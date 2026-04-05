@@ -1,24 +1,18 @@
 package com.tingeso.backend.services;
 
-import com.tingeso.backend.entities.Role;
 import com.tingeso.backend.entities.User;
 import com.tingeso.backend.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
-public class UserService implements UserDetailsService {
+public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -31,20 +25,6 @@ public class UserService implements UserDetailsService {
     @Transactional(readOnly = true)
     public User findById(Long id) {
         return userRepository.findById(id).orElse(null);
-    }
-
-    @Transactional(readOnly = true)
-    public User findByEmail(String email) {
-        Optional<User> user = userRepository.findByEmail(email);
-        return user.orElse(null);
-    }
-
-    @Transactional
-    public User save(User user) {
-        user.setRoles(Set.of(Role.ROLE_CLIENT));
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setActive(true);
-        return userRepository.save(user);
     }
 
     @Transactional
@@ -69,12 +49,5 @@ public class UserService implements UserDetailsService {
         else {
             user.setActive(false);
         }
-    }
-
-    @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException(
-                        "User with email " + email + " not found"));
     }
 }

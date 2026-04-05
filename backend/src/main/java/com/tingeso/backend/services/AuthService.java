@@ -7,8 +7,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Set;
-
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -19,7 +17,7 @@ public class AuthService {
     public User registerUser(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setActive(true);
-        user.setRoles(Set.of(Role.ROLE_CLIENT));
+        user.setRole(Role.ROLE_CLIENT);
         return userRepository.save(user);
     }
 }

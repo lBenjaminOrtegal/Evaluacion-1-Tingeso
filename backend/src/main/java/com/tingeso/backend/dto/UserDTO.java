@@ -15,7 +15,7 @@ public class UserDTO {
     private String lastname;
     private String email;
     private String phoneNumber;
-    private Set<Role> roles;
+    private Role role;
     private List<Reservation> reservations;
 
     public String fullName() {
@@ -27,7 +27,7 @@ public class UserDTO {
         this.lastname = user.getLastname();
         this.email = user.getEmail();
         this.phoneNumber = user.getPhoneNumber();
-        this.roles = user.getRoles();
+        this.role = user.getRole();
         this.reservations = user.getReservations();
     }
 }
