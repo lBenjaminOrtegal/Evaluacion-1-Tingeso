@@ -1,7 +1,6 @@
 package com.tingeso.backend.controllers;
 
 import com.tingeso.backend.dto.UserDTO;
-import com.tingeso.backend.entities.Role;
 import com.tingeso.backend.entities.User;
 import com.tingeso.backend.services.UserService;
 import jakarta.validation.Valid;
@@ -10,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Set;
 
 @RestController
 @RequestMapping("/api/users")
@@ -29,13 +27,6 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
         UserDTO userDTO = new UserDTO(userService.findById(id));
-        return ResponseEntity.ok(userDTO);
-    }
-
-    @PostMapping
-    public ResponseEntity<UserDTO> save(@Valid @RequestBody User user) {
-        user.setRoles(Set.of(Role.ROLE_CLIENT));
-        UserDTO userDTO = new UserDTO(userService.save(user));
         return ResponseEntity.ok(userDTO);
     }
 

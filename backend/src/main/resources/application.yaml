@@ -1,5 +1,5 @@
 server:
-  port: 3713
+  port: ${DB_PORT}
 spring:
   application:
     name: backend
