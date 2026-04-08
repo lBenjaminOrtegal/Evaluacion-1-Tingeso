@@ -11,6 +11,7 @@ import java.util.Set;
 @Data
 public class UserDTO {
 
+    private Long id;
     private String firstname;
     private String lastname;
     private String email;
@@ -23,11 +24,11 @@ public class UserDTO {
     }
 
     public UserDTO(User user) {
+        this.id = user.getId();
         this.firstname = user.getFirstname();
         this.lastname = user.getLastname();
         this.email = user.getEmail();
         this.phoneNumber = user.getPhoneNumber();
         this.role = user.getRole();
-        this.reservations = user.getReservations();
     }
 }

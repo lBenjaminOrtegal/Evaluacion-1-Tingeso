@@ -1,22 +1,17 @@
 package com.tingeso.backend.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.*;
 
 @Entity
 @Table(name = "users")
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class User {
@@ -48,11 +43,6 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     private Role role;
-
-    @OneToMany(mappedBy = "user",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true)
-    private List<Reservation> reservations = new ArrayList<>();
 
     private Boolean active;
 }

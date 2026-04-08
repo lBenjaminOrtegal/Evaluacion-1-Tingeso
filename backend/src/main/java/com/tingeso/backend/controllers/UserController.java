@@ -31,12 +31,8 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserDTO> updateWithId(@Valid @RequestBody User user, @PathVariable Long id) {
-        User currentUser = userService.findById(id);
-        if (currentUser == null) {
-            return ResponseEntity.notFound().build();
-        }
-        UserDTO userDTO = new UserDTO(userService.update(id, user));
+    public ResponseEntity<UserDTO> updateWithId(@Valid @RequestBody User user) {
+        UserDTO userDTO = new UserDTO(userService.update(user));
         return ResponseEntity.ok(userDTO);
     }
 

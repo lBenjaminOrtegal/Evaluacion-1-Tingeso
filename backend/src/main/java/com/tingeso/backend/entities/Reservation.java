@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Entity
 @Table(name = "reservations")
 @Data
@@ -16,6 +18,19 @@ public class Reservation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    private User user;
+    @Column(nullable = false)
+    private String email;
+
+    @Column(nullable = false)
+    private Long userId;
+
+    @Column(nullable = false)
+    private Long tourPackageId;
+
+    @Enumerated(EnumType.STRING)
+    private ReservationState state;
+
+    private Integer passengersAmount;
+    private String preferences;
+    private List<String> specialRequests;
 }
