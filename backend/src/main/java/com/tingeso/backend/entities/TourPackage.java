@@ -36,11 +36,6 @@ public class TourPackage {
     private String season;
     private String category;
 
-    // tourPackageState:
-    //    AVAILABLE,
-    //    SOLD_OUT,
-    //    NOT_AVAILABLE,
-    //    CANCELED
     @Enumerated(EnumType.STRING)
     private TourPackageState tourPackageState;
 }

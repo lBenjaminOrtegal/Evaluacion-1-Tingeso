@@ -12,6 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/tour-packages")
 @RequiredArgsConstructor
+@CrossOrigin("*")
 public class TourPackageController {
 
     private final TourPackageService tourPackageService;

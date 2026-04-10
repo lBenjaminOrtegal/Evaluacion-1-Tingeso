@@ -19,9 +19,6 @@ public class Reservation {
     private Long id;
 
     @Column(nullable = false)
-    private String email;
-
-    @Column(nullable = false)
     private Long userId;
 
     @Column(nullable = false)

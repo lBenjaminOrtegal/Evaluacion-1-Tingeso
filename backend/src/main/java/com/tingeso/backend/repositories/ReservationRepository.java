@@ -1,6 +1,7 @@
 package com.tingeso.backend.repositories;
 
 import com.tingeso.backend.entities.Reservation;
+import com.tingeso.backend.entities.ReservationState;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -11,4 +12,5 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     List<Reservation> findByUserId(Long userId);
     List<Reservation> findByTourPackageId(Long id);
+    List<Reservation> findByState(ReservationState state);
 }
