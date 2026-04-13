@@ -1,4 +1,4 @@
-import { Button, Container, Nav, Navbar, NavDropdown } from "react-bootstrap";
+import { Button, Container, Nav, Navbar } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
 function NavbarComponent() {
@@ -19,18 +19,9 @@ function NavbarComponent() {
               Acerca de nosotros
             </Nav.Link>
 
-            <NavDropdown title="Paquetes túristicos" id="basic-nav-dropdown">
-              <NavDropdown.Item as={Link} to="/tour-packages/national">
-                Nacional
-              </NavDropdown.Item>
-              <NavDropdown.Item as={Link} to="/tour-packages/international">
-                Internacional
-              </NavDropdown.Item>
-              <NavDropdown.Divider />
-              <NavDropdown.Item as={Link} to="/tour-packages">
-                Todo el catálogo
-              </NavDropdown.Item>
-            </NavDropdown>
+            <Nav.Link as={Link} to="/tour-packages">
+              Paquetes túristicos
+            </Nav.Link>
 
             <Nav.Link as={Link} to="/reservations">
               Mis reservas

@@ -1,20 +1,67 @@
 import React, { useEffect, useState } from "react";
-import {
-  Button,
-  Card,
-  Col,
-  Container,
-  Modal,
-  Row,
-} from "react-bootstrap";
+import { Button, Card, Col, Container, Modal, Row } from "react-bootstrap";
 import type { TourPackage } from "../interfaces/tourPackage.interface";
 import tourPackageService from "../services/tourPackage.service";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
-function TourPackageCardComponent() {
+function TourPackageCardComponent({ activeFilters }: { activeFilters: any }) {
   const [tourPackages, setTourPackages] = useState<TourPackage[]>([]);
   const [show, setShow] = useState(false);
-  const [tour, settour] = useState<TourPackage | null>(null);
+  const [tour, setTour] = useState<TourPackage | null>(null);
+  const navigate = useNavigate();
+
+  const filteredPackages = tourPackages.filter((pkg) => {
+    const matchName = pkg.name
+      .toLowerCase()
+      .includes(activeFilters.packageName.toLowerCase());
+    const matchDestiny = pkg.destiny
+      .toLowerCase()
+      .includes(activeFilters.destiny.toLowerCase());
+
+    const matchCategory =
+      activeFilters.category === "" || pkg.category === activeFilters.category;
+    const matchSeason =
+      activeFilters.season === "" || pkg.season === activeFilters.season;
+    const matchTypeOfTransport =
+      activeFilters.typeOfTransport === "" ||
+      pkg.typeOfTrip === activeFilters.typeOfTransport;
+
+    const matchPrice = pkg.price <= activeFilters.maxPrice;
+
+    const filterStart = activeFilters.startDate
+      ? new Date(activeFilters.startDate)
+      : new Date();
+    const filterEnd = activeFilters.endDate
+      ? new Date(activeFilters.endDate)
+      : null;
+
+    if (filterStart) filterStart.setHours(0, 0, 0, 0);
+    if (filterEnd) filterEnd.setHours(23, 59, 59, 999);
+
+    const pkgStart = new Date(pkg.startDate);
+    const pkgEnd = new Date(pkg.endDate);
+
+    const matchDate =
+      !filterStart ||
+      pkgStart >= filterStart ||
+      !filterEnd ||
+      pkgEnd <= filterEnd;
+
+    const matchAvailables = activeFilters.onlyAvailable
+      ? pkg.tourPackageState === "AVAILABLE"
+      : true;
+
+    return (
+      matchName &&
+      matchDestiny &&
+      matchPrice &&
+      matchCategory &&
+      matchSeason &&
+      matchTypeOfTransport &&
+      matchAvailables &&
+      matchDate
+    );
+  });
 
   const getTourPackages = async () => {
     try {
@@ -25,26 +72,30 @@ function TourPackageCardComponent() {
     }
   };
 
+  const handleClose = () => {
+    setShow(false);
+    setTour(null);
+  };
+
+  const handleShow = (tour: TourPackage) => {
+    setTour(tour);
+    setShow(true);
+  };
+
+  const handleReservation = (id: number) => {
+    navigate(`/tour-packages/reservation/${id}`);
+  };
+
   useEffect(() => {
     getTourPackages();
   }, []);
 
-  const handleClose = () => {
-    setShow(false);
-    settour(null);
-  };
-
-  const handleShow = (tour: TourPackage) => {
-    settour(tour);
-    setShow(true);
-  };
-
   return (
     <Container className="py-5">
       <Row xs={1} md={2} lg={3} className="g-4">
-        {tourPackages.map((tour) => (
+        {filteredPackages.map((tour) => (
           <Col key={tour.id} className="d-flex align-items-stretch">
-            <Card className="border-0 shadow-sm h-100 transition-card overflow-hidden">
+            <Card className="shadow-sm h-100 transition-card overflow-hidden">
               <div className="position-relative">
                 <Card.Img
                   variant="top"
@@ -74,7 +125,7 @@ function TourPackageCardComponent() {
                     : tour.description}
                 </Card.Text>
 
-                <div className="d-flex flex-wrap gap-3 mb-4 py-3 border-top border-bottom border-light">
+                <div className="d-flex flex-wrap gap-3 mb-4 py-3 border-top border-bottom">
                   <div className="d-flex align-items-center">
                     <i className="bi bi-clock text-secondary me-2"></i>
                     <span className="fw-medium">{tour.duration}</span>
@@ -98,10 +149,10 @@ function TourPackageCardComponent() {
                     Ver más detalles
                   </Button>
                   <Button
-                    as={Link as any}
-                    to={`/tour-packages/reservation/${tour.id}`}
                     variant="primary"
                     className="px-4 shadow-sm fw-bold"
+                    disabled={tour?.tourPackageState !== "AVAILABLE"}
+                    onClick={() => handleReservation(tour.id)}
                   >
                     Reservar
                   </Button>
@@ -165,6 +216,25 @@ function TourPackageCardComponent() {
                         </p>
                       </div>
                     </Col>
+                    <Col xs={6}>
+                      <div className="p-3 border rounded-3 bg-light-subtle">
+                        <h6 className="small text-muted mb-1">Transporte</h6>
+                        <p className="fw-bold mb-0">
+                          <i className="bi bi-cloud-sun me-2 text-primary"></i>
+                          {tour.typeOfTrip}
+                        </p>
+                      </div>
+                    </Col>
+                    <Col xs={6}>
+                      <div className="p-3 border rounded-3 bg-light-subtle">
+                        <h6 className="small text-muted mb-1">Estado</h6>
+                        <p
+                          className={`fw-bold mb-0 ${tour.tourPackageState === "AVAILABLE" ? "text-success" : "text-secondary"}`}
+                        >
+                          {tour.tourPackageState}
+                        </p>
+                      </div>
+                    </Col>
                   </Row>
 
                   <section className="mb-4">
@@ -187,14 +257,9 @@ function TourPackageCardComponent() {
                 <Col md={5} className="border-start ps-md-4">
                   <div className="mb-4">
                     <h6 className="text-uppercase text-primary fw-bold small mb-2">
-                      Estado y Cupos
+                      Cupos
                     </h6>
                     <div className="d-flex align-items-center gap-2">
-                      <span
-                        className={`badge ${tour.tourPackageState === "AVAILABLE" ? "bg-success" : "bg-warning text-dark"}`}
-                      >
-                        {tour.tourPackageState}
-                      </span>
                       <span className="text-muted small fw-medium">
                         {tour.spots} cupos restantes
                       </span>
@@ -235,10 +300,10 @@ function TourPackageCardComponent() {
                       </span>
                     </div>
                     <Button
-                      as={Link as any}
-                      to={`/tour-packages/reservation/${tour.id}`}
                       variant="primary"
                       className="w-100 py-2 fw-bold shadow-sm"
+                      disabled={tour?.tourPackageState !== "AVAILABLE"}
+                      onClick={() => handleReservation(tour.id)}
                     >
                       Reservar Ahora
                     </Button>

@@ -6,7 +6,7 @@ import HomePage from "./pages/HomePage";
 import TourPackagesAdminPage from "./pages/TourPackagesAdminPage";
 import LoginPage from "./pages/LoginPage";
 import AddEditTourPackageAdminPage from "./pages/AddEditTourPackageAdminPage";
-import TourPackageCardComponent from "./components/TourPackageCardComponent";
+import TourPackagesViewPage from "./pages/TourPackagesViewPage";
 
 function App() {
   return (
@@ -20,7 +20,7 @@ function App() {
         <Route path="/tour-packages-admin/add" element={<AddEditTourPackageAdminPage />} />
         <Route path="/tour-packages-admin/edit/:id" element={<AddEditTourPackageAdminPage />} />
 
-        <Route path="/tour-packages" element={<TourPackageCardComponent />} />
+        <Route path="/tour-packages" element={<TourPackagesViewPage />} />
       </Routes>
       {/* <FooterComponent /> */}
     </div>

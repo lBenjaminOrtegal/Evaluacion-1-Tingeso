@@ -136,7 +136,10 @@ function AddTourPackageAdminPage() {
         </Modal.Header>
         <Modal.Body>Se ha actualizado correctamente el paquete.</Modal.Body>
         <Modal.Footer>
-          <Button variant="primary" onClick={() => navigate("/tour-packages-admin")}>
+          <Button
+            variant="primary"
+            onClick={() => navigate("/tour-packages-admin")}
+          >
             Aceptar
           </Button>
         </Modal.Footer>
@@ -313,20 +316,40 @@ function AddTourPackageAdminPage() {
                   </Col>
                 </Row>
 
-                <Form.Group className="mb-3">
-                  <Form.Label className="fw-bold small">
-                    Estado de Publicación
-                  </Form.Label>
-                  <Form.Select
-                    value={tourPackageState}
-                    onChange={(e) => setTourPackageState(e.target.value)}
-                  >
-                    <option value="AVAILABLE">AVAILABLE</option>
-                    <option value="NOT_AVAILABLE">NOT_AVAILABLE</option>
-                    <option value="SOLD_OUT">SOLD_OUT</option>
-                    <option value="CANCELED">CANCELED</option>
-                  </Form.Select>
-                </Form.Group>
+                <Row>
+                  <Col>
+                    <Form.Group className="mb-3">
+                      <Form.Label className="fw-bold small">
+                        Estado de Publicación
+                      </Form.Label>
+                      <Form.Select
+                        value={tourPackageState}
+                        onChange={(e) => setTourPackageState(e.target.value)}
+                      >
+                        <option value="AVAILABLE">AVAILABLE</option>
+                        <option value="NOT_AVAILABLE">NOT_AVAILABLE</option>
+                        <option value="SOLD_OUT">SOLD_OUT</option>
+                        <option value="CANCELED">CANCELED</option>
+                      </Form.Select>
+                    </Form.Group>
+                  </Col>
+                  <Col>
+                    <Form.Group className="mb-3">
+                      <Form.Label className="fw-bold small">
+                        Tipo de viaje
+                      </Form.Label>
+                      <Form.Select
+                        value={typeOfTrip}
+                        onChange={(e) => setTypeOfTrip(e.target.value)}
+                      >
+                        <option value="Aéreo">Aéreo</option>
+                        <option value="Marítimo">Marítimo</option>
+                        <option value="Terrestre">Terrestre</option>
+                        <option value="Multimodal">Multimodal</option>
+                      </Form.Select>
+                    </Form.Group>
+                  </Col>
+                </Row>
 
                 <Form.Group className="mb-3">
                   <Form.Label className="fw-bold small">
