@@ -122,16 +122,26 @@ function TourPackagesAdminPage() {
         </tbody>
       </Table>
 
-<Modal show={idToDelete !== null} onHide={() => setIdToDelete(null)}>
+      <Modal show={idToDelete !== null} onHide={() => setIdToDelete(null)}>
         <Modal.Header closeButton>
           <Modal.Title className="fw-bold text-center">Eliminar</Modal.Title>
         </Modal.Header>
-        <Modal.Body>¿Seguro que quieres eliminar el paquete ID: {idToDelete}?</Modal.Body>
+        <Modal.Body>
+          ¿Seguro que quieres eliminar el paquete ID: {idToDelete}?
+        </Modal.Body>
         <Modal.Footer>
-          <Button className="fw-bold btn-secondary" onClick={() => setIdToDelete(null)}>
+          <Button
+            className="fw-bold btn-secondary"
+            onClick={() => setIdToDelete(null)}
+          >
             Cancelar
           </Button>
-          <Button className="fw-bold btn-danger" onClick={() => handleDelete(idToDelete!)}>Eliminar</Button>
+          <Button
+            className="fw-bold btn-danger"
+            onClick={() => handleDelete(idToDelete!)}
+          >
+            Eliminar
+          </Button>
         </Modal.Footer>
       </Modal>
     </Container>
