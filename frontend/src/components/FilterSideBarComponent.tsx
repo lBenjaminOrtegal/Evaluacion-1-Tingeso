@@ -1,3 +1,4 @@
+import { useKeycloak } from "@react-keycloak/web";
 import React, { useState } from "react";
 import {
   Col,
@@ -16,7 +17,7 @@ function FilterSideBarComponent({
   const [maxPrice, setMaxPrice] = useState<number>(1000000);
   const [category, setCategory] = useState<string>("");
   const [season, setSeason] = useState<string>("");
-  const [typeOfTransport, setTypeOfTransport] = useState<string>("");
+  const [tripType, setTripType] = useState<string>("");
   const [onlyAvailable, setOnlyAvailable] = useState<boolean>(true);
   const [packageName, setPackageName] = useState<string>("");
   const [destiny, setDestiny] = useState<string>("");
@@ -33,7 +34,7 @@ function FilterSideBarComponent({
       onlyAvailable,
       startDate,
       endDate,
-      typeOfTransport,
+      tripType,
     });
   }, [
     packageName,
@@ -44,14 +45,14 @@ function FilterSideBarComponent({
     onlyAvailable,
     startDate,
     endDate,
-    typeOfTransport,
+    tripType,
   ]);
 
   const handleReset = () => {
     setMaxPrice(1000000);
     setCategory("");
     setSeason("");
-    setTypeOfTransport("");
+    setTripType("");
     setOnlyAvailable(true);
     setPackageName("");
     setDestiny("");
@@ -59,9 +60,11 @@ function FilterSideBarComponent({
     setEndDate("");
   };
 
+  const { keycloak } = useKeycloak();
+
   return (
-    <Container className="p-3">
-      <h5 className="mb-4">Filtros de Búsqueda</h5>
+    <Container className="py-4">
+      <h5 className="mb-4 fw-bold fs-3 text-primary">Filtros de Búsqueda</h5>
 
       <Row className="mb-3">
         <Col md={6}>
@@ -98,10 +101,9 @@ function FilterSideBarComponent({
               onChange={(e) => setCategory(e.target.value)}
             >
               <option value="">Todas</option>
-              <option value="Aventura">Aventura</option>
-              <option value="Relajación">Relajación</option>
-              <option value="Cultural">Cultural</option>
-              <option value="Familiar">Familiar</option>
+              <option value="LOW_COST">Económico</option>
+              <option value="STANDARD">Estándar</option>
+              <option value="PREMIUM">Premium</option>
             </Form.Select>
           </FloatingLabel>
         </Col>
@@ -112,23 +114,25 @@ function FilterSideBarComponent({
               onChange={(e) => setSeason(e.target.value)}
             >
               <option value="">Todas</option>
-              <option value="Invierno">Invierno</option>
-              <option value="Otoño">Otoño</option>
-              <option value="Primavera">Primavera</option>
-              <option value="Verano">Verano</option>
+              <option value="WINTER">Invierno</option>
+              <option value="FALL">Otoño</option>
+              <option value="SPRING">Primavera</option>
+              <option value="SUMMER">Verano</option>
             </Form.Select>
           </FloatingLabel>
         </Col>
         <Col md={4}>
-          <FloatingLabel label="Transporte">
+          <FloatingLabel label="Tipo de viaje">
             <Form.Select
-              value={typeOfTransport}
-              onChange={(e) => setTypeOfTransport(e.target.value)}
+              value={tripType}
+              onChange={(e) => setTripType(e.target.value)}
             >
               <option value="">Todos</option>
-              <option value="Aéreo">Aéreo</option>
-              <option value="Terrestre">Terrestre</option>
-              <option value="Marítimo">Marítimo</option>
+              <option value="ADVENTURE">Aventura</option>
+              <option value="RELAXATION">Ralajación</option>
+              <option value="CULTURAL">Cultural</option>
+              <option value="BUSINESS">Negocio</option>
+              <option value="FAMILY">Familiar</option>
             </Form.Select>
           </FloatingLabel>
         </Col>
@@ -175,16 +179,18 @@ function FilterSideBarComponent({
       </Row>
 
       <Row className="align-items-center">
-        <Col xs={7}>
-          <Form.Check
-            type="switch"
-            id="available-switch"
-            label="Solo disponibles"
-            checked={onlyAvailable}
-            onChange={(e) => setOnlyAvailable(e.target.checked)}
-          />
+        <Col>
+          {keycloak.hasRealmRole("ADMIN") && (
+            <Form.Check
+              type="switch"
+              id="available-switch"
+              label="Solo disponibles"
+              checked={onlyAvailable}
+              onChange={(e) => setOnlyAvailable(e.target.checked)}
+            />
+          )}
         </Col>
-        <Col xs={5} className="text-end justify-content-between">
+        <Col xs={5} className="d-flex justify-content-end">
           <Button variant="outline-secondary" size="sm" onClick={handleReset}>
             Limpiar
           </Button>

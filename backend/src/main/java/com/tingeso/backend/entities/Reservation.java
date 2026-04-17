@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Entity
@@ -19,15 +20,16 @@ public class Reservation {
     private Long id;
 
     @Column(nullable = false)
-    private Long userId;
+    private String userEmail;
 
     @Column(nullable = false)
     private Long tourPackageId;
 
     @Enumerated(EnumType.STRING)
-    private ReservationState state;
+    private ReservationState reservationState;
 
+    private LocalDate selectedDate;
     private Integer passengersAmount;
-    private String preferences;
+    private List<String> preferences;
     private List<String> specialRequests;
 }

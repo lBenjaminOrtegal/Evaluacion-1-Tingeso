@@ -12,7 +12,7 @@ export interface TourPackage {
   conditions: string[];
   restrictions: string[];
   spots: number;
-  typeOfTrip: string;
+  tripType: string;
   season: string;
   category: string;
   tourPackageState: string;

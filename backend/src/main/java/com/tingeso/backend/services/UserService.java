@@ -37,7 +37,7 @@ public class UserService {
     public Boolean deleteById(Long id) throws EmptyResultDataAccessException {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
-        List<Reservation> reservations = reservationRepository.findByUserId(id);
+        List<Reservation> reservations = reservationRepository.findByUserEmail(user.getEmail());
         if (reservations.isEmpty()) {
             userRepository.deleteById(id);
             return true;

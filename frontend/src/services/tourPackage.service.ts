@@ -1,24 +1,5 @@
 import httpClient from "../http-common"
-
-interface TourPackage {
-  id: number;
-  name: string;
-  destiny: string;
-  description: string;
-  startDate: Date;
-  endDate: Date;
-  availableDates: string[];
-  duration: string;
-  price: number;
-  services: string[];
-  conditions: string;
-  restrictions: string;
-  spots: number;
-  typeOfTrip: string;
-  season: string;
-  category: string;
-  tourPackageState: "AVAILABLE" | "SOLD_OUT" | "NOT_AVAILABLE" | "CANCELED";
-}
+import type { TourPackage } from "../interfaces/tourPackage.interface"
 
 const getAll = () => {
     return httpClient.get('/api/tour-packages')

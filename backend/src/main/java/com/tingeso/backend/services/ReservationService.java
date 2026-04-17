@@ -27,8 +27,8 @@ public class ReservationService {
     }
 
     @Transactional(readOnly = true)
-    public List<Reservation> findByUserId(Long userId) {
-        return reservationRepository.findByUserId(userId);
+    public List<Reservation> findByUserEmail(String userEmail) {
+        return reservationRepository.findByUserEmail(userEmail);
     }
 
     @Transactional(readOnly = true)
@@ -37,9 +37,10 @@ public class ReservationService {
     }
 
     @Transactional(readOnly = true)
-    public List<Reservation> findByState(ReservationState state) {
-        return reservationRepository.findByState(state);
+    public List<Reservation> findByReservationState(ReservationState state) {
+        return reservationRepository.findByReservationState(state);
     }
+
     @Transactional
     public Reservation save(Reservation reservation) {
         return reservationRepository.save(reservation);
@@ -49,7 +50,7 @@ public class ReservationService {
     public Reservation update(Reservation reservation) throws EmptyResultDataAccessException {
         Reservation reservationSaved = reservationRepository.findById(reservation.getId())
                 .orElseThrow(() -> new RuntimeException("Reservation not found with id: " + reservation.getId()));
-        reservationSaved.setState(reservation.getState());
+        reservationSaved.setReservationState(reservation.getReservationState());
         reservationSaved.setPreferences(reservation.getPreferences());
         reservationSaved.setSpecialRequests(reservation.getSpecialRequests());
         reservationSaved.setPassengersAmount(reservation.getPassengersAmount());

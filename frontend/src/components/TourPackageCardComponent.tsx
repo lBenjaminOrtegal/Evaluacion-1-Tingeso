@@ -3,9 +3,11 @@ import { Button, Card, Col, Container, Modal, Row } from "react-bootstrap";
 import type { TourPackage } from "../interfaces/tourPackage.interface";
 import tourPackageService from "../services/tourPackage.service";
 import { useNavigate } from "react-router-dom";
+import { useKeycloak } from "@react-keycloak/web";
 
 function TourPackageCardComponent({ activeFilters }: { activeFilters: any }) {
   const [tourPackages, setTourPackages] = useState<TourPackage[]>([]);
+  const { keycloak } = useKeycloak();
   const [show, setShow] = useState(false);
   const [tour, setTour] = useState<TourPackage | null>(null);
   const navigate = useNavigate();
@@ -22,9 +24,8 @@ function TourPackageCardComponent({ activeFilters }: { activeFilters: any }) {
       activeFilters.category === "" || pkg.category === activeFilters.category;
     const matchSeason =
       activeFilters.season === "" || pkg.season === activeFilters.season;
-    const matchTypeOfTransport =
-      activeFilters.typeOfTransport === "" ||
-      pkg.typeOfTrip === activeFilters.typeOfTransport;
+    const matchTripType =
+      activeFilters.tripType === "" || pkg.tripType === activeFilters.tripType;
 
     const matchPrice = pkg.price <= activeFilters.maxPrice;
 
@@ -57,7 +58,7 @@ function TourPackageCardComponent({ activeFilters }: { activeFilters: any }) {
       matchPrice &&
       matchCategory &&
       matchSeason &&
-      matchTypeOfTransport &&
+      matchTripType &&
       matchAvailables &&
       matchDate
     );
@@ -78,12 +79,18 @@ function TourPackageCardComponent({ activeFilters }: { activeFilters: any }) {
   };
 
   const handleShow = (tour: TourPackage) => {
+    getTourPackages();
     setTour(tour);
     setShow(true);
   };
 
   const handleReservation = (id: number) => {
-    navigate(`/tour-packages/reservation/${id}`);
+    if (keycloak.authenticated) {
+      navigate(`/tour-packages/reservation/${id}`);
+    }
+    else {
+      keycloak.login();
+    }
   };
 
   useEffect(() => {
@@ -92,15 +99,25 @@ function TourPackageCardComponent({ activeFilters }: { activeFilters: any }) {
 
   return (
     <Container className="py-5">
+      {tourPackages.length <= 0 && (
+        <div className="text-center p-5 border rounded bg-light">
+          <p className="text-muted mb-0">
+            No hay paquetes túristicos registrados.
+          </p>
+        </div>
+      )}
       <Row xs={1} md={2} lg={3} className="g-4">
         {filteredPackages.map((tour) => (
           <Col key={tour.id} className="d-flex align-items-stretch">
-            <Card className="shadow-sm h-100 transition-card overflow-hidden">
+            <Card
+              className="shadow-sm h-100 transition-card overflow-hidden"
+              style={{ width: "30rem" }}
+            >
               <div className="position-relative">
                 <Card.Img
                   variant="top"
-                  src="src/assets/fortnite.jpg"
-                  style={{ height: "220px", objectFit: "cover" }}
+                  src="https://placehold.co/200x150?text=img"
+                  style={{ objectFit: "cover" }}
                 />
                 <div className="position-absolute top-0 end-0 m-3">
                   <span className="badge bg-white text-dark shadow-sm py-2 px-3 fw-bold">
@@ -174,13 +191,17 @@ function TourPackageCardComponent({ activeFilters }: { activeFilters: any }) {
           <>
             <Modal.Header closeButton className="bg-light border-0 py-3">
               <div>
-                <Modal.Title className="fw-bold fs-3 mb-0">
+                <Modal.Title className="fw-bold fs-3 mb-0 text-dark">
                   {tour.name}
+                  <strong className="fs-3 fw-bold text-primary">
+                    {" "}
+                    ({tour.destiny})
+                  </strong>
                 </Modal.Title>
                 <small className="text-secondary fw-semibold">
-                  <i className="bi bi-geo-alt-fill me-1 text-primary"></i>
-                  {tour.destiny} —{" "}
-                  <span className="text-uppercase">{tour.category}</span>
+                  <span className="text-uppercase">
+                    Categoría: {tour.category}
+                  </span>
                 </small>
               </div>
             </Modal.Header>
@@ -218,10 +239,10 @@ function TourPackageCardComponent({ activeFilters }: { activeFilters: any }) {
                     </Col>
                     <Col xs={6}>
                       <div className="p-3 border rounded-3 bg-light-subtle">
-                        <h6 className="small text-muted mb-1">Transporte</h6>
+                        <h6 className="small text-muted mb-1">Tipo de viaje</h6>
                         <p className="fw-bold mb-0">
                           <i className="bi bi-cloud-sun me-2 text-primary"></i>
-                          {tour.typeOfTrip}
+                          {tour.tripType}
                         </p>
                       </div>
                     </Col>
@@ -319,12 +340,20 @@ function TourPackageCardComponent({ activeFilters }: { activeFilters: any }) {
                     >
                       <p className="mb-1">
                         <strong>Condiciones:</strong>{" "}
-                        {tour.conditions.join(", ")}
                       </p>
+                      <ol>
+                        {tour.conditions.map((condition) => (
+                          <li>{condition}</li>
+                        ))}
+                      </ol>
                       <p className="mb-0">
                         <strong>Restricciones:</strong>{" "}
-                        {tour.restrictions.join(", ")}
                       </p>
+                      <ol>
+                        {tour.restrictions.map((restriction) => (
+                          <li>{restriction}</li>
+                        ))}
+                      </ol>
                     </div>
                   </section>
                 </Col>

@@ -1,7 +1,6 @@
 package com.tingeso.backend.repositories;
 
-import com.tingeso.backend.entities.TourPackage;
-import com.tingeso.backend.entities.TourPackageState;
+import com.tingeso.backend.entities.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -11,10 +10,10 @@ import java.util.List;
 public interface TourPackageRepository extends JpaRepository<TourPackage, Long> {
 
     List<TourPackage> findByName(String name);
-    List<TourPackage> findByCategory(String category);
+    List<TourPackage> findByCategory(Category category);
     List<TourPackage> findByDestiny(String destiny);
-    List<TourPackage> findByTypeOfTrip(String typeOfTrip);
-    List<TourPackage> findBySeason(String season);
+    List<TourPackage> findByTripType(TripType tripType);
+    List<TourPackage> findBySeason(Season season);
     List<TourPackage> findBySpotsGreaterThan(Integer spots);
     List<TourPackage> findByTourPackageState(TourPackageState tourPackageState);
 }

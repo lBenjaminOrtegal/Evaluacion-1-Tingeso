@@ -15,6 +15,7 @@ function TourPackagesViewPage() {
       <FilterSideBarComponent
         onFilterChange={handleFilterChange}
       ></FilterSideBarComponent>
+      <hr></hr>
       <TourPackageCardComponent
         activeFilters={filters}
       ></TourPackageCardComponent>

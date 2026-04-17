@@ -38,9 +38,9 @@ function AddTourPackageAdminPage() {
   const [conditions, setConditions] = useState("");
   const [restrictions, setRestrictions] = useState("");
   const [spots, setSpots] = useState(1);
-  const [typeOfTrip, setTypeOfTrip] = useState("");
-  const [season, setSeason] = useState("Verano");
-  const [category, setCategory] = useState("Aventura");
+  const [tripType, setTripType] = useState("ADVENTURE");
+  const [season, setSeason] = useState("SUMMER");
+  const [category, setCategory] = useState("STANDARD");
   const [tourPackageState, setTourPackageState] = useState("AVAILABLE");
 
   useEffect(() => {
@@ -58,13 +58,13 @@ function AddTourPackageAdminPage() {
           setPrice(pkg.price);
           setSpots(pkg.spots);
           setCategory(pkg.category);
-          setTourPackageState(pkg.tourPackageState);
+          setTourPackageState(pkg.tourPackageState || "AVAILABLE");
           setDuration(pkg.duration || "");
           setServices(pkg.services?.join(", "));
           setConditions(pkg.conditions?.join(", "));
           setRestrictions(pkg.restrictions?.join(", "));
-          setSeason(pkg.season || "Verano");
-          setTypeOfTrip(pkg.typeOfTrip || "");
+          setSeason(pkg.season || "SUMMER");
+          setTripType(pkg.tripType || "STANDARD");
           setAvailableDates(pkg.availableDates?.join(", ") || "");
         })
         .catch((error) => console.error("Error al cargar paquete", error));
@@ -109,7 +109,7 @@ function AddTourPackageAdminPage() {
         ? restrictions.split(",").map((r) => r.trim())
         : [],
       spots,
-      typeOfTrip,
+      tripType,
       season,
       category,
       tourPackageState,
@@ -291,10 +291,10 @@ function AddTourPackageAdminPage() {
                         value={season}
                         onChange={(e) => setSeason(e.target.value)}
                       >
-                        <option value="Verano">Verano</option>
-                        <option value="Otoño">Otoño</option>
-                        <option value="Invierno">Invierno</option>
-                        <option value="Primavera">Primavera</option>
+                        <option value="SUMMER">Verano</option>
+                        <option value="FALL">Otoño</option>
+                        <option value="WINTER">Invierno</option>
+                        <option value="SPRING">Primavera</option>
                       </Form.Select>
                     </Form.Group>
                   </Col>
@@ -307,10 +307,9 @@ function AddTourPackageAdminPage() {
                         value={category}
                         onChange={(e) => setCategory(e.target.value)}
                       >
-                        <option value="Aventura">Aventura</option>
-                        <option value="Relajación">Relajación</option>
-                        <option value="Cultural">Cultural</option>
-                        <option value="Familiar">Familiar</option>
+                        <option value="LOW_COST">Económico</option>
+                        <option value="STANDARD">Estándar</option>
+                        <option value="PREMIUM">Premium</option>
                       </Form.Select>
                     </Form.Group>
                   </Col>
@@ -326,10 +325,10 @@ function AddTourPackageAdminPage() {
                         value={tourPackageState}
                         onChange={(e) => setTourPackageState(e.target.value)}
                       >
-                        <option value="AVAILABLE">AVAILABLE</option>
-                        <option value="NOT_AVAILABLE">NOT_AVAILABLE</option>
-                        <option value="SOLD_OUT">SOLD_OUT</option>
-                        <option value="CANCELED">CANCELED</option>
+                        <option value="AVAILABLE">Disponible</option>
+                        <option value="NOT_AVAILABLE">No Disponible</option>
+                        <option value="SOLD_OUT">Vendido</option>
+                        <option value="CANCELED">Cancelado</option>
                       </Form.Select>
                     </Form.Group>
                   </Col>
@@ -339,13 +338,14 @@ function AddTourPackageAdminPage() {
                         Tipo de viaje
                       </Form.Label>
                       <Form.Select
-                        value={typeOfTrip}
-                        onChange={(e) => setTypeOfTrip(e.target.value)}
+                        value={tripType}
+                        onChange={(e) => setTripType(e.target.value)}
                       >
-                        <option value="Aéreo">Aéreo</option>
-                        <option value="Marítimo">Marítimo</option>
-                        <option value="Terrestre">Terrestre</option>
-                        <option value="Multimodal">Multimodal</option>
+                        <option value="ADVENTURE">Aventura</option>
+                        <option value="RELAXATION">Relajación</option>
+                        <option value="CULTURAL">Cultural</option>
+                        <option value="BUSINESS">Negocios</option>
+                        <option value="FAMILY">Familia</option>
                       </Form.Select>
                     </Form.Group>
                   </Col>

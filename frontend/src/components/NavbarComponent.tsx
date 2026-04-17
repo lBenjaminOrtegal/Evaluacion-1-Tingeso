@@ -1,11 +1,21 @@
+import { useKeycloak } from "@react-keycloak/web";
 import { Button, Container, Nav, Navbar } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
 function NavbarComponent() {
+  const { keycloak } = useKeycloak();
+
   return (
     <Navbar expand="lg" className="bg-body-tertiary border-bottom p-3">
       <Container>
         <Navbar.Brand as={Link} to="/" className="text-primary fs-medium">
+          <img
+            src="./src/assets/logo.png"
+            width="30"
+            height="30"
+            className="d-inline-block align-top fw-bold"
+            alt="TravelAgency Logo"
+          />
           TravelAgency
         </Navbar.Brand>
 
@@ -15,6 +25,7 @@ function NavbarComponent() {
             <Nav.Link as={Link} to="/">
               Inicio
             </Nav.Link>
+
             <Nav.Link as={Link} to="/about-us">
               Acerca de nosotros
             </Nav.Link>
@@ -23,19 +34,39 @@ function NavbarComponent() {
               Paquetes túristicos
             </Nav.Link>
 
+            {keycloak.hasRealmRole("ADMIN") && (
+              <Nav.Link as={Link} to="/tour-packages-admin">
+                Administrar paquetes
+              </Nav.Link>
+            )}
+
             <Nav.Link as={Link} to="/reservations">
               Mis reservas
             </Nav.Link>
+
+            {keycloak.hasRealmRole("ADMIN") && (
+              <Nav.Link as={Link} to="/reservations-admin">
+                Administrar reservas
+              </Nav.Link>
+            )}
           </Nav>
 
           <Nav>
-            <Button
-              as={Link as any}
-              to="/login"
-              className="btn-primary fw-medium"
-            >
-              Iniciar Sesión
-            </Button>
+            {keycloak.authenticated ? (
+              <Button onClick={() => keycloak.logout()} 
+              variant="outline-danger"
+              className="fw-semibold"
+              >
+                Cerrar Sesión
+              </Button>
+            ) : (
+              <Button
+                onClick={() => keycloak.login()}
+                className="fw-semibold"
+              >
+                Iniciar Sesión
+              </Button>
+            )}
           </Nav>
         </Navbar.Collapse>
       </Container>

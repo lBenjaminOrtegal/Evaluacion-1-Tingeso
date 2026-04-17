@@ -22,7 +22,10 @@ public class TourPackage {
 
     private String name;
     private String destiny;
+
+    @Column(columnDefinition = "TEXT")
     private String description;
+
     private LocalDate startDate;
     private LocalDate endDate;
     private List<LocalDate> availableDates;
@@ -32,9 +35,15 @@ public class TourPackage {
     private List<String> conditions;
     private List<String> restrictions;
     private Integer spots;
-    private String typeOfTrip;
-    private String season;
-    private String category;
+
+    @Enumerated(EnumType.STRING)
+    private TripType tripType;
+
+    @Enumerated(EnumType.STRING)
+    private Season season;
+
+    @Enumerated(EnumType.STRING)
+    private Category category;
 
     @Enumerated(EnumType.STRING)
     private TourPackageState tourPackageState;

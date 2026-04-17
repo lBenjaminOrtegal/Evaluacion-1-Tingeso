@@ -1,8 +1,6 @@
 package com.tingeso.backend.services;
 
-import com.tingeso.backend.entities.Reservation;
-import com.tingeso.backend.entities.TourPackage;
-import com.tingeso.backend.entities.TourPackageState;
+import com.tingeso.backend.entities.*;
 import com.tingeso.backend.repositories.ReservationRepository;
 import com.tingeso.backend.repositories.TourPackageRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +28,7 @@ public class TourPackageService {
     }
 
     @Transactional(readOnly = true)
-    public List<TourPackage> findByCategory(String category) {
+    public List<TourPackage> findByCategory(Category category) {
         return tourPackageRepository.findByCategory(category);
     }
 
@@ -45,7 +43,7 @@ public class TourPackageService {
     }
 
     @Transactional(readOnly = true)
-    public List<TourPackage> findBySeason(String season) {
+    public List<TourPackage> findBySeason(Season season) {
         return tourPackageRepository.findBySeason(season);
     }
 
@@ -55,8 +53,8 @@ public class TourPackageService {
     }
 
     @Transactional(readOnly = true)
-    public List<TourPackage> findByTypeOfTrip(String typeOfTrip) {
-        return tourPackageRepository.findByTypeOfTrip(typeOfTrip);
+    public List<TourPackage> findByTripType(TripType tripType) {
+        return tourPackageRepository.findByTripType(tripType);
     }
 
     @Transactional(readOnly = true)
