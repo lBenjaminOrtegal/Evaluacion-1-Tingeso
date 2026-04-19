@@ -5,13 +5,13 @@ export interface TourPackage {
   description: string;
   startDate: string;
   endDate: string;
-  availableDates: string[];
   duration: string;
   price: number;
   services: string[];
   conditions: string[];
   restrictions: string[];
-  spots: number;
+  remainingSpots: number;
+  initialSpots: number;
   tripType: string;
   season: string;
   category: string;

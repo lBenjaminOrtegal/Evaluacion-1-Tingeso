@@ -31,22 +31,22 @@ function TourPackageCardComponent({ activeFilters }: { activeFilters: any }) {
 
     const filterStart = activeFilters.startDate
       ? new Date(activeFilters.startDate)
-      : new Date();
+      : null;
     const filterEnd = activeFilters.endDate
       ? new Date(activeFilters.endDate)
       : null;
 
     if (filterStart) filterStart.setHours(0, 0, 0, 0);
-    if (filterEnd) filterEnd.setHours(23, 59, 59, 999);
+    if (filterEnd) filterEnd.setHours(0, 0, 0, 0);
 
     const pkgStart = new Date(pkg.startDate);
     const pkgEnd = new Date(pkg.endDate);
+    pkgStart.setHours(0, 0, 0, 0);
+    pkgEnd.setHours(0, 0, 0, 0);
 
     const matchDate =
-      !filterStart ||
-      pkgStart >= filterStart ||
-      !filterEnd ||
-      pkgEnd <= filterEnd;
+      (!filterStart || pkgStart >= filterStart) &&
+      (!filterEnd || pkgEnd <= filterEnd);
 
     const matchAvailables = activeFilters.onlyAvailable
       ? pkg.tourPackageState === "AVAILABLE"
@@ -87,8 +87,7 @@ function TourPackageCardComponent({ activeFilters }: { activeFilters: any }) {
   const handleReservation = (id: number) => {
     if (keycloak.authenticated) {
       navigate(`/tour-packages/reservation/${id}`);
-    }
-    else {
+    } else {
       keycloak.login();
     }
   };
@@ -144,15 +143,11 @@ function TourPackageCardComponent({ activeFilters }: { activeFilters: any }) {
 
                 <div className="d-flex flex-wrap gap-3 mb-4 py-3 border-top border-bottom">
                   <div className="d-flex align-items-center">
-                    <i className="bi bi-clock text-secondary me-2"></i>
                     <span className="fw-medium">{tour.duration}</span>
                   </div>
                   <div className="d-flex align-items-center">
-                    <i className="bi bi-people text-secondary me-2"></i>
-                    <span
-                      className={`fw-medium ${tour.spots < 5 ? "text-danger" : ""}`}
-                    >
-                      {tour.spots} cupos
+                    <span className="fw-medium text-primary">
+                      {tour.initialSpots} cupos iniciales
                     </span>
                   </div>
                 </div>
@@ -222,28 +217,19 @@ function TourPackageCardComponent({ activeFilters }: { activeFilters: any }) {
                     <Col xs={6}>
                       <div className="p-3 border rounded-3 bg-light-subtle">
                         <h6 className="small text-muted mb-1">Duración</h6>
-                        <p className="fw-bold mb-0">
-                          <i className="bi bi-clock me-2 text-primary"></i>
-                          {tour.duration}
-                        </p>
+                        <p className="fw-bold mb-0">{tour.duration}</p>
                       </div>
                     </Col>
                     <Col xs={6}>
                       <div className="p-3 border rounded-3 bg-light-subtle">
                         <h6 className="small text-muted mb-1">Temporada</h6>
-                        <p className="fw-bold mb-0">
-                          <i className="bi bi-cloud-sun me-2 text-primary"></i>
-                          {tour.season}
-                        </p>
+                        <p className="fw-bold mb-0">{tour.season}</p>
                       </div>
                     </Col>
                     <Col xs={6}>
                       <div className="p-3 border rounded-3 bg-light-subtle">
                         <h6 className="small text-muted mb-1">Tipo de viaje</h6>
-                        <p className="fw-bold mb-0">
-                          <i className="bi bi-cloud-sun me-2 text-primary"></i>
-                          {tour.tripType}
-                        </p>
+                        <p className="fw-bold mb-0">{tour.tripType}</p>
                       </div>
                     </Col>
                     <Col xs={6}>
@@ -265,10 +251,7 @@ function TourPackageCardComponent({ activeFilters }: { activeFilters: any }) {
                     <ul className="list-unstyled row g-2">
                       {tour.services.map((service, index) => (
                         <Col sm={6} key={index}>
-                          <li className="small">
-                            <i className="bi bi-check2-circle text-success me-2"></i>
-                            {service}
-                          </li>
+                          <li className="small">{service}</li>
                         </Col>
                       ))}
                     </ul>
@@ -282,35 +265,21 @@ function TourPackageCardComponent({ activeFilters }: { activeFilters: any }) {
                     </h6>
                     <div className="d-flex align-items-center gap-2">
                       <span className="text-muted small fw-medium">
-                        {tour.spots} cupos restantes
+                        {tour.remainingSpots} cupos restantes
                       </span>
                     </div>
                   </div>
 
                   <div className="mb-4">
                     <h6 className="text-uppercase text-primary fw-bold small mb-2">
-                      Fechas del Paquete
+                      Periodo del Paquete
                     </h6>
                     <p className="small mb-1 text-muted">
                       Del <strong>{tour.startDate}</strong> al{" "}
                       <strong>{tour.endDate}</strong>
                     </p>
 
-                    <div className="mt-3">
-                      <p className="small fw-bold mb-1">
-                        Otras fechas disponibles:
-                      </p>
-                      <div className="d-flex flex-wrap gap-1">
-                        {tour.availableDates.map((date, i) => (
-                          <span
-                            key={i}
-                            className="badge border text-dark fw-normal fs-6 bg-white"
-                          >
-                            {date}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
+                    
                   </div>
 
                   <div className="p-3 rounded-4 bg-primary bg-opacity-10 border border-primary border-opacity-25 mb-4">

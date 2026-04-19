@@ -3,6 +3,7 @@ package com.tingeso.backend.services;
 import com.tingeso.backend.entities.*;
 import com.tingeso.backend.repositories.ReservationRepository;
 import com.tingeso.backend.repositories.TourPackageRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
@@ -38,18 +39,13 @@ public class TourPackageService {
     }
 
     @Transactional(readOnly = true)
-    public List<TourPackage> findByName(String name) {
-        return tourPackageRepository.findByName(name);
-    }
-
-    @Transactional(readOnly = true)
     public List<TourPackage> findBySeason(Season season) {
         return tourPackageRepository.findBySeason(season);
     }
 
     @Transactional(readOnly = true)
-    public List<TourPackage> findBySpots(Integer spots) {
-        return tourPackageRepository.findBySpotsGreaterThan(spots);
+    public List<TourPackage> findByRemainingSpots(Integer remainingSpots) {
+        return tourPackageRepository.findByRemainingSpotsGreaterThan(remainingSpots);
     }
 
     @Transactional(readOnly = true)
@@ -64,18 +60,32 @@ public class TourPackageService {
 
     @Transactional
     public TourPackage createTourPackage(TourPackage tourPackage) {
+        tourPackage.calculateDuration();
         return tourPackageRepository.save(tourPackage);
     }
 
     @Transactional
-    public TourPackage update(TourPackage tourPackage) throws EmptyResultDataAccessException {
-        TourPackage tourPackageSaved = tourPackageRepository.findById(tourPackage.getId())
-                .orElseThrow(() -> new RuntimeException("TourPackage not found with id: " + tourPackage.getId()));
+    public TourPackage update(TourPackage tourPackage) {
+        TourPackage existingPackage = tourPackageRepository.findById(tourPackage.getId())
+                .orElseThrow(() -> new EntityNotFoundException("TourPackage not found with id: " + tourPackage.getId()));
         List<Reservation> reservations = reservationRepository.findByTourPackageId(tourPackage.getId());
-        if (reservations.isEmpty()) {
-            return tourPackageRepository.save(tourPackage);
+        if (!reservations.isEmpty()) {
+            throw new IllegalStateException("Cannot modify because reservations have already been set.");
         }
-        return tourPackageSaved;
+        existingPackage.setName(tourPackage.getName());
+        existingPackage.setStartDate(tourPackage.getStartDate());
+        existingPackage.setEndDate(tourPackage.getEndDate());
+        existingPackage.setPrice(tourPackage.getPrice());
+        existingPackage.setServices(tourPackage.getServices());
+        existingPackage.setConditions(tourPackage.getConditions());
+        existingPackage.setRestrictions(tourPackage.getRestrictions());
+        existingPackage.calculateDuration();
+        if (tourPackage.getInitialSpots() > existingPackage.getInitialSpots()) {
+            existingPackage.setRemainingSpots(
+                    existingPackage.getRemainingSpots() +
+                            (tourPackage.getInitialSpots() - existingPackage.getInitialSpots()));
+        }
+        return tourPackageRepository.save(existingPackage);
     }
 
     @Transactional

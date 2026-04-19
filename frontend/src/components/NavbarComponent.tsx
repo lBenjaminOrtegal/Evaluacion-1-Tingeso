@@ -8,14 +8,7 @@ function NavbarComponent() {
   return (
     <Navbar expand="lg" className="bg-body-tertiary border-bottom p-3">
       <Container>
-        <Navbar.Brand as={Link} to="/" className="text-primary fs-medium">
-          <img
-            src="./src/assets/logo.png"
-            width="30"
-            height="30"
-            className="d-inline-block align-top fw-bold"
-            alt="TravelAgency Logo"
-          />
+        <Navbar.Brand as={Link} to="/" className="text-primary fw-bold">
           TravelAgency
         </Navbar.Brand>
 
@@ -41,7 +34,7 @@ function NavbarComponent() {
             )}
 
             <Nav.Link as={Link} to="/reservations">
-              Mis reservas
+              Reservas
             </Nav.Link>
 
             {keycloak.hasRealmRole("ADMIN") && (

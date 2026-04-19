@@ -21,8 +21,8 @@ const getBySeason = (season:string) => {
     return httpClient.get(`/api/tour-packages/season/${season}`)
 }
 
-const getBySpots = (spots:number) => {
-    return httpClient.get(`/api/tour-packages/spots/${spots}`)
+const getByRemainingSpots = (remainingSpots:number) => {
+    return httpClient.get(`/api/tour-packages/spots/${remainingSpots}`)
 }
 
 const getByAvailableSpots = () => {
@@ -55,7 +55,7 @@ export default {
     getByCategory,
     getByDestiny,
     getBySeason,
-    getBySpots,
+    getByRemainingSpots,
     getByAvailableSpots,
     getByTypeOfTrips,
     getByState,

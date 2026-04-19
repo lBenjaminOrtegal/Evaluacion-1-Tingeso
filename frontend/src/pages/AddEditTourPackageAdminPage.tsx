@@ -31,13 +31,11 @@ function AddTourPackageAdminPage() {
   const [description, setDescription] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [availableDates, setAvailableDates] = useState("");
-  const [duration, setDuration] = useState("");
   const [price, setPrice] = useState(1);
   const [services, setServices] = useState("");
   const [conditions, setConditions] = useState("");
   const [restrictions, setRestrictions] = useState("");
-  const [spots, setSpots] = useState(1);
+  const [initialSpots, setInitialSpots] = useState(1);
   const [tripType, setTripType] = useState("ADVENTURE");
   const [season, setSeason] = useState("SUMMER");
   const [category, setCategory] = useState("STANDARD");
@@ -56,16 +54,14 @@ function AddTourPackageAdminPage() {
           setStartDate(pkg.startDate);
           setEndDate(pkg.endDate);
           setPrice(pkg.price);
-          setSpots(pkg.spots);
+          setInitialSpots(pkg.initialSpots);
           setCategory(pkg.category);
           setTourPackageState(pkg.tourPackageState || "AVAILABLE");
-          setDuration(pkg.duration || "");
           setServices(pkg.services?.join(", "));
           setConditions(pkg.conditions?.join(", "));
           setRestrictions(pkg.restrictions?.join(", "));
           setSeason(pkg.season || "SUMMER");
           setTripType(pkg.tripType || "STANDARD");
-          setAvailableDates(pkg.availableDates?.join(", ") || "");
         })
         .catch((error) => console.error("Error al cargar paquete", error));
     }
@@ -74,7 +70,7 @@ function AddTourPackageAdminPage() {
   const handleSubmit = (e: React.SubmitEvent) => {
     e.preventDefault();
 
-    if (tourPackageState === "AVAILABLE" && spots <= 0) {
+    if (tourPackageState === "AVAILABLE" && initialSpots <= 0) {
       alert(
         "Un paquete no puede publicarse como disponible si no tiene cupos.",
       );
@@ -98,17 +94,14 @@ function AddTourPackageAdminPage() {
       description,
       startDate,
       endDate,
-      availableDates: availableDates
-        ? availableDates.split(",").map((d) => d.trim())
-        : [],
-      duration,
       price,
       services: services ? services.split(",").map((s) => s.trim()) : [],
       conditions: conditions ? conditions.split(",").map((c) => c.trim()) : [],
       restrictions: restrictions
         ? restrictions.split(",").map((r) => r.trim())
         : [],
-      spots,
+      initialSpots,
+      remainingSpots: initialSpots,
       tripType,
       season,
       category,
@@ -195,20 +188,6 @@ function AddTourPackageAdminPage() {
                     placeholder="¿A dónde vamos?"
                   />
                 </Form.Group>
-
-                <Form.Group className="mb-3">
-                  <Form.Label className="fw-bold small">
-                    Descripción del Viaje
-                  </Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={4}
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Describe la experiencia..."
-                  />
-                </Form.Group>
-
                 <Row>
                   <Col>
                     <Form.Group className="mb-3">
@@ -235,13 +214,28 @@ function AddTourPackageAdminPage() {
                       <Form.Control
                         type="number"
                         min="1"
-                        value={spots || ""}
-                        onChange={(e) => setSpots(Number(e.target.value))}
-                        isInvalid={spots <= 0}
+                        value={initialSpots || ""}
+                        onChange={(e) =>
+                          setInitialSpots(Number(e.target.value))
+                        }
+                        isInvalid={initialSpots <= 0}
                       />
                     </Form.Group>
                   </Col>
                 </Row>
+
+                <Form.Group className="mb-3">
+                  <Form.Label className="fw-bold small">
+                    Descripción del Viaje
+                  </Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={4}
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Describe la experiencia..."
+                  />
+                </Form.Group>
               </Col>
 
               <Col md={6} className="ps-md-4">
@@ -350,28 +344,16 @@ function AddTourPackageAdminPage() {
                     </Form.Group>
                   </Col>
                 </Row>
-
                 <Form.Group className="mb-3">
                   <Form.Label className="fw-bold small">
-                    Duración Estándar
+                    Servicios Incluidos (separados por coma)
                   </Form.Label>
                   <Form.Control
-                    type="text"
-                    value={duration}
-                    onChange={(e) => setDuration(e.target.value)}
-                    placeholder="Ej: 3 días / 2 noches"
-                  />
-                </Form.Group>
-
-                <Form.Group className="mb-3">
-                  <Form.Label className="fw-bold small d-flex justify-content-between">
-                    Fechas Específicas{" "}
-                    <span className="text-muted fw-normal">AAAA-MM-DD</span>
-                  </Form.Label>
-                  <Form.Control
-                    placeholder="2026-05-01, 2026-06-15"
-                    value={availableDates}
-                    onChange={(e) => setAvailableDates(e.target.value)}
+                    as="textarea"
+                    rows={4}
+                    value={services}
+                    onChange={(e) => setServices(e.target.value)}
+                    placeholder="Guía, Almuerzo, Seguro..."
                   />
                 </Form.Group>
               </Col>
@@ -380,23 +362,11 @@ function AddTourPackageAdminPage() {
             <hr className="my-4" />
 
             <Row>
-              <Col md={4}>
+              <Col>
                 <Form.Group className="mb-3">
                   <Form.Label className="fw-bold small">
-                    Servicios Incluidos
+                    Condiciones (separadas por coma)
                   </Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={2}
-                    value={services}
-                    onChange={(e) => setServices(e.target.value)}
-                    placeholder="Guía, Almuerzo, Seguro..."
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={4}>
-                <Form.Group className="mb-3">
-                  <Form.Label className="fw-bold small">Condiciones</Form.Label>
                   <Form.Control
                     as="textarea"
                     rows={2}
@@ -406,10 +376,10 @@ function AddTourPackageAdminPage() {
                   />
                 </Form.Group>
               </Col>
-              <Col md={4}>
+              <Col>
                 <Form.Group className="mb-3">
                   <Form.Label className="fw-bold small">
-                    Restricciones
+                    Restricciones (separadas por coma)
                   </Form.Label>
                   <Form.Control
                     as="textarea"

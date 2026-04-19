@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Entity
@@ -28,13 +29,13 @@ public class TourPackage {
 
     private LocalDate startDate;
     private LocalDate endDate;
-    private List<LocalDate> availableDates;
     private String duration;
     private BigDecimal price;
     private List<String> services;
     private List<String> conditions;
     private List<String> restrictions;
-    private Integer spots;
+    private Integer initialSpots;
+    private Integer remainingSpots;
 
     @Enumerated(EnumType.STRING)
     private TripType tripType;
@@ -47,4 +48,11 @@ public class TourPackage {
 
     @Enumerated(EnumType.STRING)
     private TourPackageState tourPackageState;
+
+    public void calculateDuration() {
+        if (this.startDate != null && this.endDate != null) {
+            long integerDuration = ChronoUnit.DAYS.between(this.startDate, this.endDate);
+            this.duration = integerDuration + " días, " + (integerDuration - 1) + " noches";
+        }
+    }
 }

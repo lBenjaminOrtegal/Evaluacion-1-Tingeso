@@ -12,6 +12,7 @@ import type { PrivateRouteProps } from "./interfaces/privateRouteProps.interface
 import { Alert, Button, Spinner } from "react-bootstrap";
 import ReservationsViewPage from "./pages/ReservationsViewPage";
 import ReservationCreationPage from "./pages/ReservationCreationPage";
+import ReservationsAdminPage from "./pages/ReservationsAdminPage";
 
 function App() {
   const { keycloak, initialized } = useKeycloak();
@@ -142,16 +143,6 @@ function App() {
 
         <Route path="/tour-packages" element={<TourPackagesViewPage />} />
 
-        <Route
-          path="/reservations-admin"
-          element={
-            <PrivateRoute
-              element={<ReservationsViewPage />}
-              rolesAllowed={["ADMIN"]}
-            />
-          }
-        />
-
         <Route path="/reservations" element={<ReservationsViewPage />} />
 
         <Route
@@ -160,6 +151,16 @@ function App() {
             <PrivateRoute
               element={<ReservationCreationPage />}
               rolesAllowed={["USER", "ADMIN"]}
+            />
+          }
+        />
+
+        <Route
+          path="/reservations-admin"
+          element={
+            <PrivateRoute
+              element={<ReservationsAdminPage />}
+              rolesAllowed={["ADMIN"]}
             />
           }
         />

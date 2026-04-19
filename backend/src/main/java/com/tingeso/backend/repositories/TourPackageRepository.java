@@ -9,11 +9,10 @@ import java.util.List;
 @Repository
 public interface TourPackageRepository extends JpaRepository<TourPackage, Long> {
 
-    List<TourPackage> findByName(String name);
     List<TourPackage> findByCategory(Category category);
     List<TourPackage> findByDestiny(String destiny);
     List<TourPackage> findByTripType(TripType tripType);
     List<TourPackage> findBySeason(Season season);
-    List<TourPackage> findBySpotsGreaterThan(Integer spots);
+    List<TourPackage> findByRemainingSpotsGreaterThan(Integer remainingSpots);
     List<TourPackage> findByTourPackageState(TourPackageState tourPackageState);
 }

@@ -1,7 +1,7 @@
 import { useKeycloak } from "@react-keycloak/web";
 import React, { useEffect, useState } from "react";
 import tourPackageService from "../services/tourPackage.service";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import type { Reservation } from "../interfaces/reservation.interface";
 import {
   Button,
@@ -9,7 +9,7 @@ import {
   Col,
   Container,
   Form,
-  ListGroup,
+  Modal,
   Row,
   Stack,
 } from "react-bootstrap";
@@ -20,11 +20,18 @@ function ReservationCreationPage() {
   const [tourPackage, setTourPackage] = useState<TourPackage>();
   const { keycloak } = useKeycloak();
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const [passengersAmount, setPassengersAmount] = useState<number>(1);
   const [preferences, setPreferences] = useState<string[]>([]);
   const [specialRequests, setSpecialRequests] = useState<string[]>([]);
-  const [selectedDate, setSelectedDate] = useState<Date>();
+  const [price, setPrice] = useState<number>();
+  const [discounts, setDiscounts] = useState<any>();
+
+  const [show, setShow] = useState(false);
+
+  const handleClose = () => setShow(false);
+  const handleShow = () => setShow(true);
 
   const getTourPackage = async () => {
     try {
@@ -35,16 +42,11 @@ function ReservationCreationPage() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
 
     if (!passengersAmount || passengersAmount <= 0) {
       alert("Por favor, ingresa una cantidad válida de pasajeros");
-      return;
-    }
-
-    if (!selectedDate || selectedDate == null) {
-      alert("Por favor, ingresa una fecha válida.");
       return;
     }
 
@@ -55,12 +57,12 @@ function ReservationCreationPage() {
       preferences: preferences,
       specialRequests: specialRequests,
       reservationState: "PENDING",
-      selectedDate: selectedDate,
+      price: price,
     };
 
     try {
       await reservationService.create(newReservation as Reservation);
-      alert("Reserva creada con éxito");
+      handleShow();
     } catch (error) {
       console.error("Error al crear la reserva:", error);
     }
@@ -72,6 +74,17 @@ function ReservationCreationPage() {
 
   return (
     <Container className="align-items-center justify-content-center mt-4">
+      <Modal show={show} onHide={handleClose}>
+        <Modal.Header closeButton>
+          <Modal.Title>Reservacion creada!</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>Se ha creado correctamente la reserva.</Modal.Body>
+        <Modal.Footer>
+          <Button variant="primary" onClick={() => navigate("/reservations")}>
+            Aceptar
+          </Button>
+        </Modal.Footer>
+      </Modal>
       <Stack
         direction="horizontal"
         gap={3}
@@ -127,10 +140,10 @@ function ReservationCreationPage() {
                     <span className="text-muted uppercase fw-bold d-block mb-2">
                       Servicios incluidos
                     </span>
-                    <ul className="list-unstyled ps-0">
+                    <ul className="ps-0">
                       {tourPackage?.services.map((s, index) => (
                         <li key={index} className="mb-1 text-secondary">
-                          + {s}
+                          {s}
                         </li>
                       ))}
                     </ul>
@@ -140,10 +153,23 @@ function ReservationCreationPage() {
                     <span className="text-muted uppercase fw-bold d-block mb-2">
                       Restricciones
                     </span>
-                    <ul className="list-unstyled ps-0">
+                    <ul className="ps-0">
                       {tourPackage?.restrictions.map((r, index) => (
                         <li key={index} className="mb-1 text-secondary">
-                          - {r}
+                          {r}
+                        </li>
+                      ))}
+                    </ul>
+                  </Col>
+
+                  <Col xs={12}>
+                    <span className="text-muted uppercase fw-bold d-block mb-2">
+                      Condiciones
+                    </span>
+                    <ul className="ps-0">
+                      {tourPackage?.conditions.map((c, index) => (
+                        <li key={index} className="mb-1 text-secondary">
+                          {c}
                         </li>
                       ))}
                     </ul>
@@ -152,7 +178,7 @@ function ReservationCreationPage() {
                 <hr></hr>
                 <section className="bg-light rounded">
                   <div className="d-flex justify-content-between align-items-center mb-2">
-                    <span className="fw-bold">Precio Total</span>
+                    <span className="fw-bold">Precio del paquete</span>
                     <span className="fs-5 fw-bold text-dark">
                       ${tourPackage?.price?.toLocaleString()}
                     </span>
@@ -160,7 +186,7 @@ function ReservationCreationPage() {
                   <div className="d-flex justify-content-between align-items-center">
                     <span className="text-muted">Disponibilidad</span>
                     <span className="text-primary fw-bold">
-                      {tourPackage?.spots} cupos libres
+                      {tourPackage?.remainingSpots} cupos libres
                     </span>
                   </div>
                 </section>
@@ -170,6 +196,7 @@ function ReservationCreationPage() {
         </Col>
         <Col>
           <Stack>
+            <p className="fs-5 text-primary fw-semibold">Detalles</p>
             <Form onSubmit={handleSubmit}>
               <Row>
                 <Col>
@@ -187,37 +214,6 @@ function ReservationCreationPage() {
                       }
                     />
                   </Form.Group>
-
-                  <Form.Label className="fw-medium">
-                    Seleccione una fecha
-                  </Form.Label>
-                  {tourPackage && tourPackage.availableDates?.length === 0 && (
-                    <div className="text-center p-3 bg-light rounded">
-                      <p className="text-muted mb-0">
-                        No hay fechas disponibles para este paquete.
-                      </p>
-                    </div>
-                  )}
-                  <ListGroup className="mb-3">
-                    {tourPackage?.availableDates.map((d, index) => {
-                      const dateObject = new Date(d);
-
-                      return (
-                        <ListGroup.Item
-                          key={index}
-                          as="button"
-                          type="button"
-                          className="fw-medium"
-                          active={
-                            selectedDate?.getTime() === dateObject.getTime()
-                          }
-                          onClick={() => setSelectedDate(dateObject)}
-                        >
-                          {dateObject.toLocaleDateString()}
-                        </ListGroup.Item>
-                      );
-                    })}
-                  </ListGroup>
                 </Col>
 
                 <Col>
@@ -235,37 +231,35 @@ function ReservationCreationPage() {
                       }
                     />
                   </Form.Group>
-
-                  <Form.Group className="mb-3">
-                    <Form.Label className="fw-medium">
-                      Cantidad de pasajeros
-                    </Form.Label>
-                    <Form.Select
-                      value={passengersAmount}
-                      onChange={(e) =>
-                        setPassengersAmount(Number(e.target.value))
-                      }
-                      disabled={!tourPackage || tourPackage.spots === 0}
-                    >
-                      {(!tourPackage || tourPackage.spots === 0) && (
-                        <option value="0">No hay cupos disponibles</option>
-                      )}
-
-                      {tourPackage &&
-                        tourPackage.spots > 0 &&
-                        Array.from(
-                          { length: tourPackage.spots },
-                          (_, i) => i + 1,
-                        ).map((num) => (
-                          <option key={num} value={num}>
-                            {num} {num === 1 ? "pasajero" : "pasajeros"}
-                          </option>
-                        ))}
-                    </Form.Select>
-                  </Form.Group>
                 </Col>
-              </Row>
+                <Form.Group className="mb-3">
+                  <Form.Label className="fw-medium">
+                    Cantidad de pasajeros
+                  </Form.Label>
+                  <Form.Select
+                    value={passengersAmount}
+                    onChange={(e) =>
+                      setPassengersAmount(Number(e.target.value))
+                    }
+                    disabled={!tourPackage || tourPackage.remainingSpots === 0}
+                  >
+                    {(!tourPackage || tourPackage.remainingSpots === 0) && (
+                      <option value="0">No hay cupos disponibles</option>
+                    )}
 
+                    {tourPackage &&
+                      tourPackage.remainingSpots > 0 &&
+                      Array.from(
+                        { length: tourPackage.remainingSpots },
+                        (_, i) => i + 1,
+                      ).map((num) => (
+                        <option key={num} value={num}>
+                          {num} {num === 1 ? "pasajero" : "pasajeros"}
+                        </option>
+                      ))}
+                  </Form.Select>
+                </Form.Group>
+              </Row>
               <Button
                 type="submit"
                 variant="primary"
@@ -275,6 +269,18 @@ function ReservationCreationPage() {
               </Button>
             </Form>
           </Stack>
+          <hr></hr>
+          <Row>
+            <Stack>
+              <p className="fs-5 fw-semibold text-primary">Descuentos</p>
+              <p>Descuento por cantidad de personas: </p>
+              <p>Descuento por cliente frecuente: </p>
+              <p>Descuento por compra de múltiples paquetes: </p>
+              <p>Acumulación y límites de descuentos: </p>
+              <p>Promociones por tiempo limitado: </p>
+              <p>Monto final: </p>
+            </Stack>
+          </Row>
         </Col>
       </Row>
     </Container>

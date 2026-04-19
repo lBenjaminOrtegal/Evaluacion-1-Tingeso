@@ -1,55 +1,46 @@
 import React, { useEffect, useState } from "react";
 import { Button, Table, Stack, Container, Modal, Badge } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import tourPackageService from "../services/tourPackage.service";
-import type { TourPackage } from "../interfaces/tourPackage.interface";
+import reservationService from "../services/reservation.service";
+import type { Reservation } from "../interfaces/reservation.interface";
 
-function TourPackagesAdminPage() {
-  const [tourPackages, setTourPackages] = useState<TourPackage[]>([]);
-
+function ReservationsAdminPage() {
+  const [reservations, setReservations] = useState<Reservation[]>([]);
   const [idToDelete, setIdToDelete] = useState<number | null>(null);
 
-  const getTourPackages = async () => {
+  const getreservations = async () => {
     try {
-      const response = await tourPackageService.getAll();
-      setTourPackages(response.data);
+      const response = await reservationService.getAll();
+      setReservations(response.data);
     } catch (error) {
-      console.error("Error cargando paquetes:", error);
+      console.error("Error cargando reservas:", error);
     }
   };
 
   const handleDelete = async () => {
     if (idToDelete === null) return;
     try {
-      await tourPackageService.deleteById(idToDelete);
+      await reservationService.deleteById(idToDelete);
       setIdToDelete(null);
-      await getTourPackages();
+      await getreservations();
     } catch (error) {
-      console.error("No se pudo eliminar el paquete:", error);
+      console.error("No se pudo eliminar la reserva:", error);
     }
   };
 
   useEffect(() => {
-    getTourPackages();
+    getreservations();
   }, []);
 
   const getStateColor = (state: string) => {
     const variants: Record<string, string> = {
-      AVAILABLE: "bg-success",
-      SOLD_OUT: "bg-danger",
-      NOT_AVAILABLE: "bg-secondary",
-      CANCELED: "bg-warning",
+      PENDING: "bg-warning",
+      CONFIRMED: "bg-primary",
+      CANCELED: "bg-danger",
+      COMPLETED: "bg-success",
+      IN_PROGRESS: "bg-info",
     };
     return variants[state] || "bg-light";
-  };
-
-  const getCategoryColor = (category: string) => {
-    const variants: Record<string, string> = {
-      LOW_COST: "bg-success",
-      STANDARD: "bg-primary",
-      PREMIUM: "bg-dark",
-    };
-    return variants[category] || "bg-light";
   };
 
   const formatCurrency = (amount: number) => {
@@ -67,68 +58,48 @@ function TourPackagesAdminPage() {
         className="mb-4 pb-3 border-bottom align-items-center"
       >
         <div>
-          <h1 className="fs-3 fw-bold text-primary">Paquetes Turísticos</h1>
+          <h1 className="fs-3 fw-bold text-primary">Reservas</h1>
           <p className="text-muted m-0">
-            Publicación y gestión de paquetes turísticos.
+            Gestión y edición de las reservas creadas.
           </p>
         </div>
-        <Button
-          as={Link as any}
-          to="/tour-packages-admin/add"
-          variant="success"
-          className="ms-auto"
-        >
-          Agregar paquete
-        </Button>
       </Stack>
 
       <Table bordered hover responsive className="align-middle">
         <thead className="table-light">
           <tr>
             <th>ID</th>
-            <th>Nombre</th>
-            <th>Destino</th>
-            <th>Inicio</th>
-            <th>Fin</th>
-            <th>Precio</th>
-            <th className="text-center">Cupos</th>
+            <th>Usuario (Email)</th>
+            <th>Paquete</th>
+            <th>Monto</th>
+            <th className="text-center">Pasajeros</th>
             <th className="text-center">Estado</th>
-            <th className="text-center">Categoría</th>
             <th className="text-center">Acciones</th>
           </tr>
         </thead>
         <tbody>
-          {tourPackages.length <= 0 && (
+          {reservations.length <= 0 && (
             <tr>
               <td colSpan={7} className="text-center py-4">
-                No hay paquetes túristicos registrados.
+                No hay reservas registradas.
               </td>
             </tr>
           )}
 
-          {tourPackages.map((tour) => (
-            <tr key={tour.id}>
-              <td className="text-muted">#{tour.id}</td>
-              <td className="fw-medium">{tour.name}</td>
-              <td className="text-muted">{tour.destiny}</td>
-              <td>{tour.startDate}</td>
-              <td>{tour.endDate}</td>
+          {reservations.map((reservation) => (
+            <tr key={reservation.id}>
+              <td className="text-muted">#{reservation.id}</td>
+              <td className="fw-medium">{reservation.userEmail}</td>
+              <td className="fw-medium">{reservation.tourPackageName}</td>
               <td className="fw-bold text-success">
-                {formatCurrency(tour.price)}
+                {formatCurrency(reservation.price)}
               </td>
-              <td className="text-center">{tour.remainingSpots}</td>
+              <td className="text-center">{reservation.passengersAmount}</td>
               <td className="text-center">
                 <Badge
-                  className={`fw-semibold ${getStateColor(tour.tourPackageState)}`}
+                  className={`fw-semibold ${getStateColor(reservation.reservationState)}`}
                 >
-                  {tour.tourPackageState}
-                </Badge>
-              </td>
-              <td className="text-center">
-                <Badge
-                  className={`fw-semibold ${getCategoryColor(tour.category)}`}
-                >
-                  {tour.category}
+                  {reservation.reservationState}
                 </Badge>
               </td>
               <td>
@@ -139,18 +110,18 @@ function TourPackagesAdminPage() {
                 >
                   <Button
                     as={Link as any}
-                    to={`/tour-packages-admin/edit/${tour.id}`}
+                    to={`/reservations-admin/manage/${reservation.id}`}
                     className="fw-semibold w-50"
                     variant="primary"
                     size="sm"
                   >
-                    Editar
+                    Administrar
                   </Button>
                   <Button
                     className="fw-semibold w-50"
                     variant="danger"
                     size="sm"
-                    onClick={() => setIdToDelete(tour.id)}
+                    onClick={() => setIdToDelete(reservation.id)}
                   >
                     Eliminar
                   </Button>
@@ -166,7 +137,7 @@ function TourPackagesAdminPage() {
           <Modal.Title className="fw-bold text-center">Eliminar</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          ¿Estás seguro de que deseas eliminar el paquete con ID:{" "}
+          ¿Estás seguro de que deseas eliminar la reserva con ID:{" "}
           <strong>#{idToDelete}</strong>? Esta acción no se puede deshacer.
         </Modal.Body>
         <Modal.Footer>
@@ -185,4 +156,4 @@ function TourPackagesAdminPage() {
   );
 }
 
-export default TourPackagesAdminPage;
+export default ReservationsAdminPage;

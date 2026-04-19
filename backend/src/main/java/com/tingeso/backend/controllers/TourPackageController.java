@@ -50,9 +50,9 @@ public class TourPackageController {
     }
 
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    @GetMapping("/spots/{spots}")
-    public ResponseEntity<List<TourPackage>> findBySpots(@PathVariable Integer spots) {
-        return ResponseEntity.ok(tourPackageService.findBySpots(spots));
+    @GetMapping("/spots/{remainingSpots}")
+    public ResponseEntity<List<TourPackage>> findByRemainingSpots(@PathVariable Integer remainingSpots) {
+        return ResponseEntity.ok(tourPackageService.findByRemainingSpots(remainingSpots));
     }
 
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
