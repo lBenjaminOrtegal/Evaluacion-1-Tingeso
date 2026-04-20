@@ -9,10 +9,11 @@ import AddEditTourPackageAdminPage from "./pages/AddEditTourPackageAdminPage";
 import TourPackagesViewPage from "./pages/TourPackagesViewPage";
 import { useKeycloak } from "@react-keycloak/web";
 import type { PrivateRouteProps } from "./interfaces/privateRouteProps.interface";
-import { Alert, Button, Spinner } from "react-bootstrap";
+import { Alert, Button, Container, Spinner } from "react-bootstrap";
 import ReservationsViewPage from "./pages/ReservationsViewPage";
 import ReservationCreationPage from "./pages/ReservationCreationPage";
 import ReservationsAdminPage from "./pages/ReservationsAdminPage";
+import PaymentPage from "./pages/PaymentPage";
 
 function App() {
   const { keycloak, initialized } = useKeycloak();
@@ -21,18 +22,11 @@ function App() {
 
   if (!initialized) {
     return (
-      <div className="d-flex flex-column justify-content-center align-items-center vh-100">
-        <div className="text-center">
-          <Spinner
-            animation="border"
-            variant="primary"
-            style={{ width: "3rem", height: "3rem" }}
-            className="mb-3"
-          />
-          <h5 className="fw-medium text-secondary">Cargando...</h5>
-          <p className="text-muted small">Por favor, espera un momento.</p>
-        </div>
-      </div>
+      <Container className="py-5 text-center align-items-center">
+        <Spinner animation="border" variant="primary" />
+        <h5 className="fw-medium text-secondary">Cargando...</h5>
+        <p className="text-muted small">Por favor, espera un momento.</p>
+      </Container>
     );
   }
 
@@ -161,6 +155,16 @@ function App() {
             <PrivateRoute
               element={<ReservationsAdminPage />}
               rolesAllowed={["ADMIN"]}
+            />
+          }
+        />
+
+        <Route
+          path="/reservations/payment/:id"
+          element={
+            <PrivateRoute
+              element={<PaymentPage />}
+              rolesAllowed={["USER", "ADMIN"]}
             />
           }
         />

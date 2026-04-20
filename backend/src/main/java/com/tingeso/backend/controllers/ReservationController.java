@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -52,7 +51,6 @@ public class ReservationController {
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @PostMapping
     public ResponseEntity<Reservation> create(@RequestBody Reservation reservation) {
-        reservation.setReservationDate(LocalDateTime.now());
         return ResponseEntity.ok(reservationService.create(reservation));
     }
 

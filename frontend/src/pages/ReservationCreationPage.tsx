@@ -11,6 +11,7 @@ import {
   Form,
   Modal,
   Row,
+  Spinner,
   Stack,
 } from "react-bootstrap";
 import type { TourPackage } from "../interfaces/tourPackage.interface";
@@ -27,11 +28,9 @@ function ReservationCreationPage() {
   const [specialRequests, setSpecialRequests] = useState<string[]>([]);
   const [price, setPrice] = useState<number>();
   const [discounts, setDiscounts] = useState<any>();
-
+  
+  const [loading, setLoading] = useState<boolean>(false);
   const [show, setShow] = useState(false);
-
-  const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
 
   const getTourPackage = async () => {
     try {
@@ -54,17 +53,20 @@ function ReservationCreationPage() {
       userEmail: keycloak.tokenParsed?.email,
       tourPackageId: Number(id),
       passengersAmount: passengersAmount,
-      preferences: preferences,
-      specialRequests: specialRequests,
+      preferences: preferences.length > 0 ? preferences : ["Sin preferencias"],
+      specialRequests: specialRequests.length > 0 ? specialRequests : ["Sin solicitudes"],
       reservationState: "PENDING",
-      price: price,
+      price: (price && price > 0) ? price : 1,
     };
 
     try {
+      setLoading(true);
       await reservationService.create(newReservation as Reservation);
-      handleShow();
+      setShow(true);
     } catch (error) {
       console.error("Error al crear la reserva:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -72,9 +74,19 @@ function ReservationCreationPage() {
     getTourPackage();
   }, []);
 
+  if (loading) {
+    return (
+      <Container className="py-5 text-center align-items-center">
+        <Spinner animation="border" variant="primary" />
+        <h5 className="fw-medium text-secondary">Cargando...</h5>
+        <p className="text-muted small">Por favor, espera un momento.</p>
+      </Container>
+    );
+  }
+
   return (
     <Container className="align-items-center justify-content-center mt-4">
-      <Modal show={show} onHide={handleClose}>
+      <Modal show={show} onHide={() => setShow(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Reservacion creada!</Modal.Title>
         </Modal.Header>
@@ -219,7 +231,7 @@ function ReservationCreationPage() {
                 <Col>
                   <Form.Group className="mb-3">
                     <Form.Label className="fw-medium">
-                      Peticiones (separadas por coma)
+                      Solicitudes (separadas por coma)
                     </Form.Label>
                     <Form.Control
                       type="text"

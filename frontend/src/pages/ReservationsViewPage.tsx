@@ -8,6 +8,7 @@ import {
   Container,
   Modal,
   Row,
+  Spinner,
   Stack,
 } from "react-bootstrap";
 import reservationService from "../services/reservation.service";
@@ -25,16 +26,13 @@ function ReservationsViewPage() {
 
   const [show, setShow] = useState<boolean>();
   const [showCancel, setShowCancel] = useState<boolean>();
-
-  const handleClose = () => setShow(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const handleShow = (reservation: Reservation) => {
     setShow(true);
     setSelectedReservation(reservation);
     getTourPackage(reservation.tourPackageId);
   };
-
-  const handleCancelClose = () => setShowCancel(false);
 
   const handleCancelShow = (reservation: Reservation) => {
     setShowCancel(true);
@@ -47,19 +45,25 @@ function ReservationsViewPage() {
     }
     const email: string = keycloak.tokenParsed?.email;
     try {
+      setLoading(true);
       const response = await reservationService.getByEmail(email);
       setReservations(response.data);
     } catch (error) {
       console.error("Error cargando reservas:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const getTourPackage = async (id: number) => {
     try {
+      setLoading(true);
       const response = await tourPackageService.getById(id);
       setTourPackage(response.data);
     } catch (error) {
       console.error("Error cargando paquete túristico:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -90,11 +94,14 @@ function ReservationsViewPage() {
       reservationState: "CANCELED",
     };
     try {
+      setLoading(true);
       await reservationService.update(updatedReservation);
       getReservations();
       setShowCancel(false);
     } catch (error) {
       console.error("Error cancelando la reserva:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -127,9 +134,19 @@ function ReservationsViewPage() {
     getReservations();
   }, []);
 
+  if (loading) {
+    return (
+      <Container className="py-5 text-center align-items-center">
+        <Spinner animation="border" variant="primary" />
+        <h5 className="fw-medium text-secondary">Cargando...</h5>
+        <p className="text-muted small">Por favor, espera un momento.</p>
+      </Container>
+    );
+  }
+
   return (
     <Container className="mt-4">
-      <Modal show={showCancel} onHide={handleCancelClose}>
+      <Modal show={showCancel} onHide={() => setShowCancel(false)}>
         <Modal.Header closeButton>
           <Modal.Title className="fw-bold text-center">
             Cancelar reserva
@@ -140,7 +157,7 @@ function ReservationsViewPage() {
           puede deshacer.
         </Modal.Body>
         <Modal.Footer>
-          <Button className="fw-bold btn-secondary" onClick={handleCancelClose}>
+          <Button className="fw-bold btn-secondary" onClick={() => setShowCancel(false)}>
             Atrás
           </Button>
           <Button className="fw-bold btn-danger" onClick={handleCancel}>
@@ -153,7 +170,7 @@ function ReservationsViewPage() {
         size="lg"
         centered
         show={show}
-        onHide={handleClose}
+        onHide={() => setShow(false)}
         contentClassName="shadow-lg border-0"
       >
         {tourPackage && (
@@ -220,10 +237,7 @@ function ReservationsViewPage() {
                       <div className="p-3 border rounded-3 bg-light-subtle">
                         <h6 className="small text-muted mb-1">Monto</h6>
                         <p className="fw-bold mb-0 text-success">
-                          $
-                          {selectedReservation?.price
-                            ? selectedReservation?.price.toLocaleString()
-                            : "0"}
+                          {formatCurrency(Number(selectedReservation?.price))}
                         </p>
                       </div>
                     </Col>
@@ -271,16 +285,16 @@ function ReservationsViewPage() {
                         <strong>Preferencias</strong>{" "}
                       </p>
                       <ol>
-                        {selectedReservation?.preferences.map((p) => (
-                          <li>{p}</li>
+                        {selectedReservation?.preferences.map((p, index) => (
+                          <li key={index}>{p}</li>
                         ))}
                       </ol>
                       <p className="mb-0">
-                        <strong>Peticiones</strong>{" "}
+                        <strong>Solicitudes</strong>{" "}
                       </p>
                       <ol>
-                        {selectedReservation?.specialRequests.map((p) => (
-                          <li>{p}</li>
+                        {selectedReservation?.specialRequests.map((p, index) => (
+                          <li key={index}>{p}</li>
                         ))}
                       </ol>
                     </div>

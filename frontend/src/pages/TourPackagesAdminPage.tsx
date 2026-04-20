@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, Table, Stack, Container, Modal, Badge } from "react-bootstrap";
+import { Button, Table, Stack, Container, Modal, Badge, Spinner } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import tourPackageService from "../services/tourPackage.service";
 import type { TourPackage } from "../interfaces/tourPackage.interface";
@@ -9,23 +9,31 @@ function TourPackagesAdminPage() {
 
   const [idToDelete, setIdToDelete] = useState<number | null>(null);
 
+  const [loading, setLoading] = useState<boolean>(false);
+
   const getTourPackages = async () => {
     try {
+      setLoading(true);
       const response = await tourPackageService.getAll();
       setTourPackages(response.data);
     } catch (error) {
       console.error("Error cargando paquetes:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleDelete = async () => {
     if (idToDelete === null) return;
     try {
+      setLoading(true);
       await tourPackageService.deleteById(idToDelete);
       setIdToDelete(null);
       await getTourPackages();
     } catch (error) {
       console.error("No se pudo eliminar el paquete:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -58,6 +66,16 @@ function TourPackagesAdminPage() {
       currency: "CLP",
     }).format(amount);
   };
+
+  if (loading) {
+    return (
+      <Container className="py-5 text-center align-items-center">
+        <Spinner animation="border" variant="primary" />
+        <h5 className="fw-medium text-secondary">Cargando...</h5>
+        <p className="text-muted small">Por favor, espera un momento.</p>
+      </Container>
+    );
+  }
 
   return (
     <Container className="py-4">

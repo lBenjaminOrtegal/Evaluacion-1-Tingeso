@@ -11,6 +11,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -68,12 +69,15 @@ public class ReservationService {
     @Transactional
     public Reservation create(Reservation reservation) {
         TourPackage tourPackage = tourPackageRepository.findById(reservation.getTourPackageId()).orElse(null);
-        tourPackage.setRemainingSpots(tourPackage.getRemainingSpots() - reservation.getPassengersAmount());
-        if (tourPackage.getRemainingSpots() <= 0) {
-            tourPackage.setTourPackageState(TourPackageState.SOLD_OUT);
+        if (tourPackage != null) {
+            tourPackage.setRemainingSpots(tourPackage.getRemainingSpots() - reservation.getPassengersAmount());
+            if (tourPackage.getRemainingSpots() <= 0) {
+                tourPackage.setTourPackageState(TourPackageState.SOLD_OUT);
+            }
+            reservation.setTourPackageName(tourPackage.getName());
+            tourPackageRepository.save(tourPackage);
         }
-        reservation.setTourPackageName(tourPackage.getName());
-        tourPackageRepository.save(tourPackage);
+        reservation.setReservationDate(LocalDateTime.now());
         return reservationRepository.save(reservation);
     }
 
@@ -81,15 +85,28 @@ public class ReservationService {
     public Reservation update(Reservation reservation) throws EmptyResultDataAccessException {
         Reservation reservationSaved = reservationRepository.findById(reservation.getId())
                 .orElseThrow(() -> new RuntimeException("Reservation not found with id: " + reservation.getId()));
+        if (reservation.getReservationState() == ReservationState.CANCELED) {
+            TourPackage tourPackage = tourPackageRepository.findById(reservation.getTourPackageId()).orElse(null);
+            if (tourPackage != null) {
+                tourPackage.setRemainingSpots(tourPackage.getRemainingSpots() + reservation.getPassengersAmount());
+                tourPackage.setTourPackageState(TourPackageState.AVAILABLE);
+                tourPackageRepository.save(tourPackage);
+            }
+        }
         reservationSaved.setReservationState(reservation.getReservationState());
-        reservationSaved.setPreferences(reservation.getPreferences());
-        reservationSaved.setSpecialRequests(reservation.getSpecialRequests());
-        reservationSaved.setPassengersAmount(reservation.getPassengersAmount());
         return reservationRepository.save(reservationSaved);
     }
 
     @Transactional
     public void deleteById(Long id) {
+        Reservation reservationSaved = reservationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Reservation not found with id: " + id));
+        TourPackage tourPackage = tourPackageRepository.findById(reservationSaved.getTourPackageId()).orElse(null);
+        if (tourPackage != null) {
+            tourPackage.setRemainingSpots(tourPackage.getRemainingSpots() + reservationSaved.getPassengersAmount());
+            tourPackage.setTourPackageState(TourPackageState.AVAILABLE);
+            tourPackageRepository.save(tourPackage);
+        }
         reservationRepository.deleteById(id);
     }
 }

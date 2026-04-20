@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, Card, Col, Container, Modal, Row } from "react-bootstrap";
+import { Button, Card, Col, Container, Modal, Row, Spinner } from "react-bootstrap";
 import type { TourPackage } from "../interfaces/tourPackage.interface";
 import tourPackageService from "../services/tourPackage.service";
 import { useNavigate } from "react-router-dom";
@@ -10,6 +10,7 @@ function TourPackageCardComponent({ activeFilters }: { activeFilters: any }) {
   const { keycloak } = useKeycloak();
   const [show, setShow] = useState(false);
   const [tour, setTour] = useState<TourPackage | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
 
   const filteredPackages = tourPackages.filter((pkg) => {
@@ -64,12 +65,22 @@ function TourPackageCardComponent({ activeFilters }: { activeFilters: any }) {
     );
   });
 
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("es-CL", {
+      style: "currency",
+      currency: "CLP",
+    }).format(amount);
+  };
+
   const getTourPackages = async () => {
     try {
+      setLoading(true);
       const response = await tourPackageService.getAll();
       setTourPackages(response.data);
     } catch (error) {
       console.error("Error cargando paquetes:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -79,7 +90,6 @@ function TourPackageCardComponent({ activeFilters }: { activeFilters: any }) {
   };
 
   const handleShow = (tour: TourPackage) => {
-    getTourPackages();
     setTour(tour);
     setShow(true);
   };
@@ -95,6 +105,16 @@ function TourPackageCardComponent({ activeFilters }: { activeFilters: any }) {
   useEffect(() => {
     getTourPackages();
   }, []);
+
+  if (loading) {
+    return (
+      <Container className="py-5 text-center align-items-center">
+        <Spinner animation="border" variant="primary" />
+        <h5 className="fw-medium text-secondary">Cargando...</h5>
+        <p className="text-muted small">Por favor, espera un momento.</p>
+      </Container>
+    );
+  }
 
   return (
     <Container className="py-5">
@@ -278,15 +298,13 @@ function TourPackageCardComponent({ activeFilters }: { activeFilters: any }) {
                       Del <strong>{tour.startDate}</strong> al{" "}
                       <strong>{tour.endDate}</strong>
                     </p>
-
-                    
                   </div>
 
                   <div className="p-3 rounded-4 bg-primary bg-opacity-10 border border-primary border-opacity-25 mb-4">
                     <div className="d-flex justify-content-between align-items-center mb-3">
                       <span className="text-secondary">Precio por persona</span>
                       <span className="fs-3 fw-bold text-primary">
-                        ${tour.price}
+                        {formatCurrency(tour.price)}
                       </span>
                     </div>
                     <Button
@@ -311,16 +329,16 @@ function TourPackageCardComponent({ activeFilters }: { activeFilters: any }) {
                         <strong>Condiciones:</strong>{" "}
                       </p>
                       <ol>
-                        {tour.conditions.map((condition) => (
-                          <li>{condition}</li>
+                        {tour.conditions.map((condition, index) => (
+                          <li key={index}>{condition}</li>
                         ))}
                       </ol>
                       <p className="mb-0">
                         <strong>Restricciones:</strong>{" "}
                       </p>
                       <ol>
-                        {tour.restrictions.map((restriction) => (
-                          <li>{restriction}</li>
+                        {tour.restrictions.map((restriction, index) => (
+                          <li key={index}>{restriction}</li>
                         ))}
                       </ol>
                     </div>

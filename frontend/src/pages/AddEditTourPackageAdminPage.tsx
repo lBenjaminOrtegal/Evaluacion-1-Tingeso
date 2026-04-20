@@ -9,11 +9,13 @@ import {
   Card,
   InputGroup,
   Modal,
+  Spinner,
 } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 import tourPackageService from "../services/tourPackage.service";
+import type { TourPackage } from "../interfaces/tourPackage.interface";
 
-function AddTourPackageAdminPage() {
+function AddEditTourPackageAdminPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
 
@@ -22,9 +24,7 @@ function AddTourPackageAdminPage() {
   );
 
   const [show, setShow] = useState(false);
-
-  const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const [name, setName] = useState("");
   const [destiny, setDestiny] = useState("");
@@ -36,6 +36,8 @@ function AddTourPackageAdminPage() {
   const [conditions, setConditions] = useState("");
   const [restrictions, setRestrictions] = useState("");
   const [initialSpots, setInitialSpots] = useState(1);
+  const [remainingSpots, setRemainingSpots] = useState(1);
+  const [soldSpots, setSoldSpots] = useState(1);
   const [tripType, setTripType] = useState("ADVENTURE");
   const [season, setSeason] = useState("SUMMER");
   const [category, setCategory] = useState("STANDARD");
@@ -55,6 +57,8 @@ function AddTourPackageAdminPage() {
           setEndDate(pkg.endDate);
           setPrice(pkg.price);
           setInitialSpots(pkg.initialSpots);
+          setRemainingSpots(pkg.remainingSpots);
+          setSoldSpots(pkg.initialSpots - pkg.remainingSpots);
           setCategory(pkg.category);
           setTourPackageState(pkg.tourPackageState || "AVAILABLE");
           setServices(pkg.services?.join(", "));
@@ -67,7 +71,7 @@ function AddTourPackageAdminPage() {
     }
   }, [id]);
 
-  const handleSubmit = (e: React.SubmitEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
 
     if (tourPackageState === "AVAILABLE" && initialSpots <= 0) {
@@ -87,7 +91,7 @@ function AddTourPackageAdminPage() {
       return;
     }
 
-    const tourPackage: any = {
+    const tourPackage: Partial<TourPackage> = {
       id: id ? Number(id) : undefined,
       name,
       destiny,
@@ -108,22 +112,32 @@ function AddTourPackageAdminPage() {
       tourPackageState,
     };
 
-    const request = id
-      ? tourPackageService.update(tourPackage)
-      : tourPackageService.create(tourPackage);
-
-    request
-      .then(() => {
-        handleShow();
-      })
-      .catch((err) => {
-        console.log(err.response.data);
-      });
+    try {
+      setLoading(true);
+      await (id
+        ? tourPackageService.update(tourPackage as TourPackage)
+        : tourPackageService.create(tourPackage as TourPackage));
+      setShow(true);
+    } catch (error) {
+      console.error("No se pudo realizar la transacción.", error);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <Container className="py-5 text-center align-items-center">
+        <Spinner animation="border" variant="primary" />
+        <h5 className="fw-medium text-secondary">Cargando...</h5>
+        <p className="text-muted small">Por favor, espera un momento.</p>
+      </Container>
+    );
+  }
 
   return (
     <Container className="py-4">
-      <Modal show={show} onHide={handleClose}>
+      <Modal show={show} onHide={() => setShow(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Transacción completa</Modal.Title>
         </Modal.Header>
@@ -165,30 +179,32 @@ function AddTourPackageAdminPage() {
                 <h5 className="mb-3 text-secondary text-uppercase small fw-bold">
                   Información General
                 </h5>
-
-                <Form.Group className="mb-3">
-                  <Form.Label className="fw-bold small">
-                    Nombre del Paquete
-                  </Form.Label>
-                  <Form.Control
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                    placeholder="Ej: Torres del Paine Express"
-                    className="bg-white"
-                  />
-                </Form.Group>
-
-                <Form.Group className="mb-3">
-                  <Form.Label className="fw-bold small">Destino</Form.Label>
-                  <Form.Control
-                    value={destiny}
-                    onChange={(e) => setDestiny(e.target.value)}
-                    required
-                    placeholder="¿A dónde vamos?"
-                  />
-                </Form.Group>
                 <Row>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="fw-bold small">
+                      Nombre del Paquete
+                    </Form.Label>
+                    <Form.Control
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required
+                      placeholder="Ej: Torres del Paine Express"
+                      className="bg-white"
+                    />
+                  </Form.Group>
+                </Row>
+                <Row>
+                  <Col md={7}>
+                    <Form.Group className="mb-3">
+                      <Form.Label className="fw-bold small">Destino</Form.Label>
+                      <Form.Control
+                        value={destiny}
+                        onChange={(e) => setDestiny(e.target.value)}
+                        required
+                        placeholder="¿A dónde vamos?"
+                      />
+                    </Form.Group>
+                  </Col>
                   <Col>
                     <Form.Group className="mb-3">
                       <Form.Label className="fw-bold small">
@@ -206,6 +222,9 @@ function AddTourPackageAdminPage() {
                       </InputGroup>
                     </Form.Group>
                   </Col>
+                </Row>
+
+                <Row>
                   <Col>
                     <Form.Group className="mb-3">
                       <Form.Label className="fw-bold small">
@@ -213,12 +232,39 @@ function AddTourPackageAdminPage() {
                       </Form.Label>
                       <Form.Control
                         type="number"
-                        min="1"
+                        min={soldSpots}
                         value={initialSpots || ""}
                         onChange={(e) =>
                           setInitialSpots(Number(e.target.value))
                         }
                         isInvalid={initialSpots <= 0}
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col>
+                    <Form.Group className="mb-3">
+                      <Form.Label className="fw-bold small">
+                        Cupos Restantes
+                      </Form.Label>
+                      <Form.Control
+                        type="number"
+                        value={remainingSpots}
+                        readOnly
+                        disabled
+                      />
+                    </Form.Group>
+                  </Col>
+
+                  <Col>
+                    <Form.Group className="mb-3">
+                      <Form.Label className="fw-bold small">
+                        Cupos Vendidos
+                      </Form.Label>
+                      <Form.Control
+                        type="text"
+                        value={soldSpots}
+                        readOnly
+                        disabled
                       />
                     </Form.Group>
                   </Col>
@@ -409,4 +455,4 @@ function AddTourPackageAdminPage() {
   );
 }
 
-export default AddTourPackageAdminPage;
+export default AddEditTourPackageAdminPage;

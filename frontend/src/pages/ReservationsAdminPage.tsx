@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, Table, Stack, Container, Modal, Badge } from "react-bootstrap";
+import { Button, Table, Stack, Container, Modal, Badge, Spinner } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import reservationService from "../services/reservation.service";
 import type { Reservation } from "../interfaces/reservation.interface";
@@ -7,13 +7,17 @@ import type { Reservation } from "../interfaces/reservation.interface";
 function ReservationsAdminPage() {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [idToDelete, setIdToDelete] = useState<number | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const getreservations = async () => {
     try {
+      setLoading(true);
       const response = await reservationService.getAll();
       setReservations(response.data);
     } catch (error) {
       console.error("Error cargando reservas:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -49,6 +53,16 @@ function ReservationsAdminPage() {
       currency: "CLP",
     }).format(amount);
   };
+
+  if (loading) {
+    return (
+      <Container className="py-5 text-center align-items-center">
+        <Spinner animation="border" variant="primary" />
+        <h5 className="fw-medium text-secondary">Cargando...</h5>
+        <p className="text-muted small">Por favor, espera un momento.</p>
+      </Container>
+    );
+  }
 
   return (
     <Container className="py-4">

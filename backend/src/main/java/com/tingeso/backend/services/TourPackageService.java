@@ -69,8 +69,21 @@ public class TourPackageService {
         TourPackage existingPackage = tourPackageRepository.findById(tourPackage.getId())
                 .orElseThrow(() -> new EntityNotFoundException("TourPackage not found with id: " + tourPackage.getId()));
         List<Reservation> reservations = reservationRepository.findByTourPackageId(tourPackage.getId());
-        if (!reservations.isEmpty()) {
-            throw new IllegalStateException("Cannot modify because reservations have already been set.");
+        if (!reservations.isEmpty()) { // if had reservations
+            if (tourPackage.getInitialSpots() >= (existingPackage.getInitialSpots() - existingPackage.getRemainingSpots())) {
+                existingPackage.setRemainingSpots(tourPackage.getInitialSpots() - (existingPackage.getInitialSpots() - existingPackage.getRemainingSpots()));
+                existingPackage.setInitialSpots(tourPackage.getInitialSpots());
+                if (existingPackage.getRemainingSpots() <= 0) {
+                    existingPackage.setTourPackageState(TourPackageState.SOLD_OUT);
+                }
+                else {
+                    existingPackage.setTourPackageState(TourPackageState.AVAILABLE);
+                }
+                return tourPackageRepository.save(existingPackage);
+            }
+            else {
+                throw new IllegalStateException("Cannot modify because reservations have already been set.");
+            }
         }
         existingPackage.setName(tourPackage.getName());
         existingPackage.setStartDate(tourPackage.getStartDate());
@@ -80,11 +93,8 @@ public class TourPackageService {
         existingPackage.setConditions(tourPackage.getConditions());
         existingPackage.setRestrictions(tourPackage.getRestrictions());
         existingPackage.calculateDuration();
-        if (tourPackage.getInitialSpots() > existingPackage.getInitialSpots()) {
-            existingPackage.setRemainingSpots(
-                    existingPackage.getRemainingSpots() +
-                            (tourPackage.getInitialSpots() - existingPackage.getInitialSpots()));
-        }
+        existingPackage.setInitialSpots(tourPackage.getInitialSpots());
+        existingPackage.setRemainingSpots(existingPackage.getRemainingSpots());
         return tourPackageRepository.save(existingPackage);
     }
 
