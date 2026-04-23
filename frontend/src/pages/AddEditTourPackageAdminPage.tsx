@@ -43,33 +43,40 @@ function AddEditTourPackageAdminPage() {
   const [category, setCategory] = useState("STANDARD");
   const [tourPackageState, setTourPackageState] = useState("AVAILABLE");
 
+  const setData = async () => {
+    try {
+      setLoading(true);
+      const response = await tourPackageService.getById(Number(id));
+      const pkg = response.data;
+      setName(pkg.name);
+      setDestiny(pkg.destiny);
+      setDescription(pkg.description);
+      setStartDate(pkg.startDate);
+      setEndDate(pkg.endDate);
+      setPrice(pkg.price);
+      setInitialSpots(pkg.initialSpots);
+      setRemainingSpots(pkg.remainingSpots);
+      setSoldSpots(pkg.initialSpots - pkg.remainingSpots);
+      setCategory(pkg.category);
+      setTourPackageState(pkg.tourPackageState || "AVAILABLE");
+      setServices(pkg.services?.join(", "));
+      setConditions(pkg.conditions?.join(", "));
+      setRestrictions(pkg.restrictions?.join(", "));
+      setSeason(pkg.season || "SUMMER");
+      setTripType(pkg.tripType || "STANDARD");
+    } catch (error) {
+      console.error("Error al cargar paquete", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (id) {
       setTitleForm("Editar Paquete Turístico");
-      tourPackageService
-        .getById(Number(id))
-        .then((response) => {
-          const pkg = response.data;
-          setName(pkg.name);
-          setDestiny(pkg.destiny);
-          setDescription(pkg.description);
-          setStartDate(pkg.startDate);
-          setEndDate(pkg.endDate);
-          setPrice(pkg.price);
-          setInitialSpots(pkg.initialSpots);
-          setRemainingSpots(pkg.remainingSpots);
-          setSoldSpots(pkg.initialSpots - pkg.remainingSpots);
-          setCategory(pkg.category);
-          setTourPackageState(pkg.tourPackageState || "AVAILABLE");
-          setServices(pkg.services?.join(", "));
-          setConditions(pkg.conditions?.join(", "));
-          setRestrictions(pkg.restrictions?.join(", "));
-          setSeason(pkg.season || "SUMMER");
-          setTripType(pkg.tripType || "STANDARD");
-        })
-        .catch((error) => console.error("Error al cargar paquete", error));
+      setData();
     }
-  }, [id]);
+  }, []);
 
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
@@ -99,11 +106,15 @@ function AddEditTourPackageAdminPage() {
       startDate,
       endDate,
       price,
-      services: services ? services.split(",").map((s) => s.trim()) : [],
-      conditions: conditions ? conditions.split(",").map((c) => c.trim()) : [],
+      services: services
+        ? services.split(",").map((s) => s.trim())
+        : ["Sin servicios asociados"],
+      conditions: conditions
+        ? conditions.split(",").map((c) => c.trim())
+        : ["Sin condiciones asociadas"],
       restrictions: restrictions
         ? restrictions.split(",").map((r) => r.trim())
-        : [],
+        : ["Sin restricciones asociadas"],
       initialSpots,
       remainingSpots: initialSpots,
       tripType,
@@ -114,12 +125,14 @@ function AddEditTourPackageAdminPage() {
 
     try {
       setLoading(true);
-      await (id
-        ? tourPackageService.update(tourPackage as TourPackage)
-        : tourPackageService.create(tourPackage as TourPackage));
+      if (id) {
+        await tourPackageService.update(tourPackage as TourPackage);
+      } else {
+        await tourPackageService.create(tourPackage as TourPackage);
+      }
       setShow(true);
     } catch (error) {
-      console.error("No se pudo realizar la transacción.", error);
+      console.error("No se pudo realizar la transacción:", error);
     } finally {
       setLoading(false);
     }
@@ -399,7 +412,7 @@ function AddEditTourPackageAdminPage() {
                     rows={4}
                     value={services}
                     onChange={(e) => setServices(e.target.value)}
-                    placeholder="Guía, Almuerzo, Seguro..."
+                    placeholder="Alojamiento, Almuerzo, Seguro..."
                   />
                 </Form.Group>
               </Col>

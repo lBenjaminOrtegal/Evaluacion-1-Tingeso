@@ -20,10 +20,10 @@ spring:
             client-secret: ${KEYCLOAK_CLIENT_SECRET}
             scope: openid,profile,email
             authorization-grant-type: authorization_code
-            redirect-uri: http://localhost:${PORT}/login/oauth2/code/keycloak
+            redirect-uri: http://${HOST}:${PORT}/login/oauth2/code/keycloak
         provider:
           keycloak:
-            issuer-uri: http://localhost:${PORT_KEYCLOAK}/realms/${KEYCLOAK_REALM}
+            issuer-uri: http://${HOST}:${KEYCLOAK_PORT}/realms/${KEYCLOAK_REALM}
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:${PORT_KEYCLOAK}/realms/${KEYCLOAK_REALM}
+          issuer-uri: http://${HOST}:${KEYCLOAK_PORT}/realms/${KEYCLOAK_REALM}

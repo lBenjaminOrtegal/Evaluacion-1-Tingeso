@@ -52,7 +52,13 @@ public class TourPackage {
     public void calculateDuration() {
         if (this.startDate != null && this.endDate != null) {
             long integerDuration = ChronoUnit.DAYS.between(this.startDate, this.endDate);
-            this.duration = integerDuration + " días, " + (integerDuration - 1) + " noches";
+            if (services != null && services.stream()
+                    .anyMatch(s -> s.equalsIgnoreCase("Alojamiento"))) {
+                this.duration = integerDuration + " días, " + (integerDuration - 1) + " noches";
+            }
+            else {
+                this.duration = integerDuration + " días";
+            }
         }
     }
 }

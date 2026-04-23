@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Button, Table, Stack, Container, Modal, Badge, Spinner } from "react-bootstrap";
+import {
+  Button,
+  Table,
+  Stack,
+  Container,
+  Modal,
+  Badge,
+  Spinner,
+} from "react-bootstrap";
 import { Link } from "react-router-dom";
 import tourPackageService from "../services/tourPackage.service";
 import type { TourPackage } from "../interfaces/tourPackage.interface";
@@ -110,15 +118,15 @@ function TourPackagesAdminPage() {
             <th>Fin</th>
             <th>Precio</th>
             <th className="text-center">Cupos</th>
-            <th className="text-center">Estado</th>
             <th className="text-center">Categoría</th>
+            <th className="text-center">Estado</th>
             <th className="text-center">Acciones</th>
           </tr>
         </thead>
         <tbody>
           {tourPackages.length <= 0 && (
             <tr>
-              <td colSpan={7} className="text-center py-4">
+              <td colSpan={10} className="text-center py-4">
                 No hay paquetes túristicos registrados.
               </td>
             </tr>
@@ -137,16 +145,16 @@ function TourPackagesAdminPage() {
               <td className="text-center">{tour.remainingSpots}</td>
               <td className="text-center">
                 <Badge
-                  className={`fw-semibold ${getStateColor(tour.tourPackageState)}`}
+                  className={`fw-semibold ${getCategoryColor(tour.category)}`}
                 >
-                  {tour.tourPackageState}
+                  {tour.category}
                 </Badge>
               </td>
               <td className="text-center">
                 <Badge
-                  className={`fw-semibold ${getCategoryColor(tour.category)}`}
+                  className={`fw-semibold ${getStateColor(tour.tourPackageState)}`}
                 >
-                  {tour.category}
+                  {tour.tourPackageState}
                 </Badge>
               </td>
               <td>

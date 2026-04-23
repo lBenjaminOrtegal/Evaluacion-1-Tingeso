@@ -150,6 +150,16 @@ function App() {
         />
 
         <Route
+          path="/tour-packages/reservation/:id/:reservationId"
+          element={
+            <PrivateRoute
+              element={<ReservationCreationPage />}
+              rolesAllowed={["ADMIN"]}
+            />
+          }
+        />
+
+        <Route
           path="/reservations-admin"
           element={
             <PrivateRoute
@@ -158,6 +168,7 @@ function App() {
             />
           }
         />
+
 
         <Route
           path="/reservations/payment/:id"

@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Button, Card, Col, Container, Modal, Row, Spinner } from "react-bootstrap";
+import {
+  Button,
+  Card,
+  Col,
+  Container,
+  Modal,
+  Row,
+  Spinner,
+} from "react-bootstrap";
 import type { TourPackage } from "../interfaces/tourPackage.interface";
 import tourPackageService from "../services/tourPackage.service";
 import { useNavigate } from "react-router-dom";
@@ -271,7 +279,7 @@ function TourPackageCardComponent({ activeFilters }: { activeFilters: any }) {
                     <ul className="list-unstyled row g-2">
                       {tour.services.map((service, index) => (
                         <Col sm={6} key={index}>
-                          <li className="small">{service}</li>
+                          <li className="small fw-bold">{service}</li>
                         </Col>
                       ))}
                     </ul>

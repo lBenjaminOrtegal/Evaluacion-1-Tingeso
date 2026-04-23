@@ -13,7 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/reservations")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "https://localhost:5173")
 public class ReservationController {
 
     private final ReservationService reservationService;
@@ -42,7 +42,7 @@ public class ReservationController {
         return ResponseEntity.ok(reservationService.findByTourPackageId(id));
     }
 
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/state/{reservationState}")
     public ResponseEntity<List<Reservation>> findByReservationState(@PathVariable ReservationState reservationState) {
         return ResponseEntity.ok(reservationService.findByReservationState(reservationState));
@@ -60,7 +60,7 @@ public class ReservationController {
         return ResponseEntity.ok(reservationService.update(reservation));
     }
 
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable Long id) {
         reservationService.deleteById(id);

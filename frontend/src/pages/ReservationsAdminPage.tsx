@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Button, Table, Stack, Container, Modal, Badge, Spinner } from "react-bootstrap";
+import {
+  Button,
+  Table,
+  Stack,
+  Container,
+  Modal,
+  Badge,
+  Spinner,
+} from "react-bootstrap";
 import { Link } from "react-router-dom";
 import reservationService from "../services/reservation.service";
 import type { Reservation } from "../interfaces/reservation.interface";
@@ -82,8 +90,9 @@ function ReservationsAdminPage() {
       <Table bordered hover responsive className="align-middle">
         <thead className="table-light">
           <tr>
-            <th>ID</th>
+            <th>ID Reserva</th>
             <th>Usuario (Email)</th>
+            <th>ID Paquete</th>
             <th>Paquete</th>
             <th>Monto</th>
             <th className="text-center">Pasajeros</th>
@@ -104,6 +113,7 @@ function ReservationsAdminPage() {
             <tr key={reservation.id}>
               <td className="text-muted">#{reservation.id}</td>
               <td className="fw-medium">{reservation.userEmail}</td>
+              <td className="text-muted">#{reservation.tourPackageId}</td>
               <td className="fw-medium">{reservation.tourPackageName}</td>
               <td className="fw-bold text-success">
                 {formatCurrency(reservation.price)}
@@ -124,12 +134,12 @@ function ReservationsAdminPage() {
                 >
                   <Button
                     as={Link as any}
-                    to={`/reservations-admin/manage/${reservation.id}`}
+                    to={`/tour-packages/reservation/${reservation.tourPackageId}/${reservation.id}`}
                     className="fw-semibold w-50"
                     variant="primary"
                     size="sm"
                   >
-                    Administrar
+                    Editar
                   </Button>
                   <Button
                     className="fw-semibold w-50"

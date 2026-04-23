@@ -85,6 +85,15 @@ function ReservationsViewPage() {
     return variants[state] || "bg-light";
   };
 
+  const getCategoryColor = (category: string) => {
+    const variants: Record<string, string> = {
+      LOW_COST: "bg-success",
+      STANDARD: "bg-primary",
+      PREMIUM: "bg-dark",
+    };
+    return variants[category] || "bg-light";
+  };
+
   const handleCancel = async () => {
     if (!selectedReservation) {
       return;
@@ -97,10 +106,10 @@ function ReservationsViewPage() {
       setLoading(true);
       await reservationService.update(updatedReservation);
       getReservations();
-      setShowCancel(false);
     } catch (error) {
       console.error("Error cancelando la reserva:", error);
     } finally {
+      setShowCancel(false);
       setLoading(false);
     }
   };
@@ -157,7 +166,10 @@ function ReservationsViewPage() {
           puede deshacer.
         </Modal.Body>
         <Modal.Footer>
-          <Button className="fw-bold btn-secondary" onClick={() => setShowCancel(false)}>
+          <Button
+            className="fw-bold btn-secondary"
+            onClick={() => setShowCancel(false)}
+          >
             Atrás
           </Button>
           <Button className="fw-bold btn-danger" onClick={handleCancel}>
@@ -230,7 +242,11 @@ function ReservationsViewPage() {
                     <Col xs={6}>
                       <div className="p-3 border rounded-3 bg-light-subtle">
                         <h6 className="small text-muted mb-1">Categoría</h6>
-                        <p className="fw-bold mb-0">{tourPackage.category}</p>
+                        <Badge
+                          className={`fw-semibold ${getCategoryColor(tourPackage.category)}`}
+                        >
+                          {tourPackage.category}
+                        </Badge>
                       </div>
                     </Col>
                     <Col xs={6}>
@@ -293,8 +309,18 @@ function ReservationsViewPage() {
                         <strong>Solicitudes</strong>{" "}
                       </p>
                       <ol>
-                        {selectedReservation?.specialRequests.map((p, index) => (
-                          <li key={index}>{p}</li>
+                        {selectedReservation?.specialRequests.map(
+                          (p, index) => (
+                            <li key={index}>{p}</li>
+                          ),
+                        )}
+                      </ol>
+                      <p className="mb-0">
+                        <strong>Servicios contratados</strong>{" "}
+                      </p>
+                      <ol>
+                        {tourPackage?.services.map((s, index) => (
+                          <li key={index}>{s}</li>
                         ))}
                       </ol>
                     </div>
