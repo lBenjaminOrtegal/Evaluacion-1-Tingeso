@@ -25,8 +25,8 @@ const create = (data: Reservation) => {
   return httpClient.post("/api/reservations", data);
 };
 
-const calculateDiscounts = (data: Reservation) => {
-  return httpClient.post("/api/reservations/calculate-discounts", data);
+const calculatePrice = (data: Reservation) => {
+  return httpClient.post("/api/reservations/calculate-price", data);
 };
 
 const update = (data: Reservation) => {
@@ -44,7 +44,7 @@ export default {
   getByTourPackageId,
   getByReservationState,
   create,
-  calculateDiscounts,
+  calculatePrice,
   update,
   deleteById,
 };

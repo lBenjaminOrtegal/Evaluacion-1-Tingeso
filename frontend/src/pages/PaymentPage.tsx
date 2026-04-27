@@ -16,6 +16,7 @@ import type { TourPackage } from "../interfaces/tourPackage.interface";
 import tourPackageService from "../services/tourPackage.service";
 import transactionService from "../services/transaction.service";
 import type { Transaction } from "../interfaces/transaction.interface";
+import formatCurrency from "../utils/formatUtils";
 
 function PaymentPage() {
   const { id } = useParams();
@@ -28,13 +29,6 @@ function PaymentPage() {
   const [cvv, setCvv] = useState<string>("");
   const [expirationDate, setExpirationDate] = useState<string>("");
   const [show, setShow] = useState<boolean>(false);
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("es-CL", {
-      style: "currency",
-      currency: "CLP",
-    }).format(amount);
-  };
 
   const getData = useCallback(async () => {
     if (!id) return;
@@ -93,9 +87,9 @@ function PaymentPage() {
       if (isSuccess === true) {
         await transactionService.create(newTransaction as Transaction);
         setShow(true);
-        console.log("se creo la transaccion")
+        console.log("se creo la transaccion");
       } else {
-        console.log("pago rechazado")
+        console.log("pago rechazado");
         alert("El pago fue rechazado.");
       }
     } catch (error) {

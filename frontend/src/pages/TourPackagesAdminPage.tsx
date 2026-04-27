@@ -11,6 +11,8 @@ import {
 import { Link } from "react-router-dom";
 import tourPackageService from "../services/tourPackage.service";
 import type { TourPackage } from "../interfaces/tourPackage.interface";
+import formatCurrency from "../utils/formatUtils";
+import { getCategoryColor, getStateColor } from "../utils/colorUtils";
 
 function TourPackagesAdminPage() {
   const [tourPackages, setTourPackages] = useState<TourPackage[]>([]);
@@ -48,32 +50,6 @@ function TourPackagesAdminPage() {
   useEffect(() => {
     getTourPackages();
   }, []);
-
-  const getStateColor = (state: string) => {
-    const variants: Record<string, string> = {
-      AVAILABLE: "bg-success",
-      SOLD_OUT: "bg-danger",
-      NOT_AVAILABLE: "bg-secondary",
-      CANCELED: "bg-warning",
-    };
-    return variants[state] || "bg-light";
-  };
-
-  const getCategoryColor = (category: string) => {
-    const variants: Record<string, string> = {
-      LOW_COST: "bg-success",
-      STANDARD: "bg-primary",
-      PREMIUM: "bg-dark",
-    };
-    return variants[category] || "bg-light";
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("es-CL", {
-      style: "currency",
-      currency: "CLP",
-    }).format(amount);
-  };
 
   if (loading) {
     return (

@@ -16,6 +16,8 @@ import type { Reservation } from "../interfaces/reservation.interface";
 import { Link } from "react-router-dom";
 import tourPackageService from "../services/tourPackage.service";
 import type { TourPackage } from "../interfaces/tourPackage.interface";
+import formatCurrency from "../utils/formatUtils";
+import { getCategoryColor, getStateColor } from "../utils/colorUtils";
 
 function ReservationsViewPage() {
   const { keycloak } = useKeycloak();
@@ -65,33 +67,6 @@ function ReservationsViewPage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("es-CL", {
-      style: "currency",
-      currency: "CLP",
-    }).format(amount);
-  };
-
-  const getStateColor = (state: string) => {
-    const variants: Record<string, string> = {
-      PENDING: "bg-warning",
-      CONFIRMED: "bg-primary",
-      CANCELED: "bg-danger",
-      COMPLETED: "bg-success",
-      IN_PROGRESS: "bg-info",
-    };
-    return variants[state] || "bg-light";
-  };
-
-  const getCategoryColor = (category: string) => {
-    const variants: Record<string, string> = {
-      LOW_COST: "bg-success",
-      STANDARD: "bg-primary",
-      PREMIUM: "bg-dark",
-    };
-    return variants[category] || "bg-light";
   };
 
   const handleCancel = async () => {

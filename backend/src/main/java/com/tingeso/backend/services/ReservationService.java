@@ -1,9 +1,7 @@
 package com.tingeso.backend.services;
 
-import com.tingeso.backend.entities.Reservation;
-import com.tingeso.backend.entities.ReservationState;
-import com.tingeso.backend.entities.TourPackage;
-import com.tingeso.backend.entities.TourPackageState;
+import com.tingeso.backend.entities.*;
+import com.tingeso.backend.repositories.PromotionRepository;
 import com.tingeso.backend.repositories.ReservationRepository;
 import com.tingeso.backend.repositories.TourPackageRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -12,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -22,26 +21,8 @@ public class ReservationService {
 
     private final ReservationRepository reservationRepository;
     private final TourPackageRepository tourPackageRepository;
-
-//    DISCOUNTS
-//    private Integer passengersAmountDiscount;
-//    private Integer passengersAmountForDiscount;
-//    private Integer discountLimitPasAmoDis;
-//    private Boolean cumulativeDiscountPasAmoDis;
-//
-//    private Integer frequentClientPurchasesAmountDiscount;
-//    private Integer frequentClientPurchasesAmountForDiscount;
-//    private Integer discountLimitFreCliPurAmoDis;
-//    private Boolean cumulativeDiscountFreCliPurAmoDis;
-//
-//    private Integer multiplePackagesAmountDiscount;
-//    private Integer multiplePackagesAmountForDiscount;
-//    private Integer discountLimitMulPacAmoDis;
-//    private Boolean cumulativeDiscountMulPacAmoDis;
-//
-//    private Integer promotionDiscount;
-//    private Integer promotionAmountForDiscount;
-//    private Boolean cumulativeDiscountProDis;
+    private final PromotionRepository promotionRepository;
+    private final DiscountService discountService;
 
     @Transactional(readOnly = true)
     public List<Reservation> findAll() {
@@ -79,7 +60,7 @@ public class ReservationService {
         if (tourPackage.getRemainingSpots() <= 0) {
             tourPackage.setTourPackageState(TourPackageState.SOLD_OUT);
         }
-        reservation.setPrice(calculatePrice(reservation));
+        reservation.setPrice(calculatePrice(reservation).getTotalAmount());
         reservation.setTourPackageName(tourPackage.getName());
         reservation.setReservationDate(LocalDateTime.now());
         tourPackageRepository.save(tourPackage);
@@ -121,7 +102,7 @@ public class ReservationService {
         reservationSaved.setSpecialRequests(reservation.getSpecialRequests());
         reservationSaved.setPassengersAmount(reservation.getPassengersAmount());
         reservationSaved.setReservationState(reservation.getReservationState());
-        reservationSaved.setPrice(calculatePrice(reservationSaved));
+        reservationSaved.setPrice(calculatePrice(reservation).getTotalAmount());
         return reservationRepository.save(reservationSaved);
     }
 
@@ -137,9 +118,56 @@ public class ReservationService {
         reservationRepository.deleteById(id);
     }
 
-    public BigDecimal calculatePrice(Reservation reservation) {
+    public DiscountData calculatePrice(Reservation reservation) {
         TourPackage tourPackage = tourPackageRepository.findById(reservation.getTourPackageId())
-                .orElseThrow(() -> new RuntimeException("Tour package not found with id: " + reservation.getTourPackageId()));
-        return tourPackage.getPrice().multiply(BigDecimal.valueOf(reservation.getPassengersAmount()));
+                .orElseThrow(() -> new EntityNotFoundException("Tour package not found with id: " + reservation.getTourPackageId()));
+
+        final boolean combinableDiscounts = true;
+        final BigDecimal maxDiscountLimit = new BigDecimal("0.25"); // change this
+
+        DiscountData discountData = new DiscountData();
+        BigDecimal basePrice = tourPackage.getPrice();
+        BigDecimal totalWithoutDiscounts = basePrice.multiply(BigDecimal.valueOf(reservation.getPassengersAmount()));
+
+        discountData.setTotalAmountWithoutDiscounts(totalWithoutDiscounts.setScale(2, RoundingMode.HALF_UP));
+
+        BigDecimal passengersDiscountPercentage = discountService.calculatePassengersAmountDiscount(reservation.getPassengersAmount());
+        BigDecimal frequentClientDiscountPercentage = discountService.calculateFrequentClientDiscount(reservation.getUserEmail());
+        BigDecimal multiplePackagesDiscountPercentage = discountService.calculateMultiplePackagesDiscount(reservation.getUserEmail());
+
+        BigDecimal promotionDiscountPercentage = promotionRepository.findByTourPackageId(reservation.getTourPackageId())
+                .map(Promotion::getDiscount)
+                .orElse(BigDecimal.ZERO);
+
+        discountData.setPassengersDiscount(totalWithoutDiscounts.multiply(passengersDiscountPercentage).setScale(2, RoundingMode.HALF_UP));
+        discountData.setFrequentClientDiscount(totalWithoutDiscounts.multiply(frequentClientDiscountPercentage).setScale(2, RoundingMode.HALF_UP));
+        discountData.setMultiplePackagesDiscount(totalWithoutDiscounts.multiply(multiplePackagesDiscountPercentage).setScale(2, RoundingMode.HALF_UP));
+        discountData.setPromotionDiscount(totalWithoutDiscounts.multiply(promotionDiscountPercentage).setScale(2, RoundingMode.HALF_UP));
+
+        BigDecimal accumulatedPercentage;
+        if (combinableDiscounts) {
+            accumulatedPercentage = passengersDiscountPercentage.add(frequentClientDiscountPercentage)
+                    .add(multiplePackagesDiscountPercentage)
+                    .add(promotionDiscountPercentage);
+        } else {
+            accumulatedPercentage = passengersDiscountPercentage.max(frequentClientDiscountPercentage)
+                    .max(multiplePackagesDiscountPercentage)
+                    .max(promotionDiscountPercentage);
+        }
+
+        if (accumulatedPercentage.subtract(maxDiscountLimit).compareTo(BigDecimal.ZERO) > 0) {
+            accumulatedPercentage = maxDiscountLimit;
+            discountData.setMaxDiscount(true);
+        } else {
+            discountData.setMaxDiscount(false);
+        }
+
+        BigDecimal finalDiscountAmount = totalWithoutDiscounts.multiply(accumulatedPercentage);
+        BigDecimal totalWithDiscounts = totalWithoutDiscounts.subtract(finalDiscountAmount);
+
+        discountData.setDiscountAmount(finalDiscountAmount.setScale(0, RoundingMode.HALF_UP));
+        discountData.setTotalAmount(totalWithDiscounts.setScale(0, RoundingMode.HALF_UP));
+
+        return discountData;
     }
 }

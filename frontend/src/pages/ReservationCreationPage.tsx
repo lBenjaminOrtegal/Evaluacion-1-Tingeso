@@ -19,6 +19,9 @@ import {
 } from "react-bootstrap";
 import type { TourPackage } from "../interfaces/tourPackage.interface";
 import reservationService from "../services/reservation.service";
+import formatCurrency from "../utils/formatUtils";
+import { getCategoryColor } from "../utils/colorUtils";
+import type { DiscountData } from "../interfaces/discountData.interface";
 
 function ReservationCreationPage() {
   const { keycloak } = useKeycloak();
@@ -34,23 +37,7 @@ function ReservationCreationPage() {
   const [preferences, setPreferences] = useState<string[]>([]);
   const [specialRequests, setSpecialRequests] = useState<string[]>([]);
   const [reservationState, setReservationState] = useState<string>("PENDING");
-  const [discounts, setDiscounts] = useState<any>();
-
-  const getCategoryColor = (category: string) => {
-    const variants: Record<string, string> = {
-      LOW_COST: "bg-success",
-      STANDARD: "bg-primary",
-      PREMIUM: "bg-dark",
-    };
-    return variants[category] || "bg-light";
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("es-CL", {
-      style: "currency",
-      currency: "CLP",
-    }).format(amount);
-  };
+  const [discountsData, setDiscountsData] = useState<DiscountData>();
 
   const getData = async () => {
     try {
@@ -67,10 +54,28 @@ function ReservationCreationPage() {
         setSpecialRequests(responseReservationData.specialRequests);
         setReservationState(responseReservationData.reservationState);
       }
+      await getPrice();
     } catch (error) {
       console.error("No se pudieron cargar los datos:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const getPrice = async () => {
+    const reservationData: Partial<Reservation> = {
+      userEmail: keycloak.tokenParsed?.email || "",
+      tourPackageId: Number(id),
+      passengersAmount: passengersAmount,
+    };
+    try {
+      const priceResponse = await reservationService.calculatePrice(
+        reservationData as Reservation,
+      );
+      setDiscountsData(priceResponse.data);
+      console.log(discountsData);
+    } catch (error) {
+      console.error("Error cargando el monto final:", error);
     }
   };
 
@@ -119,27 +124,6 @@ function ReservationCreationPage() {
         <h5 className="fw-medium text-secondary">Cargando...</h5>
         <p className="text-muted small">Por favor, espera un momento.</p>
       </Container>
-    );
-  }
-
-  if (tourPackage?.tourPackageState !== "AVAILABLE") {
-    return (
-      <Stack gap={3} className="mb-4 py-4 align-items-center text-center">
-        <div>
-          <h1 className="fs-3 fw-bold text-danger">Acción no disponible</h1>
-          <p className="text-muted m-0">
-            No se puede realizar la reserva porque el paquete seleccionado no
-            está disponible.
-          </p>
-          <Button
-            variant="link"
-            className="ms-auto fw-bold text-decoration-none"
-            onClick={() => navigate("/tour-packages")}
-          >
-            Haz click aquí para regresar a los paquetes disponibles.
-          </Button>
-        </div>
-      </Stack>
     );
   }
 
@@ -290,51 +274,52 @@ function ReservationCreationPage() {
             </Card.Body>
           </Card>
         </Col>
-        <Col>
+        <Col className="mb-4">
           <Stack>
             <p className="fs-4 text-center text-primary fw-semibold">
               Detalles
             </p>
             <Form onSubmit={handleSubmit}>
               <Row>
-                <Col>
+                <Col md={6}>
                   <Form.Group className="mb-3">
-                    <Form.Label className="fw-medium">
-                      Preferencias (separadas por coma)
-                    </Form.Label>
+                    <Form.Label className="fw-medium">Preferencias</Form.Label>
                     <Form.Control
                       type="text"
                       placeholder="Ej: Ventanilla, Vegetariano"
-                      value={preferences}
-                      onChange={(e) => {
-                        setPreferences(e.target.value.split(","));
-                      }}
-                      onBlur={() => {
+                      value={preferences.join(", ")}
+                      onChange={(e) =>
+                        setPreferences(
+                          e.target.value.split(",").map((s) => s.trimStart()),
+                        )
+                      }
+                      onBlur={() =>
                         setPreferences((prev) =>
-                          prev.map((s) => s.trim()).filter((s) => s !== ""),
-                        );
-                      }}
+                          prev.map((s) => s.trim()).filter(Boolean),
+                        )
+                      }
                     />
                   </Form.Group>
                 </Col>
-
-                <Col>
+                <Col md={6}>
                   <Form.Group className="mb-3">
                     <Form.Label className="fw-medium">
-                      Solicitudes (separadas por coma)
+                      Solicitudes Especiales
                     </Form.Label>
                     <Form.Control
                       type="text"
                       placeholder="Alguna necesidad adicional..."
-                      value={specialRequests}
-                      onChange={(e) => {
-                        setSpecialRequests(e.target.value.split(","));
-                      }}
-                      onBlur={() => {
+                      value={specialRequests.join(", ")}
+                      onChange={(e) =>
+                        setSpecialRequests(
+                          e.target.value.split(",").map((s) => s.trimStart()),
+                        )
+                      }
+                      onBlur={() =>
                         setSpecialRequests((prev) =>
-                          prev.map((s) => s.trim()).filter((s) => s !== ""),
-                        );
-                      }}
+                          prev.map((s) => s.trim()).filter(Boolean),
+                        )
+                      }
                     />
                   </Form.Group>
                 </Col>
@@ -404,30 +389,104 @@ function ReservationCreationPage() {
                     </Form.Group>
                   </Col>
                 )}
+                <Button
+                  onClick={getPrice}
+                  variant="outline-primary"
+                  className="w-100 fw-semibold"
+                >
+                  Calcular precio
+                </Button>
               </Row>
-              <Button
-                type="submit"
-                variant="primary"
-                className="w-100 size-lg fw-semibold"
-              >
-                Confirmar Reserva
-              </Button>
+
+              <hr></hr>
+              <Row>
+                <Stack gap={2}>
+                  <p className="fs-4 text-center text-primary fw-semibold">
+                    Pago
+                  </p>
+                  <Stack>
+                    <Stack className="text-muted fw-medium">
+                      {discountsData &&
+                        discountsData.passengersDiscount > 0 && (
+                          <p className="mb-1">
+                            Descuento en función del número de pasajeros:{" "}
+                            {formatCurrency(
+                              Number(discountsData?.passengersDiscount),
+                            )}
+                          </p>
+                        )}
+
+                      {discountsData &&
+                        discountsData.frequentClientDiscount > 0 && (
+                          <p className="mb-1">
+                            Descuento para clientes frecuentes:{" "}
+                            {formatCurrency(
+                              Number(discountsData?.frequentClientDiscount),
+                            )}
+                          </p>
+                        )}
+
+                      {discountsData &&
+                        discountsData.multiplePackagesDiscount > 0 && (
+                          <p className="mb-1">
+                            Descuento por compras múltiples:{" "}
+                            {formatCurrency(
+                              Number(discountsData?.multiplePackagesDiscount),
+                            )}
+                          </p>
+                        )}
+
+                      {discountsData && discountsData.promotionDiscount > 0 && (
+                        <p className="mb-1">
+                          Promociones aplicadas:{" "}
+                          {formatCurrency(
+                            Number(discountsData?.promotionDiscount),
+                          )}
+                        </p>
+                      )}
+
+                      {discountsData?.maxDiscount ? (
+                        <p className="mb-1 fw-semibold">
+                          Descuentos totales aplicados (máximo del 25%):{" "}
+                          {formatCurrency(
+                            Number(discountsData?.discountAmount),
+                          )}
+                        </p>
+                      ) : (
+                        <p className="mb-1">
+                          Descuentos totales aplicados:{" "}
+                          {formatCurrency(
+                            Number(discountsData?.discountAmount),
+                          )}
+                        </p>
+                      )}
+
+                      <p className="mb-1">
+                        Importe total sin descuentos:{" "}
+                        {formatCurrency(
+                          Number(discountsData?.totalAmountWithoutDiscounts),
+                        )}
+                      </p>
+
+                      <p className="fw-bold fs-5 text-primary mb-3">
+                        Importe final:{" "}
+                        {formatCurrency(Number(discountsData?.totalAmount))}
+                      </p>
+                    </Stack>
+                  </Stack>
+
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    className="w-100 size-lg fw-semibold py-2"
+                  >
+                    Confirmar Reserva
+                  </Button>
+                </Stack>
+              </Row>
             </Form>
           </Stack>
-          <hr></hr>
-          <Row>
-            <Stack>
-              <p className="fs-4 text-center text-primary fw-semibold">
-                Descuentos
-              </p>
-              <p>Descuento por cantidad de personas: </p>
-              <p>Descuento por cliente frecuente: </p>
-              <p>Descuento por compra de múltiples paquetes: </p>
-              <p>Acumulación y límites de descuentos: </p>
-              <p>Promociones por tiempo limitado: </p>
-              <p>Monto final: </p>
-            </Stack>
-          </Row>
+          <Row></Row>
         </Col>
       </Row>
     </Container>

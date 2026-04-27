@@ -11,6 +11,8 @@ import {
 import { Link } from "react-router-dom";
 import reservationService from "../services/reservation.service";
 import type { Reservation } from "../interfaces/reservation.interface";
+import formatCurrency from "../utils/formatUtils";
+import { getStateColor } from "../utils/colorUtils";
 
 function ReservationsAdminPage() {
   const [reservations, setReservations] = useState<Reservation[]>([]);
@@ -43,24 +45,6 @@ function ReservationsAdminPage() {
   useEffect(() => {
     getreservations();
   }, []);
-
-  const getStateColor = (state: string) => {
-    const variants: Record<string, string> = {
-      PENDING: "bg-warning",
-      CONFIRMED: "bg-primary",
-      CANCELED: "bg-danger",
-      COMPLETED: "bg-success",
-      IN_PROGRESS: "bg-info",
-    };
-    return variants[state] || "bg-light";
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("es-CL", {
-      style: "currency",
-      currency: "CLP",
-    }).format(amount);
-  };
 
   if (loading) {
     return (

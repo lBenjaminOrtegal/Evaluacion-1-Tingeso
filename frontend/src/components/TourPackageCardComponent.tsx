@@ -12,6 +12,7 @@ import type { TourPackage } from "../interfaces/tourPackage.interface";
 import tourPackageService from "../services/tourPackage.service";
 import { useNavigate } from "react-router-dom";
 import { useKeycloak } from "@react-keycloak/web";
+import formatCurrency from "../utils/formatUtils";
 
 function TourPackageCardComponent({ activeFilters }: { activeFilters: any }) {
   const [tourPackages, setTourPackages] = useState<TourPackage[]>([]);
@@ -72,13 +73,6 @@ function TourPackageCardComponent({ activeFilters }: { activeFilters: any }) {
       matchDate
     );
   });
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("es-CL", {
-      style: "currency",
-      currency: "CLP",
-    }).format(amount);
-  };
 
   const getTourPackages = async () => {
     try {

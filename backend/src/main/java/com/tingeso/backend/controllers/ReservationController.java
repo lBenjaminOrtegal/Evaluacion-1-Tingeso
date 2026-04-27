@@ -1,5 +1,6 @@
 package com.tingeso.backend.controllers;
 
+import com.tingeso.backend.entities.DiscountData;
 import com.tingeso.backend.entities.Reservation;
 import com.tingeso.backend.entities.ReservationState;
 import com.tingeso.backend.services.ReservationService;
@@ -65,5 +66,11 @@ public class ReservationController {
     public ResponseEntity<?> delete(@PathVariable Long id) {
         reservationService.deleteById(id);
         return ResponseEntity.ok().build();
+    }
+
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @PostMapping("/calculate-price")
+    public ResponseEntity<DiscountData> calculatePrice(@RequestBody Reservation reservation) {
+        return ResponseEntity.ok(reservationService.calculatePrice(reservation));
     }
 }
