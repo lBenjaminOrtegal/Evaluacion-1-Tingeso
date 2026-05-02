@@ -21,6 +21,27 @@ const getByReservationState = (state: string) => {
   return httpClient.get(`/api/reservations/state/${state}`);
 };
 
+const getDateReports = (startDate: string, endDate: string) => {
+  const start = `${startDate}T00:00:00`;
+  const end = `${endDate}T23:59:59`;
+  return httpClient.get(`/api/reservations/reports/date`, {
+    params: { startDate: start, endDate: end },
+  });
+};
+
+const getRanking = (
+  startDate: string,
+  endDate: string,
+  order: number,
+  type: string,
+) => {
+  const start = `${startDate}T00:00:00`;
+  const end = `${endDate}T23:59:59`;
+  return httpClient.get(`/api/reservations/reports/ranking`, {
+    params: { startDate: start, endDate: end, order, type },
+  });
+};
+
 const create = (data: Reservation) => {
   return httpClient.post("/api/reservations", data);
 };
@@ -43,6 +64,8 @@ export default {
   getByEmail,
   getByTourPackageId,
   getByReservationState,
+  getDateReports,
+  getRanking,
   create,
   calculatePrice,
   update,

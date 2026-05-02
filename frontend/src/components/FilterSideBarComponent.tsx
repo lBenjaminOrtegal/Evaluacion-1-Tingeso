@@ -7,6 +7,7 @@ import {
   Form,
   Row,
   Button,
+  Stack,
 } from "react-bootstrap";
 
 function FilterSideBarComponent({
@@ -64,7 +65,18 @@ function FilterSideBarComponent({
 
   return (
     <Container className="py-4">
-      <h5 className="mb-4 fw-bold fs-3 text-primary">Filtros de Búsqueda</h5>
+      <Stack
+        direction="horizontal"
+        gap={3}
+        className="mb-4 pb-3 border-bottom align-items-center"
+      >
+        <div>
+          <h1 className="fs-3 fw-bold text-primary">Filtros de Búsqueda</h1>
+          <p className="text-muted m-0">
+            Optimiza tu búsqueda y encuentra el paquete ideal.
+          </p>
+        </div>
+      </Stack>
 
       <Row className="mb-3">
         <Col md={6}>

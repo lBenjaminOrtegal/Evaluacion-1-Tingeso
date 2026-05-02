@@ -19,16 +19,12 @@ function NavbarComponent() {
               Inicio
             </Nav.Link>
 
-            <Nav.Link as={Link} to="/about-us">
-              Acerca de nosotros
-            </Nav.Link>
-
             <Nav.Link as={Link} to="/tour-packages">
               Paquetes túristicos
             </Nav.Link>
 
             {keycloak.hasRealmRole("ADMIN") && (
-              <Nav.Link as={Link} to="/tour-packages-admin">
+              <Nav.Link as={Link} to="/tour-packages-admin" className="text-decoration-underline">
                 Administrar paquetes
               </Nav.Link>
             )}
@@ -38,8 +34,14 @@ function NavbarComponent() {
             </Nav.Link>
 
             {keycloak.hasRealmRole("ADMIN") && (
-              <Nav.Link as={Link} to="/reservations-admin">
+              <Nav.Link as={Link} to="/reservations-admin" className="text-decoration-underline">
                 Administrar reservas
+              </Nav.Link>
+            )}
+
+            {keycloak.hasRealmRole("ADMIN") && (
+              <Nav.Link as={Link} to="/reports" className="text-decoration-underline">
+                Reportes
               </Nav.Link>
             )}
           </Nav>

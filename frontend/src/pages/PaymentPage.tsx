@@ -295,7 +295,7 @@ function PaymentPage() {
               <Button
                 type="submit"
                 variant="primary"
-                className="w-100 fw-bold fs-5 shadow"
+                className="w-100 fw-bold fs-5"
               >
                 Confirmar Pago
               </Button>

@@ -406,6 +406,13 @@ function ReservationCreationPage() {
                   </p>
                   <Stack>
                     <Stack className="text-muted fw-medium">
+                      <p className="mb-1">
+                        Importe total sin descuentos:{" "}
+                        {formatCurrency(
+                          Number(discountsData?.totalAmountWithoutDiscounts),
+                        )}
+                      </p>
+
                       {discountsData &&
                         discountsData.passengersDiscount > 0 && (
                           <p className="mb-1">
@@ -453,20 +460,13 @@ function ReservationCreationPage() {
                           )}
                         </p>
                       ) : (
-                        <p className="mb-1">
+                        <p className="mb-1 text-decoration-underline">
                           Descuentos totales aplicados:{" "}
                           {formatCurrency(
                             Number(discountsData?.discountAmount),
                           )}
                         </p>
                       )}
-
-                      <p className="mb-1">
-                        Importe total sin descuentos:{" "}
-                        {formatCurrency(
-                          Number(discountsData?.totalAmountWithoutDiscounts),
-                        )}
-                      </p>
 
                       <p className="fw-bold fs-5 text-primary mb-3">
                         Importe final:{" "}

@@ -1,10 +1,8 @@
 import React from "react";
 import NavbarComponent from "./components/NavbarComponent";
-import FooterComponent from "./components/FooterComponent";
 import { Route, Routes, useNavigate } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import TourPackagesAdminPage from "./pages/TourPackagesAdminPage";
-import LoginPage from "./pages/LoginPage";
 import AddEditTourPackageAdminPage from "./pages/AddEditTourPackageAdminPage";
 import TourPackagesViewPage from "./pages/TourPackagesViewPage";
 import { useKeycloak } from "@react-keycloak/web";
@@ -14,6 +12,7 @@ import ReservationsViewPage from "./pages/ReservationsViewPage";
 import ReservationCreationPage from "./pages/ReservationCreationPage";
 import ReservationsAdminPage from "./pages/ReservationsAdminPage";
 import PaymentPage from "./pages/PaymentPage";
+import ReportsPage from "./pages/ReportsPage";
 
 function App() {
   const { keycloak, initialized } = useKeycloak();
@@ -169,7 +168,6 @@ function App() {
           }
         />
 
-
         <Route
           path="/reservations/payment/:id"
           element={
@@ -179,8 +177,14 @@ function App() {
             />
           }
         />
+
+        <Route
+          path="/reports"
+          element={
+            <PrivateRoute element={<ReportsPage />} rolesAllowed={["ADMIN"]} />
+          }
+        />
       </Routes>
-      {/* <FooterComponent /> */}
     </div>
   );
 }

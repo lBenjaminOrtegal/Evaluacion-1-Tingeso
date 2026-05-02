@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Container } from "react-bootstrap";
 import FilterSideBarComponent from "../components/FilterSideBarComponent";
 import TourPackageCardComponent from "../components/TourPackageCardComponent";

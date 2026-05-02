@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -47,6 +48,18 @@ public class ReservationController {
     @GetMapping("/state/{reservationState}")
     public ResponseEntity<List<Reservation>> findByReservationState(@PathVariable ReservationState reservationState) {
         return ResponseEntity.ok(reservationService.findByReservationState(reservationState));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/reports/date")
+    public ResponseEntity<List<Reservation>> findDateReports(@RequestParam LocalDateTime startDate, @RequestParam LocalDateTime endDate) {
+        return ResponseEntity.ok(reservationService.findDateReports(startDate, endDate));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/reports/ranking")
+    public ResponseEntity<List<List<Reservation>>> findRanking(@RequestParam LocalDateTime startDate, @RequestParam LocalDateTime endDate, @RequestParam Integer order, @RequestParam String type) {
+        return ResponseEntity.ok(reservationService.findRanking(startDate, endDate, order, type));
     }
 
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
