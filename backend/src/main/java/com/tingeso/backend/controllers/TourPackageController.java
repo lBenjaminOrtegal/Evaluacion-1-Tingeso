@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -29,7 +31,18 @@ public class TourPackageController {
     }
 
     @GetMapping("/filters")
-    public ResponseEntity<List<TourPackage>> findCustomFilters(TourPackageFilters tourPackageFilters) {
+    public ResponseEntity<List<TourPackage>> findCustomFilters(
+            @RequestParam String name,
+            @RequestParam String destiny,
+            @RequestParam Category category,
+            @RequestParam Season season,
+            @RequestParam TripType tripType,
+            @RequestParam BigDecimal maxPrice,
+            @RequestParam LocalDate startDate,
+            @RequestParam LocalDate endDate,
+            @RequestParam Integer minSpots) {
+        TourPackageFilters tourPackageFilters = new TourPackageFilters(
+                name, destiny, category, season, tripType, maxPrice, startDate, endDate, minSpots);
         return ResponseEntity.ok(tourPackageService.findCustomFilters(tourPackageFilters));
     }
 

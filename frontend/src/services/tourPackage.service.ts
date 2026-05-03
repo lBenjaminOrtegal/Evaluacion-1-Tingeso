@@ -9,18 +9,6 @@ const getById = (id: number) => {
   return httpClient.get(`/api/tour-packages/${id}`);
 };
 
-const getByCategory = (category: string) => {
-  return httpClient.get(`/api/tour-packages/category/${category}`);
-};
-
-const getByDestiny = (destiny: string) => {
-  return httpClient.get(`/api/tour-packages/destiny/${destiny}`);
-};
-
-const getBySeason = (season: string) => {
-  return httpClient.get(`/api/tour-packages/season/${season}`);
-};
-
 const getByRemainingSpots = (remainingSpots: number) => {
   return httpClient.get(`/api/tour-packages/spots/${remainingSpots}`);
 };
@@ -29,12 +17,34 @@ const getByAvailableSpots = () => {
   return httpClient.get("/api/tour-packages/spots/0");
 };
 
-const getByTypeOfTrips = (typeOfTrip: string) => {
-  return httpClient.get(`/api/tour-packages/type-of-trip/${typeOfTrip}`);
-};
-
 const getByState = (state: string) => {
   return httpClient.get(`/api/tour-packages/state/${state}`);
+};
+
+const getByCustomFilters = (
+  name: string,
+  destiny: string,
+  category: string,
+  season: string,
+  tripType: string,
+  maxPrice: number,
+  startDate: string,
+  endDate: string,
+  minSpots: number,
+) => {
+  return httpClient.get(`/api/tour-packages/filters`, {
+    params: {
+      name,
+      destiny,
+      category,
+      season,
+      tripType,
+      maxPrice,
+      startDate,
+      endDate,
+      minSpots,
+    },
+  });
 };
 
 const create = (data: TourPackage) => {
@@ -52,13 +62,10 @@ const deleteById = (id: number) => {
 export default {
   getAll,
   getById,
-  getByCategory,
-  getByDestiny,
-  getBySeason,
   getByRemainingSpots,
   getByAvailableSpots,
-  getByTypeOfTrips,
   getByState,
+  getByCustomFilters,
   create,
   update,
   deleteById,
