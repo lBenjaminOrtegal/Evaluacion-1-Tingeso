@@ -33,6 +33,8 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers("/api/tour-packages").permitAll()
+                        .requestMatchers("/api/tour-packages/filters").permitAll()
+                        .requestMatchers("/api/tour-packages/{id}").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 ->

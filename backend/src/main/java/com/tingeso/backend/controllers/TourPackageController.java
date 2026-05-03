@@ -32,17 +32,26 @@ public class TourPackageController {
 
     @GetMapping("/filters")
     public ResponseEntity<List<TourPackage>> findCustomFilters(
-            @RequestParam String name,
-            @RequestParam String destiny,
-            @RequestParam Category category,
-            @RequestParam Season season,
-            @RequestParam TripType tripType,
-            @RequestParam BigDecimal maxPrice,
-            @RequestParam LocalDate startDate,
-            @RequestParam LocalDate endDate,
-            @RequestParam Integer minSpots) {
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String destiny,
+            @RequestParam(required = false) Category category,
+            @RequestParam(required = false) Season season,
+            @RequestParam(required = false) TripType tripType,
+            @RequestParam(required = false) BigDecimal maxPrice,
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate,
+            @RequestParam(required = false) Integer minSpots) {
         TourPackageFilters tourPackageFilters = new TourPackageFilters(
-                name, destiny, category, season, tripType, maxPrice, startDate, endDate, minSpots);
+                name,
+                destiny,
+                category,
+                season,
+                tripType,
+                maxPrice,
+                startDate,
+                endDate,
+                minSpots
+        );
         return ResponseEntity.ok(tourPackageService.findCustomFilters(tourPackageFilters));
     }
 
