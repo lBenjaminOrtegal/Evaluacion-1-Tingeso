@@ -9,18 +9,6 @@ const getById = (id: number) => {
   return httpClient.get(`/api/tour-packages/${id}`);
 };
 
-const getByRemainingSpots = (remainingSpots: number) => {
-  return httpClient.get(`/api/tour-packages/spots/${remainingSpots}`);
-};
-
-const getByAvailableSpots = () => {
-  return httpClient.get("/api/tour-packages/spots/0");
-};
-
-const getByState = (state: string) => {
-  return httpClient.get(`/api/tour-packages/state/${state}`);
-};
-
 const getByCustomFilters = (
   name: string,
   destiny: string,
@@ -30,7 +18,7 @@ const getByCustomFilters = (
   maxPrice: number,
   startDate: string,
   endDate: string,
-  minSpots: number,
+  state: string,
 ) => {
   return httpClient.get(`/api/tour-packages/filters`, {
     params: {
@@ -42,7 +30,7 @@ const getByCustomFilters = (
       maxPrice,
       startDate,
       endDate,
-      minSpots,
+      state,
     },
   });
 };
@@ -62,9 +50,6 @@ const deleteById = (id: number) => {
 export default {
   getAll,
   getById,
-  getByRemainingSpots,
-  getByAvailableSpots,
-  getByState,
   getByCustomFilters,
   create,
   update,

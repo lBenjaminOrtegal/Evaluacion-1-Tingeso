@@ -6,10 +6,12 @@ import com.tingeso.backend.repositories.TourPackageRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -32,16 +34,6 @@ public class TourPackageService {
     @Transactional(readOnly = true)
     public List<TourPackage> findCustomFilters(TourPackageFilters tourPackageFilters) {
         return tourPackageRepository.findCustomFilters(tourPackageFilters);
-    }
-
-    @Transactional(readOnly = true)
-    public List<TourPackage> findByRemainingSpots(Integer remainingSpots) {
-        return tourPackageRepository.findByRemainingSpotsGreaterThan(remainingSpots);
-    }
-
-    @Transactional(readOnly = true)
-    public List<TourPackage> findByTourPackageState(String state) {
-        return tourPackageRepository.findByTourPackageState(TourPackageState.valueOf(state));
     }
 
     @Transactional
@@ -100,16 +92,26 @@ public class TourPackageService {
     }
 
     @Transactional
-    public Boolean deleteById(Long id) throws EmptyResultDataAccessException {
+    public void deleteById(Long id) throws EmptyResultDataAccessException {
         TourPackage tourPackage = tourPackageRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("TourPackage not found with id: " + id));
         List<Reservation> reservations = reservationRepository.findByTourPackageId(id);
         if (reservations.isEmpty()) {
             tourPackageRepository.delete(tourPackage);
-            return true;
         }
         tourPackage.setTourPackageState(TourPackageState.NOT_AVAILABLE);
         tourPackageRepository.save(tourPackage);
-        return false;
+    }
+
+    @Scheduled(fixedRate = 3600000 * 24)
+    @Transactional
+    public void cancelStartedTourPackages() {
+        List<TourPackage> tourPackageList = tourPackageRepository.findAll();
+        for (TourPackage tourPackage : tourPackageList) {
+            if (LocalDate.now().isEqual(tourPackage.getStartDate())) {
+                tourPackage.setTourPackageState(TourPackageState.NOT_AVAILABLE);
+            }
+        }
+        tourPackageRepository.saveAll(tourPackageList);
     }
 }

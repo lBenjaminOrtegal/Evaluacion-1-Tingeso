@@ -62,7 +62,7 @@ function TourPackagesViewPage() {
         maxPrice,
         startDate,
         endDate,
-        onlyAvailable ? 1 : 0,
+        onlyAvailable ? "AVAILABLE" : "",
       );
       setTourPackages(response.data);
     } catch (error) {

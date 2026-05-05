@@ -11,9 +11,6 @@ import java.util.List;
 @Repository
 public interface TourPackageRepository extends JpaRepository<TourPackage, Long> {
 
-    List<TourPackage> findByRemainingSpotsGreaterThan(Integer remainingSpots);
-    List<TourPackage> findByTourPackageState(TourPackageState tourPackageState);
-
     @Query("SELECT t FROM TourPackage t WHERE " +
             "(:#{#tourPackageFilters.name} IS NULL OR LOWER(t.name) LIKE LOWER(CONCAT('%', :#{#tourPackageFilters.name}, '%'))) AND " +
             "(:#{#tourPackageFilters.destiny} IS NULL OR LOWER(t.destiny) LIKE LOWER(CONCAT('%', :#{#tourPackageFilters.destiny}, '%'))) AND " +
@@ -23,6 +20,6 @@ public interface TourPackageRepository extends JpaRepository<TourPackage, Long> 
             "(:#{#tourPackageFilters.maxPrice} IS NULL OR t.price <= :#{#tourPackageFilters.maxPrice}) AND " +
             "(:#{#tourPackageFilters.startDate} IS NULL OR t.startDate >= :#{#tourPackageFilters.startDate}) AND " +
             "(:#{#tourPackageFilters.endDate} IS NULL OR t.endDate <= :#{#tourPackageFilters.endDate}) AND " +
-            "(:#{#tourPackageFilters.minSpots} IS NULL OR t.remainingSpots >= :#{#tourPackageFilters.minSpots})")
+            "(:#{#tourPackageFilters.state} IS NULL OR t.tourPackageState = :#{#tourPackageFilters.state})")
     List<TourPackage> findCustomFilters(@Param("tourPackageFilters") TourPackageFilters tourPackageFilters);
 }

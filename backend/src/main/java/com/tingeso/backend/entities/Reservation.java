@@ -31,7 +31,9 @@ public class Reservation {
     @Enumerated(EnumType.STRING)
     private ReservationState reservationState;
 
+    @Column(precision = 12, scale = 2)
     private BigDecimal price;
+
     private LocalDateTime reservationDate;
     private LocalDateTime paymentDate;
     private Integer passengersAmount;

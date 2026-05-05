@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -21,21 +20,6 @@ public class TransactionService {
 
     private final TransactionRepository transactionRepository;
     private final ReservationRepository reservationRepository;
-
-    @Transactional(readOnly = true)
-    public List<Transaction> findAll() {
-        return transactionRepository.findAll();
-    }
-
-    @Transactional(readOnly = true)
-    public Transaction findById(Long id) {
-        return transactionRepository.findById(id).orElse(null);
-    }
-
-    @Transactional(readOnly = true)
-    public Transaction findByReservationId(Long reservationId) {
-        return transactionRepository.findByReservationId(reservationId);
-    }
 
     @Transactional
     public Transaction create(Transaction transaction) {

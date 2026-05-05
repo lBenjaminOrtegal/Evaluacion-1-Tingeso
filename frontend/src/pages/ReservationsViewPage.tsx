@@ -405,7 +405,7 @@ function ReservationsViewPage() {
                 <Stack direction="horizontal" gap={2}>
                   <Button
                     variant="outline-danger"
-                    className="w-25"
+                    className="w-25 fw-semibold"
                     onClick={() => handleCancelShow(reservation)}
                   >
                     Cancelar reserva

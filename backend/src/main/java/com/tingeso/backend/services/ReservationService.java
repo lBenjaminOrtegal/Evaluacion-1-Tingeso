@@ -1,5 +1,6 @@
 package com.tingeso.backend.services;
 
+import com.tingeso.backend.dto.DiscountDataDTO;
 import com.tingeso.backend.entities.*;
 import com.tingeso.backend.repositories.PromotionRepository;
 import com.tingeso.backend.repositories.ReservationRepository;
@@ -15,6 +16,9 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.tingeso.backend.configuration.DiscountConfig.COMBINABLE_DISCOUNTS;
+import static com.tingeso.backend.configuration.DiscountConfig.MAX_DISCOUNT_LIMIT;
 
 @Service
 @RequiredArgsConstructor
@@ -41,16 +45,6 @@ public class ReservationService {
     }
 
     @Transactional(readOnly = true)
-    public List<Reservation> findByTourPackageId(Long tourPackageId) {
-        return reservationRepository.findByTourPackageId(tourPackageId);
-    }
-
-    @Transactional(readOnly = true)
-    public List<Reservation> findByReservationState(ReservationState state) {
-        return reservationRepository.findByReservationState(state);
-    }
-
-    @Transactional(readOnly = true)
     public List<Reservation> findDateReports(LocalDateTime startDate, LocalDateTime endDate) {
         if (startDate.isAfter(endDate)) {
             throw new RuntimeException("Start date is after end date");
@@ -62,6 +56,9 @@ public class ReservationService {
 
     @Transactional(readOnly = true)
     public List<List<Reservation>> findRanking(LocalDateTime startDate, LocalDateTime endDate, Integer order, String type) {
+        if (startDate.isAfter(endDate)) {
+            throw new RuntimeException("Start date is after end date");
+        }
         List<Reservation> reservations = findDateReports(startDate, endDate);
         Map<Long, List<Reservation>> groupedByPackage = reservations
                 .stream()
@@ -123,9 +120,11 @@ public class ReservationService {
         if (reservationSaved.getReservationState() == ReservationState.CANCELED) {
             throw new IllegalStateException("Cannot modify reservation because reservation is already canceled.");
         }
-        if (reservation.getReservationState() == ReservationState.CONFIRMED) {
+        if (reservation.getReservationState() == ReservationState.CONFIRMED
+                || reservation.getReservationState() == ReservationState.COMPLETED
+                || reservation.getReservationState() == ReservationState.IN_PROGRESS) {
             if (reservationSaved.getPaymentDate() != null) {
-                reservationSaved.setReservationState(ReservationState.CONFIRMED);
+                reservationSaved.setReservationState(reservation.getReservationState());
             } else {
                 throw new IllegalStateException("Cannot modify reservation because payment date is null (not transaction done).");
             }
@@ -165,18 +164,15 @@ public class ReservationService {
         reservationRepository.deleteById(id);
     }
 
-    public DiscountData calculatePrice(Reservation reservation) {
+    public DiscountDataDTO calculatePrice(Reservation reservation) {
         TourPackage tourPackage = tourPackageRepository.findById(reservation.getTourPackageId())
                 .orElseThrow(() -> new EntityNotFoundException("Tour package not found with id: " + reservation.getTourPackageId()));
 
-        final boolean combinableDiscounts = true;
-        final BigDecimal maxDiscountLimit = new BigDecimal("0.25"); // change this
-
-        DiscountData discountData = new DiscountData();
+        DiscountDataDTO discountDataDTO = new DiscountDataDTO();
         BigDecimal basePrice = tourPackage.getPrice();
         BigDecimal totalWithoutDiscounts = basePrice.multiply(BigDecimal.valueOf(reservation.getPassengersAmount()));
 
-        discountData.setTotalAmountWithoutDiscounts(totalWithoutDiscounts.setScale(2, RoundingMode.HALF_UP));
+        discountDataDTO.setTotalAmountWithoutDiscounts(totalWithoutDiscounts.setScale(2, RoundingMode.HALF_UP));
 
         BigDecimal passengersDiscountPercentage = discountService.calculatePassengersAmountDiscount(reservation.getPassengersAmount());
         BigDecimal frequentClientDiscountPercentage = discountService.calculateFrequentClientDiscount(reservation.getUserEmail());
@@ -186,13 +182,13 @@ public class ReservationService {
                 .map(Promotion::getDiscount)
                 .orElse(BigDecimal.ZERO);
 
-        discountData.setPassengersDiscount(totalWithoutDiscounts.multiply(passengersDiscountPercentage).setScale(2, RoundingMode.HALF_UP));
-        discountData.setFrequentClientDiscount(totalWithoutDiscounts.multiply(frequentClientDiscountPercentage).setScale(2, RoundingMode.HALF_UP));
-        discountData.setMultiplePackagesDiscount(totalWithoutDiscounts.multiply(multiplePackagesDiscountPercentage).setScale(2, RoundingMode.HALF_UP));
-        discountData.setPromotionDiscount(totalWithoutDiscounts.multiply(promotionDiscountPercentage).setScale(2, RoundingMode.HALF_UP));
+        discountDataDTO.setPassengersDiscount(totalWithoutDiscounts.multiply(passengersDiscountPercentage).setScale(2, RoundingMode.HALF_UP));
+        discountDataDTO.setFrequentClientDiscount(totalWithoutDiscounts.multiply(frequentClientDiscountPercentage).setScale(2, RoundingMode.HALF_UP));
+        discountDataDTO.setMultiplePackagesDiscount(totalWithoutDiscounts.multiply(multiplePackagesDiscountPercentage).setScale(2, RoundingMode.HALF_UP));
+        discountDataDTO.setPromotionDiscount(totalWithoutDiscounts.multiply(promotionDiscountPercentage).setScale(2, RoundingMode.HALF_UP));
 
         BigDecimal accumulatedPercentage;
-        if (combinableDiscounts) {
+        if (COMBINABLE_DISCOUNTS) {
             accumulatedPercentage = passengersDiscountPercentage.add(frequentClientDiscountPercentage)
                     .add(multiplePackagesDiscountPercentage)
                     .add(promotionDiscountPercentage);
@@ -202,23 +198,23 @@ public class ReservationService {
                     .max(promotionDiscountPercentage);
         }
 
-        if (accumulatedPercentage.subtract(maxDiscountLimit).compareTo(BigDecimal.ZERO) > 0) {
-            accumulatedPercentage = maxDiscountLimit;
-            discountData.setMaxDiscount(true);
+        if (accumulatedPercentage.subtract(MAX_DISCOUNT_LIMIT).compareTo(BigDecimal.ZERO) > 0) {
+            accumulatedPercentage = MAX_DISCOUNT_LIMIT;
+            discountDataDTO.setMaxDiscount(true);
         } else {
-            discountData.setMaxDiscount(false);
+            discountDataDTO.setMaxDiscount(false);
         }
 
         BigDecimal finalDiscountAmount = totalWithoutDiscounts.multiply(accumulatedPercentage);
         BigDecimal totalWithDiscounts = totalWithoutDiscounts.subtract(finalDiscountAmount);
 
-        discountData.setDiscountAmount(finalDiscountAmount.setScale(0, RoundingMode.HALF_UP));
-        discountData.setTotalAmount(totalWithDiscounts.setScale(0, RoundingMode.HALF_UP));
+        discountDataDTO.setDiscountAmount(finalDiscountAmount.setScale(0, RoundingMode.HALF_UP));
+        discountDataDTO.setTotalAmount(totalWithDiscounts.setScale(0, RoundingMode.HALF_UP));
 
-        return discountData;
+        return discountDataDTO;
     }
 
-    @Scheduled(fixedRate = 3600000)
+    @Scheduled(fixedRate = 3600000 * 24)
     @Transactional
     public void cancelExpiredReservations() {
         LocalDateTime limit = LocalDateTime.now().minusHours(24);

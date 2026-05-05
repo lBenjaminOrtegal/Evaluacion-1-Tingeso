@@ -1,4 +1,4 @@
-package com.tingeso.backend.entities;
+package com.tingeso.backend.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class DiscountData {
+public class DiscountDataDTO {
     private BigDecimal totalAmount;
     private BigDecimal discountAmount;
     private BigDecimal totalAmountWithoutDiscounts;

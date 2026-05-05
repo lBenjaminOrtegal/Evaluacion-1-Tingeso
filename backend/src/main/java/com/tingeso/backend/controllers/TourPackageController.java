@@ -40,7 +40,7 @@ public class TourPackageController {
             @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(required = false) LocalDate startDate,
             @RequestParam(required = false) LocalDate endDate,
-            @RequestParam(required = false) Integer minSpots) {
+            @RequestParam(required = false) TourPackageState state) {
         TourPackageFilters tourPackageFilters = new TourPackageFilters(
                 name,
                 destiny,
@@ -50,21 +50,9 @@ public class TourPackageController {
                 maxPrice,
                 startDate,
                 endDate,
-                minSpots
+                state
         );
         return ResponseEntity.ok(tourPackageService.findCustomFilters(tourPackageFilters));
-    }
-
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    @GetMapping("/spots/{remainingSpots}")
-    public ResponseEntity<List<TourPackage>> findByRemainingSpots(@PathVariable Integer remainingSpots) {
-        return ResponseEntity.ok(tourPackageService.findByRemainingSpots(remainingSpots));
-    }
-
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    @GetMapping("/state/{state}")
-    public ResponseEntity<List<TourPackage>> findByState(@PathVariable String state) {
-        return ResponseEntity.ok(tourPackageService.findByTourPackageState(state));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -82,6 +70,7 @@ public class TourPackageController {
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Boolean> delete(@PathVariable Long id) {
-        return ResponseEntity.ok(tourPackageService.deleteById(id));
+        tourPackageService.deleteById(id);
+        return ResponseEntity.ok().build();
     }
 }

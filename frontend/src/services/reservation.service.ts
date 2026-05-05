@@ -13,14 +13,6 @@ const getByEmail = (email: string) => {
   return httpClient.get(`/api/reservations/user-email/${email}`);
 };
 
-const getByTourPackageId = (id: number) => {
-  return httpClient.get(`/api/reservations/tour-package-id/${id}`);
-};
-
-const getByReservationState = (state: string) => {
-  return httpClient.get(`/api/reservations/state/${state}`);
-};
-
 const getDateReports = (startDate: string, endDate: string) => {
   const start = `${startDate}T00:00:00`;
   const end = `${endDate}T23:59:59`;
@@ -62,8 +54,6 @@ export default {
   getAll,
   getById,
   getByEmail,
-  getByTourPackageId,
-  getByReservationState,
   getDateReports,
   getRanking,
   create,

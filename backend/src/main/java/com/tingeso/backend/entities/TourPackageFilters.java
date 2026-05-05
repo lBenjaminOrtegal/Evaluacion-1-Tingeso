@@ -12,5 +12,5 @@ public record TourPackageFilters(
         BigDecimal maxPrice,
         LocalDate startDate,
         LocalDate endDate,
-        Integer minSpots
+        TourPackageState state
 ) {}

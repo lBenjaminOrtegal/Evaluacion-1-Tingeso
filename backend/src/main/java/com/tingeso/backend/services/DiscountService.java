@@ -9,47 +9,42 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import static com.tingeso.backend.configuration.DiscountConfig.*;
+
 @Service
 @RequiredArgsConstructor
 public class DiscountService {
 
     private final ReservationRepository reservationRepository;
 
-    // only if passengersAmount >= 4
-    // discount = 5%
+    // only if passengersAmount >= MIN_PASSENGERS
+    // discount = DISCOUNT_PASSENGERS
     public BigDecimal calculatePassengersAmountDiscount(Integer passengersAmount) {
-        final int MIN_PASSENGERS = 4;
-        final BigDecimal DISCOUNT_PCT = new BigDecimal("0.05"); // 5%
         return (passengersAmount != null && passengersAmount >= MIN_PASSENGERS)
-                ? DISCOUNT_PCT
+                ? DISCOUNT_PASSENGERS
                 : BigDecimal.ZERO;
     }
 
-    // only if reservationsAmount >= 3
-    // discount = 10%
+    // only if reservationsAmount >= MIN_RESERVATIONS
+    // discount = DISCOUNT_RESERVATIONS
     public BigDecimal calculateFrequentClientDiscount(String userEmail) {
-        final int MIN_RESERVATIONS = 3;
-        final BigDecimal DISCOUNT_PCT = new BigDecimal("0.10"); // 10%
         long validReservationsCount = reservationRepository.findByUserEmail(userEmail)
                 .stream()
                 .filter(this::isCompletedReservation)
                 .count();
-        return validReservationsCount >= MIN_RESERVATIONS ? DISCOUNT_PCT : BigDecimal.ZERO;
+        return validReservationsCount >= MIN_RESERVATIONS ? DISCOUNT_RESERVATIONS : BigDecimal.ZERO;
     }
 
-    // only if reservationsAmount >= 3 && today - days is after payment date
-    // discount = 10%
+    // only if reservationsAmount >= MIN_RESERVATIONS_MULTIPLE_PACKAGES && today - DAYS_WINDOW is after payment date
+    // discount = DISCOUNT_MULTIPLE_PACKAGES
     public BigDecimal calculateMultiplePackagesDiscount(String userEmail) {
-        final int DAYS_WINDOW = 7;
-        final int MIN_RESERVATIONS = 3;
-        final BigDecimal DISCOUNT_PCT = new BigDecimal("0.15"); // 15%
         LocalDate limitDate = LocalDate.now().minusDays(DAYS_WINDOW);
         long recentReservationsCount = reservationRepository.findByUserEmail(userEmail)
                 .stream()
                 .filter(this::isCompletedReservation)
                 .filter(res -> res.getReservationDate().toLocalDate().isAfter(limitDate))
                 .count();
-        return recentReservationsCount >= MIN_RESERVATIONS ? DISCOUNT_PCT : BigDecimal.ZERO;
+        return recentReservationsCount >= MIN_RESERVATIONS_MULTIPLE_PACKAGES ? DISCOUNT_MULTIPLE_PACKAGES : BigDecimal.ZERO;
     }
 
     private boolean isCompletedReservation(Reservation reservation) {

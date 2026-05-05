@@ -1,8 +1,7 @@
 package com.tingeso.backend.controllers;
 
-import com.tingeso.backend.entities.DiscountData;
+import com.tingeso.backend.dto.DiscountDataDTO;
 import com.tingeso.backend.entities.Reservation;
-import com.tingeso.backend.entities.ReservationState;
 import com.tingeso.backend.services.ReservationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -38,18 +37,6 @@ public class ReservationController {
         return ResponseEntity.ok(reservationService.findByUserEmail(userEmail));
     }
 
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    @GetMapping("/tour-package-id/{id}")
-    public ResponseEntity<List<Reservation>> findByTourPackageId(@PathVariable Long id) {
-        return ResponseEntity.ok(reservationService.findByTourPackageId(id));
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/state/{reservationState}")
-    public ResponseEntity<List<Reservation>> findByReservationState(@PathVariable ReservationState reservationState) {
-        return ResponseEntity.ok(reservationService.findByReservationState(reservationState));
-    }
-
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/reports/date")
     public ResponseEntity<List<Reservation>> findDateReports(@RequestParam LocalDateTime startDate, @RequestParam LocalDateTime endDate) {
@@ -83,7 +70,7 @@ public class ReservationController {
 
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @PostMapping("/calculate-price")
-    public ResponseEntity<DiscountData> calculatePrice(@RequestBody Reservation reservation) {
+    public ResponseEntity<DiscountDataDTO> calculatePrice(@RequestBody Reservation reservation) {
         return ResponseEntity.ok(reservationService.calculatePrice(reservation));
     }
 }
