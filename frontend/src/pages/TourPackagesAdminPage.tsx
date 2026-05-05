@@ -77,8 +77,8 @@ function TourPackagesAdminPage() {
         <Button
           as={Link as any}
           to="/tour-packages-admin/add"
-          variant="success"
-          className="ms-auto"
+          variant="outline-success"
+          className="ms-auto fw-semibold"
         >
           Agregar paquete
         </Button>

@@ -6,16 +6,14 @@ import com.tingeso.backend.repositories.ReservationRepository;
 import com.tingeso.backend.repositories.TourPackageRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -218,5 +216,23 @@ public class ReservationService {
         discountData.setTotalAmount(totalWithDiscounts.setScale(0, RoundingMode.HALF_UP));
 
         return discountData;
+    }
+
+    @Scheduled(fixedRate = 3600000)
+    @Transactional
+    public void cancelExpiredReservations() {
+        LocalDateTime limit = LocalDateTime.now().minusHours(24);
+        List<Reservation> expiredReservations = reservationRepository
+                .findByReservationStateAndReservationDateBefore(ReservationState.PENDING, limit);
+
+        if (!expiredReservations.isEmpty()) {
+            expiredReservations.forEach(reservation -> {
+                reservation.setReservationState(ReservationState.CANCELED);
+                Optional<TourPackage> tourPackage = tourPackageRepository.findById(reservation.getTourPackageId());
+                tourPackage.ifPresent(aPackage -> aPackage.setRemainingSpots(aPackage.getRemainingSpots() + reservation.getPassengersAmount()));
+                tourPackage.ifPresent(aPackage -> aPackage.setTourPackageState(TourPackageState.AVAILABLE));
+            });
+            reservationRepository.saveAll(expiredReservations);
+        }
     }
 }

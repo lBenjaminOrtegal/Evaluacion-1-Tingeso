@@ -87,7 +87,7 @@ function ReservationsAdminPage() {
         <tbody>
           {reservations.length <= 0 && (
             <tr>
-              <td colSpan={7} className="text-center py-4">
+              <td colSpan={8} className="text-center py-4">
                 No hay reservas registradas.
               </td>
             </tr>

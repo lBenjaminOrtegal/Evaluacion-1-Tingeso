@@ -27,4 +27,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
             @Param("end") LocalDateTime end,
             @Param("excludedState") ReservationState excludedState
     );
+
+    List<Reservation> findByReservationStateAndReservationDateBefore(ReservationState reservationState, LocalDateTime limit);
 }
