@@ -47,7 +47,7 @@ public class DiscountService {
         return recentReservationsCount >= MIN_RESERVATIONS_MULTIPLE_PACKAGES ? DISCOUNT_MULTIPLE_PACKAGES : BigDecimal.ZERO;
     }
 
-    private boolean isCompletedReservation(Reservation reservation) {
+    public boolean isCompletedReservation(Reservation reservation) {
         return reservation.getReservationState() != ReservationState.PENDING &&
                 reservation.getReservationState() != ReservationState.CANCELED;
     }

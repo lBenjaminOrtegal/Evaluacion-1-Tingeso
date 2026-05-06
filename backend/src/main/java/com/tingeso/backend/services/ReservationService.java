@@ -220,15 +220,12 @@ public class ReservationService {
         LocalDateTime limit = LocalDateTime.now().minusHours(24);
         List<Reservation> expiredReservations = reservationRepository
                 .findByReservationStateAndReservationDateBefore(ReservationState.PENDING, limit);
-
-        if (!expiredReservations.isEmpty()) {
-            expiredReservations.forEach(reservation -> {
-                reservation.setReservationState(ReservationState.CANCELED);
-                Optional<TourPackage> tourPackage = tourPackageRepository.findById(reservation.getTourPackageId());
-                tourPackage.ifPresent(aPackage -> aPackage.setRemainingSpots(aPackage.getRemainingSpots() + reservation.getPassengersAmount()));
-                tourPackage.ifPresent(aPackage -> aPackage.setTourPackageState(TourPackageState.AVAILABLE));
-            });
-            reservationRepository.saveAll(expiredReservations);
-        }
+        expiredReservations.forEach(reservation -> {
+            reservation.setReservationState(ReservationState.CANCELED);
+            Optional<TourPackage> tourPackage = tourPackageRepository.findById(reservation.getTourPackageId());
+            tourPackage.ifPresent(aPackage -> aPackage.setRemainingSpots(aPackage.getRemainingSpots() + reservation.getPassengersAmount()));
+            tourPackage.ifPresent(aPackage -> aPackage.setTourPackageState(TourPackageState.AVAILABLE));
+        });
+        reservationRepository.saveAll(expiredReservations);
     }
 }

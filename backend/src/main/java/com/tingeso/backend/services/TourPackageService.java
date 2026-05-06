@@ -45,9 +45,7 @@ public class TourPackageService {
             throw new IllegalStateException("Start date must be before end date");
         }
         if (tourPackage.getInitialSpots() <= 0) {
-            if (tourPackage.getTourPackageState() == TourPackageState.AVAILABLE) {
-                throw new IllegalStateException("Initial spots must be greater than zero");
-            }
+            throw new IllegalStateException("Initial spots must be greater than zero");
         }
         tourPackage.calculateDuration();
         return tourPackageRepository.save(tourPackage);
