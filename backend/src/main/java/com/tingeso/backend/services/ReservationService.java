@@ -208,8 +208,8 @@ public class ReservationService {
         BigDecimal finalDiscountAmount = totalWithoutDiscounts.multiply(accumulatedPercentage);
         BigDecimal totalWithDiscounts = totalWithoutDiscounts.subtract(finalDiscountAmount);
 
-        discountDataDTO.setDiscountAmount(finalDiscountAmount.setScale(0, RoundingMode.HALF_UP));
-        discountDataDTO.setTotalAmount(totalWithDiscounts.setScale(0, RoundingMode.HALF_UP));
+        discountDataDTO.setDiscountAmount(finalDiscountAmount.setScale(2, RoundingMode.HALF_UP));
+        discountDataDTO.setTotalAmount(totalWithDiscounts.setScale(2, RoundingMode.HALF_UP));
 
         return discountDataDTO;
     }

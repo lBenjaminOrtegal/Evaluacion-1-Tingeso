@@ -64,19 +64,14 @@ public class TourPackageService {
         existingPackage.setServices(tourPackage.getServices());
         existingPackage.setConditions(tourPackage.getConditions());
         existingPackage.setRestrictions(tourPackage.getRestrictions());
+        int occupiedSpots = existingPackage.getInitialSpots() - existingPackage.getRemainingSpots();
         if (!reservations.isEmpty()) { // if had reservations
-            int occupiedSpots = existingPackage.getInitialSpots() - existingPackage.getRemainingSpots();
-            if (tourPackage.getInitialSpots() >= occupiedSpots) {
-                existingPackage.setInitialSpots(tourPackage.getInitialSpots());
-                existingPackage.setRemainingSpots(tourPackage.getInitialSpots() - occupiedSpots);
-                if (existingPackage.getRemainingSpots() <= 0) {
-                    existingPackage.setTourPackageState(TourPackageState.SOLD_OUT);
-                } else {
-                    existingPackage.setTourPackageState(TourPackageState.AVAILABLE);
-                }
+            if (tourPackage.getInitialSpots() < occupiedSpots) {
+                throw new IllegalStateException("New initial spots are less tan occupied spots.");
             }
             else {
-                throw new IllegalStateException("Cannot modify because reservations have already been set.");
+                existingPackage.setInitialSpots(tourPackage.getInitialSpots());
+                existingPackage.setRemainingSpots(tourPackage.getInitialSpots() - occupiedSpots);
             }
         } else {
             existingPackage.setStartDate(tourPackage.getStartDate());
@@ -84,7 +79,11 @@ public class TourPackageService {
             existingPackage.calculateDuration();
             existingPackage.setInitialSpots(tourPackage.getInitialSpots());
             existingPackage.setRemainingSpots(existingPackage.getRemainingSpots());
-            existingPackage.setTourPackageState(tourPackage.getTourPackageState());
+        }
+        if (existingPackage.getRemainingSpots() <= 0) {
+            existingPackage.setTourPackageState(TourPackageState.SOLD_OUT);
+        } else {
+            existingPackage.setTourPackageState(TourPackageState.AVAILABLE);
         }
         return tourPackageRepository.save(existingPackage);
     }
@@ -96,6 +95,7 @@ public class TourPackageService {
         List<Reservation> reservations = reservationRepository.findByTourPackageId(id);
         if (reservations.isEmpty()) {
             tourPackageRepository.delete(tourPackage);
+            return;
         }
         tourPackage.setTourPackageState(TourPackageState.NOT_AVAILABLE);
         tourPackageRepository.save(tourPackage);

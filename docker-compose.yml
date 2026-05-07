@@ -12,8 +12,6 @@ services:
       - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/timezone:ro
 
   keycloak:
     image: quay.io/keycloak/keycloak:24.0.0
@@ -29,8 +27,6 @@ services:
     volumes:
       - ./imports:/opt/keycloak/data/import/
       - keycloak_data:/opt/keycloak/data/h2/
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/timezone:ro
     depends_on:
       - db
 
@@ -50,9 +46,7 @@ services:
       DB_PASSWORD: pass_tingeso
       KEYCLOAK_CLIENT_ID: tingeso-1-backend
       KEYCLOAK_CLIENT_SECRET: 1GByryhvJ3lSoxYJBG64ARQnaZOOgjUK
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/timezone:ro
+      TZ: America/Santiago
     depends_on:
       - db
       - keycloak
@@ -69,9 +63,7 @@ services:
       VITE_KEYCLOAK_PORT: 9090
       VITE_KEYCLOAK_REALM: tingeso-1-realm
       VITE_KEYCLOAK_CLIENT_ID: tingeso-1-frontend
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/timezone:ro
+      TZ: America/Santiago
     depends_on:
       - backend
 
