@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -227,5 +228,27 @@ public class ReservationService {
             tourPackage.ifPresent(aPackage -> aPackage.setTourPackageState(TourPackageState.AVAILABLE));
         });
         reservationRepository.saveAll(expiredReservations);
+    }
+
+    @Scheduled(fixedRate = 3600000 * 24)
+    @Transactional
+    public void setReservationsState() {
+        List<Reservation> reservations = reservationRepository
+                .findAll();
+        reservations.forEach(reservation -> {
+            if (reservation.getReservationState() == ReservationState.CONFIRMED ||
+                    reservation.getReservationState() == ReservationState.IN_PROGRESS) {
+                Optional<TourPackage> tourPackage = tourPackageRepository.findById(reservation.getTourPackageId());
+                if (tourPackage.isPresent()) {
+                    if (tourPackage.get().getStartDate().isAfter(LocalDate.now())) {
+                        reservation.setReservationState(ReservationState.IN_PROGRESS);
+                    }
+                    else if (tourPackage.get().getEndDate().isAfter(LocalDate.now())) {
+                        reservation.setReservationState(ReservationState.COMPLETED);
+                    }
+                }
+            }
+        });
+        reservationRepository.saveAll(reservations);
     }
 }
