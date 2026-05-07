@@ -1,10 +1,15 @@
-FROM gradle:8.14-jdk21 AS build
+FROM eclipse-temurin:21-jdk-alpine AS build
 WORKDIR /app
 
-COPY build.gradle settings.gradle ./
-COPY src ./src
+COPY gradlew .
+COPY gradle gradle
+COPY build.gradle .
+COPY settings.gradle .
 
-RUN gradle clean bootJar -x test --no-daemon
+RUN ./gradlew dependencies --no-daemon
+
+COPY src src
+RUN ./gradlew bootJar -x test --no-daemon
 
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
@@ -13,4 +18,4 @@ COPY --from=build /app/build/libs/*.jar tingeso-1-backend.jar
 
 EXPOSE 8080
 
-CMD ["java", "-jar", "/app/my-spring-boot-app.jar"]
+ENTRYPOINT ["java", "-jar", "tingeso-1-backend.jar"]

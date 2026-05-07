@@ -1,0 +1,80 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_DATABASE: tingeso_db
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_USER: user_tingeso
+      MYSQL_PASSWORD: pass_tingeso
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.0
+    container_name: keycloak
+    command: start-dev --import-realm
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HTTP_PORT: 8080
+      KC_HOSTNAME_STRICT: "false"
+    ports:
+      - "9090:8080"
+    volumes:
+      - ./imports:/opt/keycloak/data/import/
+      - keycloak_data:/opt/keycloak/data/h2/
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    depends_on:
+      - db
+
+  backend:
+    build: ./backend
+    container_name: backend-1
+    restart: on-failure
+    ports:
+      - "8080:8080"
+    environment:
+      HOST: keycloak
+      PORT: 8080
+      KEYCLOAK_PORT: 8080
+      KEYCLOAK_REALM: tingeso-1-realm
+      DB_URL: jdbc:mysql://db:3306/tingeso_db
+      DB_USER: user_tingeso
+      DB_PASSWORD: pass_tingeso
+      KEYCLOAK_CLIENT_ID: tingeso-1-backend
+      KEYCLOAK_CLIENT_SECRET: 1GByryhvJ3lSoxYJBG64ARQnaZOOgjUK
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    depends_on:
+      - db
+      - keycloak
+
+  frontend:
+    build: 
+      context: ./frontend
+    container_name: frontend-1
+    ports:
+      - "8008:8008"
+    environment:
+      VITE_BACKEND_SERVER: localhost
+      VITE_BACKEND_PORT: 8080
+      VITE_KEYCLOAK_PORT: 9090
+      VITE_KEYCLOAK_REALM: tingeso-1-realm
+      VITE_KEYCLOAK_CLIENT_ID: tingeso-1-frontend
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    depends_on:
+      - backend
+
+volumes:
+  db_data:
+  keycloak_data:
