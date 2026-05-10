@@ -11,10 +11,14 @@ RUN chmod +x gradlew
 RUN ./gradlew dependencies --no-daemon
 
 COPY src src
+
 RUN ./gradlew bootJar -x test --no-daemon
 
 FROM eclipse-temurin:21-jre-alpine
+
 WORKDIR /app
+
+ENV TZ=America/Santiago
 
 COPY --from=build /app/build/libs/*.jar tingeso-1-backend.jar
 

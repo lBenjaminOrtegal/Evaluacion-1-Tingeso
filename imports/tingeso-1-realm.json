@@ -849,6 +849,7 @@
           "config": {
             "user.session.note": "client_id",
             "introspection.token.claim": "true",
+            "userinfo.token.claim": "true",
             "id.token.claim": "true",
             "access.token.claim": "true",
             "claim.name": "client_id",
@@ -864,6 +865,7 @@
           "config": {
             "user.session.note": "clientAddress",
             "introspection.token.claim": "true",
+            "userinfo.token.claim": "true",
             "id.token.claim": "true",
             "access.token.claim": "true",
             "claim.name": "clientAddress",
@@ -879,6 +881,7 @@
           "config": {
             "user.session.note": "clientHost",
             "introspection.token.claim": "true",
+            "userinfo.token.claim": "true",
             "id.token.claim": "true",
             "access.token.claim": "true",
             "claim.name": "clientHost",
@@ -905,18 +908,18 @@
       "clientId": "tingeso-1-frontend",
       "name": "",
       "description": "",
-      "rootUrl": "http://localhost:8008",
-      "adminUrl": "http://localhost:8008",
-      "baseUrl": "http://localhost:8008",
+      "rootUrl": "http://localhost:8070",
+      "adminUrl": "http://localhost:8070",
+      "baseUrl": "http://localhost:8070",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "http://localhost:8008/*"
+        "http://localhost:8070/*"
       ],
       "webOrigins": [
-        "http://localhost:8008"
+        "http://localhost:8070"
       ],
       "notBefore": 0,
       "bearerOnly": false,
@@ -931,7 +934,7 @@
       "attributes": {
         "oidc.ciba.grant.enabled": "false",
         "backchannel.logout.session.required": "true",
-        "post.logout.redirect.uris": "http://localhost:8008/*",
+        "post.logout.redirect.uris": "http://localhost:8070/*",
         "oauth2.device.authorization.grant.enabled": "false",
         "display.on.consent.screen": "false",
         "backchannel.logout.revoke.offline.tokens": "false"
@@ -1373,9 +1376,10 @@
           "consentRequired": false,
           "config": {
             "included.client.audience": "tingeso-1-backend",
+            "introspection.token.claim": "true",
+            "userinfo.token.claim": "false",
             "id.token.claim": "false",
             "lightweight.claim": "false",
-            "introspection.token.claim": "true",
             "access.token.claim": "true"
           }
         }
@@ -1593,12 +1597,12 @@
           "allowed-protocol-mapper-types": [
             "saml-user-property-mapper",
             "oidc-address-mapper",
-            "oidc-sha256-pairwise-sub-mapper",
             "saml-user-attribute-mapper",
+            "oidc-usermodel-attribute-mapper",
+            "oidc-full-name-mapper",
             "saml-role-list-mapper",
             "oidc-usermodel-property-mapper",
-            "oidc-full-name-mapper",
-            "oidc-usermodel-attribute-mapper"
+            "oidc-sha256-pairwise-sub-mapper"
           ]
         }
       },
@@ -1618,14 +1622,14 @@
         "subComponents": {},
         "config": {
           "allowed-protocol-mapper-types": [
-            "oidc-sha256-pairwise-sub-mapper",
+            "oidc-usermodel-attribute-mapper",
             "oidc-full-name-mapper",
+            "saml-role-list-mapper",
             "saml-user-attribute-mapper",
             "oidc-address-mapper",
-            "oidc-usermodel-attribute-mapper",
-            "saml-user-property-mapper",
+            "oidc-sha256-pairwise-sub-mapper",
             "oidc-usermodel-property-mapper",
-            "saml-role-list-mapper"
+            "saml-user-property-mapper"
           ]
         }
       },

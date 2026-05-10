@@ -1,23 +1,25 @@
-# build
 FROM node:lts-alpine AS build-stage
 
 WORKDIR /app
 
 COPY package*.json ./
 RUN npm install
-
 COPY . .
+
+ARG VITE_BACKEND_SERVER
+ARG VITE_BACKEND_PORT
+ARG VITE_KEYCLOAK_SERVER
+ARG VITE_KEYCLOAK_PORT
+ARG VITE_KEYCLOAK_REALM
+ARG VITE_KEYCLOAK_CLIENT_ID
+
 RUN npm run build
 
-# nginx
 FROM nginx:alpine
-
 RUN rm -rf /usr/share/nginx/html/*
+COPY --from=build-stage /app/dist /usr/share/nginx/html
 
-COPY dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-COPY nginx.conf /etc/nginx/nginx.conf
-
-EXPOSE 8008
-
+EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]

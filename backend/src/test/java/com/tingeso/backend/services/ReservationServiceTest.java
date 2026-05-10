@@ -17,7 +17,6 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.*;
 
-import static com.tingeso.backend.configuration.DiscountConfig.COMBINABLE_DISCOUNTS;
 import static com.tingeso.backend.configuration.DiscountConfig.MAX_DISCOUNT_LIMIT;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -423,8 +422,8 @@ class ReservationServiceTest {
         when(promotionRepository.findByTourPackageId(10L)).thenReturn(Optional.empty());
         DiscountDataDTO result = reservationService.calculatePrice(reservation);
         assertTrue(result.getMaxDiscount());
-        BigDecimal expectedDiscount = BigDecimal.valueOf(2000).multiply(MAX_DISCOUNT_LIMIT).setScale(0, RoundingMode.HALF_UP);
-        BigDecimal expectedTotal = BigDecimal.valueOf(2000).subtract(expectedDiscount).setScale(0, RoundingMode.HALF_UP);
+        BigDecimal expectedDiscount = BigDecimal.valueOf(2000).multiply(MAX_DISCOUNT_LIMIT).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal expectedTotal = BigDecimal.valueOf(2000).subtract(expectedDiscount).setScale(2, RoundingMode.HALF_UP);
         assertEquals(expectedTotal, result.getTotalAmount());
     }
 

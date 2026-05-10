@@ -215,7 +215,7 @@ public class ReservationService {
         return discountDataDTO;
     }
 
-    @Scheduled(fixedRate = 3600000 * 24)
+    @Scheduled(cron = "0 0 0 * * *")
     @Transactional
     public void cancelExpiredReservations() {
         LocalDateTime limit = LocalDateTime.now().minusHours(24);
@@ -230,22 +230,20 @@ public class ReservationService {
         reservationRepository.saveAll(expiredReservations);
     }
 
-    @Scheduled(fixedRate = 3600000 * 24)
+    @Scheduled(cron = "0 0 0 * * *")
     @Transactional
     public void setReservationsState() {
-        List<Reservation> reservations = reservationRepository
-                .findAll();
+        LocalDate today = LocalDate.now();
+        List<Reservation> reservations = reservationRepository.findAll();
         reservations.forEach(reservation -> {
-            if (reservation.getReservationState() == ReservationState.CONFIRMED ||
-                    reservation.getReservationState() == ReservationState.IN_PROGRESS) {
-                Optional<TourPackage> tourPackage = tourPackageRepository.findById(reservation.getTourPackageId());
-                if (tourPackage.isPresent()) {
-                    if (tourPackage.get().getStartDate().isAfter(LocalDate.now())) {
-                        reservation.setReservationState(ReservationState.IN_PROGRESS);
-                    }
-                    else if (tourPackage.get().getEndDate().isAfter(LocalDate.now())) {
-                        reservation.setReservationState(ReservationState.COMPLETED);
-                    }
+            Optional<TourPackage> tourPackage = tourPackageRepository.findById(reservation.getTourPackageId());
+            if (tourPackage.isPresent()) {
+                if ((today.isEqual(tourPackage.get().getStartDate()) || today.isAfter(tourPackage.get().getStartDate()))
+                        && today.isBefore(tourPackage.get().getEndDate())) {
+                    reservation.setReservationState(ReservationState.IN_PROGRESS);
+                }
+                else if (today.isEqual(tourPackage.get().getEndDate()) || today.isAfter(tourPackage.get().getEndDate())) {
+                    reservation.setReservationState(ReservationState.COMPLETED);
                 }
             }
         });

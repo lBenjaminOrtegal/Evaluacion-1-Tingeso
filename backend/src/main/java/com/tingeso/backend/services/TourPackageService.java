@@ -101,7 +101,7 @@ public class TourPackageService {
         tourPackageRepository.save(tourPackage);
     }
 
-    @Scheduled(fixedRate = 3600000 * 24)
+    @Scheduled(cron = "0 0 0 * * *")
     @Transactional
     public void cancelStartedTourPackages() {
         List<TourPackage> tourPackageList = tourPackageRepository.findAll();
