@@ -138,7 +138,18 @@ function PaymentPage() {
           <Modal.Title>Pago Exitoso</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          Tu transacción ha sido confirmada correctamente.
+          <Stack>
+            <p className="fw-semibold text-muted">
+              Tu transacción ha sido confirmada correctamente.
+            </p>
+            <p className="fw-medium">
+              Monto total pagado:{" "}
+              <span className="text-success">
+                {formatCurrency(reservation.price)}
+              </span>
+            </p>
+            <p className="fw-medium">Método de pago: Tarjeta de crédito</p>
+          </Stack>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="primary" onClick={() => navigate("/reservations")}>

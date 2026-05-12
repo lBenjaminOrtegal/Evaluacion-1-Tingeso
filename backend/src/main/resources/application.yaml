@@ -26,6 +26,6 @@ spring:
           keycloak:
             issuer-uri: http://${KEYCLOAK_SERVER}:${KEYCLOAK_PORT}/realms/${KEYCLOAK_REALM}
       resourceserver:
-        jwt:
-          issuer-uri: ${KEYCLOAK_ISSUER_URI}
+        jwt: # change to ${KEYCLOAK_ISSUER_URI} if dont work
+          issuer-uri: http://${KEYCLOAK_SERVER}:${KEYCLOAK_PORT}/realms/${KEYCLOAK_REALM}
           jwk-set-uri: http://${KEYCLOAK_SERVER}:${KEYCLOAK_PORT}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/certs

@@ -24,7 +24,11 @@ function NavbarComponent() {
             </Nav.Link>
 
             {keycloak.hasRealmRole("ADMIN") && (
-              <Nav.Link as={Link} to="/tour-packages-admin" className="text-decoration-underline">
+              <Nav.Link
+                as={Link}
+                to="/tour-packages-admin"
+                className="text-decoration-underline"
+              >
                 Administrar paquetes
               </Nav.Link>
             )}
@@ -34,31 +38,43 @@ function NavbarComponent() {
             </Nav.Link>
 
             {keycloak.hasRealmRole("ADMIN") && (
-              <Nav.Link as={Link} to="/reservations-admin" className="text-decoration-underline">
+              <Nav.Link
+                as={Link}
+                to="/reservations-admin"
+                className="text-decoration-underline"
+              >
                 Administrar reservas
               </Nav.Link>
             )}
 
             {keycloak.hasRealmRole("ADMIN") && (
-              <Nav.Link as={Link} to="/reports" className="text-decoration-underline">
+              <Nav.Link
+                as={Link}
+                to="/reports"
+                className="text-decoration-underline"
+              >
                 Reportes
+              </Nav.Link>
+            )}
+
+            {keycloak.authenticated && (
+              <Nav.Link as={Link} to="/profile">
+                Perfil
               </Nav.Link>
             )}
           </Nav>
 
           <Nav>
             {keycloak.authenticated ? (
-              <Button onClick={() => keycloak.logout()} 
-              variant="outline-danger"
-              className="fw-semibold"
+              <Button
+                onClick={() => keycloak.logout()}
+                variant="outline-danger"
+                className="fw-semibold"
               >
                 Cerrar Sesión
               </Button>
             ) : (
-              <Button
-                onClick={() => keycloak.login()}
-                className="fw-semibold"
-              >
+              <Button onClick={() => keycloak.login()} className="fw-semibold">
                 Iniciar Sesión
               </Button>
             )}

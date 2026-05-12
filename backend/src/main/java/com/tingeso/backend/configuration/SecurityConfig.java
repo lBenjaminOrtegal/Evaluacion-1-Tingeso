@@ -1,5 +1,6 @@
 package com.tingeso.backend.configuration;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -19,12 +20,15 @@ import java.util.Map;
 @EnableMethodSecurity
 public class SecurityConfig {
 
+    @Value("${ALLOWED_ORIGINS:http://localhost:5173,http://localhost:8008,http://localhost:8070,http://localhost:80}")
+    private List<String> allowedOrigins;
+
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .cors(cors -> cors.configurationSource(request -> {
                     var config = new org.springframework.web.cors.CorsConfiguration();
-                    config.setAllowedOrigins(List.of("http://localhost:8008", "http://localhost:8070", "http://localhost:80"));
+                    config.setAllowedOrigins(allowedOrigins);
                     config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                     config.setAllowedHeaders(List.of("*"));
                     config.setAllowCredentials(true);

@@ -13,7 +13,17 @@ services:
     networks:
       - backend-network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "user_tingeso", "-ppass_tingeso"]
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "user_tingeso",
+          "-ppass_tingeso",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -31,7 +41,7 @@ services:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
       KEYCLOAK_HTTP_ENABLED: "true"
-      KEYCLOAK_HOSTNAME_URL: http://localhost:9090
+      KEYCLOAK_HOSTNAME_URL: http://localhost:9090 # change localhost for ec2 public ip
       KEYCLOAK_HOSTNAME_ADMIN_URL: http://localhost:9090
       KEYCLOAK_PROXY: edge
     ports:
@@ -55,7 +65,7 @@ services:
       KEYCLOAK_SERVER: keycloak
       KEYCLOAK_PORT: 8080
       KEYCLOAK_REALM: tingeso-1-realm
-      KEYCLOAK_ISSUER_URI: http://localhost:9090/realms/tingeso-1-realm
+      KEYCLOAK_ISSUER_URI: http://localhost:9090/realms/tingeso-1-realm # change localhost for ec2 public ip
       DB_URL: jdbc:mysql://db:3306/tingeso_db
       DB_USER: user_tingeso
       DB_PASSWORD: pass_tingeso
@@ -72,15 +82,15 @@ services:
       keycloak:
         condition: service_started
 
-  backend2:
-    <<: *backend_config
-    container_name: backend2
-    hostname: backend2
-
-  backend3:
-    <<: *backend_config
-    container_name: backend3
-    hostname: backend3
+  #  backend2:
+  #    <<: *backend_config
+  #    container_name: backend2
+  #    hostname: backend2
+  #
+  #  backend3:
+  #    <<: *backend_config
+  #    container_name: backend3
+  #    hostname: backend3
 
   frontend1: &frontend_config
     container_name: frontend1
@@ -88,9 +98,9 @@ services:
     build:
       context: ./frontend
       args:
-        VITE_BACKEND_SERVER: localhost
+        VITE_BACKEND_SERVER: localhost # change localhost for ec2 public ip
         VITE_BACKEND_PORT: "8080"
-        VITE_KEYCLOAK_SERVER: localhost
+        VITE_KEYCLOAK_SERVER: localhost # change localhost for ec2 public ip
         VITE_KEYCLOAK_PORT: "9090"
         VITE_KEYCLOAK_REALM: tingeso-1-realm
         VITE_KEYCLOAK_CLIENT_ID: tingeso-1-frontend
@@ -102,15 +112,15 @@ services:
       - nginx-backend
       - keycloak
 
-  frontend2:
-    <<: *frontend_config
-    container_name: frontend2
-    hostname: frontend2
-
-  frontend3:
-    <<: *frontend_config
-    container_name: frontend3
-    hostname: frontend3
+  #  frontend2:
+  #    <<: *frontend_config
+  #    container_name: frontend2
+  #    hostname: frontend2
+  #
+  #  frontend3:
+  #    <<: *frontend_config
+  #    container_name: frontend3
+  #    hostname: frontend3
 
   nginx-backend:
     image: nginx:latest
@@ -125,8 +135,8 @@ services:
       - frontend-network
     depends_on:
       - backend1
-      - backend2
-      - backend3
+  #      - backend2
+  #      - backend3
 
   nginx-frontend:
     image: nginx:latest
@@ -140,8 +150,8 @@ services:
       - frontend-network
     depends_on:
       - frontend1
-      - frontend2
-      - frontend3
+#      - frontend2
+#      - frontend3
 
 networks:
   frontend-network:
