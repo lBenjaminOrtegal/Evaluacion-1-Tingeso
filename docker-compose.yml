@@ -41,10 +41,11 @@ services:
       db:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:7080/health/ready"]
+      test: ["CMD", "/opt/keycloak/bin/kc.sh", "show-config"]
       interval: 15s
-      timeout: 2s
+      timeout: 5s
       retries: 15
+      start_period: 60s
     networks:
       - backend-network
 
@@ -64,7 +65,7 @@ services:
       KEYCLOAK_CLIENT_ID: tingeso-1-backend
       KEYCLOAK_CLIENT_SECRET: Z5uuNMVdXMPEvzUkYm5jjwadC50gmakA
       TZ: America/Santiago
-      ALLOWED_ORIGINS: http://localhost:8070,http://localhost:5173,http://3.22.172.245:8070
+      ALLOWED_ORIGINS: http://localhost:8070,http://3.16.44.233,http://3.16.44.233:8070 # change for server ip
     expose:
       - "8080"
     networks:
@@ -91,7 +92,7 @@ services:
     build:
       context: ./frontend
       args:
-        VITE_BACKEND_SERVER: localhost   # change for server ip
+        VITE_BACKEND_SERVER: localhost  # change for server ip
         VITE_BACKEND_PORT: "8080"
         VITE_KEYCLOAK_SERVER: localhost  # change for server ip
         VITE_KEYCLOAK_PORT: "7080"

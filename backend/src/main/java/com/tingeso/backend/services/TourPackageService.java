@@ -78,7 +78,7 @@ public class TourPackageService {
             existingPackage.setEndDate(tourPackage.getEndDate());
             existingPackage.calculateDuration();
             existingPackage.setInitialSpots(tourPackage.getInitialSpots());
-            existingPackage.setRemainingSpots(existingPackage.getRemainingSpots());
+            existingPackage.setRemainingSpots(tourPackage.getInitialSpots());
         }
         if (existingPackage.getRemainingSpots() <= 0) {
             existingPackage.setTourPackageState(TourPackageState.SOLD_OUT);

@@ -11,7 +11,10 @@ createRoot(document.getElementById('root')!).render(
     authClient={keycloak}
     initOptions={{
       checkLoginIframe: false,
-      pkceMethod: 'S256',
+      // pkceMethod: 'S256',
+    }}
+    onEvent={(event, error) => {
+      console.log('Keycloak event:', event, error)
     }}
   >
     <BrowserRouter>
