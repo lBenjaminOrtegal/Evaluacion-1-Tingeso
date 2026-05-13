@@ -7,7 +7,13 @@ import { ReactKeycloakProvider } from '@react-keycloak/web';
 import keycloak from './services/keycloak.ts';
 
 createRoot(document.getElementById('root')!).render(
-  <ReactKeycloakProvider authClient={keycloak}>
+  <ReactKeycloakProvider 
+    authClient={keycloak}
+    initOptions={{
+      checkLoginIframe: false,
+      pkceMethod: 'S256',
+    }}
+  >
     <BrowserRouter>
       <App />
     </BrowserRouter>

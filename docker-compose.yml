@@ -1,8 +1,6 @@
 services:
   db:
-    image: mysql:8.0
-    container_name: mysql-db
-    restart: always
+    image: mysql:lts
     environment:
       MYSQL_DATABASE: tingeso_db
       MYSQL_ROOT_PASSWORD: root_password
@@ -10,49 +8,45 @@ services:
       MYSQL_PASSWORD: pass_tingeso
     volumes:
       - db_data:/var/lib/mysql
-    networks:
-      - backend-network
     healthcheck:
-      test:
-        [
-          "CMD",
-          "mysqladmin",
-          "ping",
-          "-h",
-          "localhost",
-          "-u",
-          "user_tingeso",
-          "-ppass_tingeso",
-        ]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
       timeout: 5s
       retries: 5
-
-  keycloak:
-    image: quay.io/keycloak/keycloak:24.0.0
-    container_name: keycloak
-    restart: always
-    command: start-dev --import-realm
-    environment:
-      KEYCLOAK_DB: mysql
-      KEYCLOAK_DB_URL: jdbc:mysql://db:3306/tingeso_db
-      KEYCLOAK_DB_USERNAME: user_tingeso
-      KEYCLOAK_DB_PASSWORD: pass_tingeso
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
-      KEYCLOAK_HTTP_ENABLED: "true"
-      KEYCLOAK_HOSTNAME_URL: http://localhost:9090 # change localhost for ec2 public ip
-      KEYCLOAK_HOSTNAME_ADMIN_URL: http://localhost:9090
-      KEYCLOAK_PROXY: edge
-    ports:
-      - "9090:8080"
-    volumes:
-      - ./imports:/opt/keycloak/data/import
     networks:
       - backend-network
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.2.4
+    container_name: keycloak
+    restart: always
+    command: start-dev --import-realm --http-port 7080
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_DB: mysql
+      KC_DB_URL: jdbc:mysql://db:3306/tingeso_db
+      KC_DB_USERNAME: user_tingeso
+      KC_DB_PASSWORD: pass_tingeso
+      KC_PROXY_HEADERS: xforwarded
+      KC_HTTP_ENABLED: true
+      KC_HEALTH_ENABLED: true
+      KC_HOSTNAME: http://localhost:7080    # change localhost for server ip
+      KC_HOSTNAME_BACKCHANNEL_DYNAMIC: true
+    ports:
+      - "7080:7080"
+    volumes:
+      - ./imports:/opt/keycloak/data/import
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7080/health/ready"]
+      interval: 15s
+      timeout: 2s
+      retries: 15
+    networks:
+      - backend-network
 
   backend1: &backend_config
     container_name: backend1
@@ -62,16 +56,15 @@ services:
     restart: on-failure
     environment:
       PORT: 8080
-      KEYCLOAK_SERVER: keycloak
-      KEYCLOAK_PORT: 8080
-      KEYCLOAK_REALM: tingeso-1-realm
-      KEYCLOAK_ISSUER_URI: http://localhost:9090/realms/tingeso-1-realm # change localhost for ec2 public ip
       DB_URL: jdbc:mysql://db:3306/tingeso_db
       DB_USER: user_tingeso
       DB_PASSWORD: pass_tingeso
+      KEYCLOAK_ISSUER_URI: http://localhost:7080/realms/tingeso-1-realm   # change localhost for server ip
+      KEYCLOAK_JWK_SET_URI: http://keycloak:7080/realms/tingeso-1-realm/protocol/openid-connect/certs
       KEYCLOAK_CLIENT_ID: tingeso-1-backend
       KEYCLOAK_CLIENT_SECRET: Z5uuNMVdXMPEvzUkYm5jjwadC50gmakA
       TZ: America/Santiago
+      ALLOWED_ORIGINS: http://localhost:8070,http://localhost:5173,http://3.22.172.245:8070
     expose:
       - "8080"
     networks:
@@ -80,7 +73,7 @@ services:
       db:
         condition: service_healthy
       keycloak:
-        condition: service_started
+        condition: service_healthy
 
   #  backend2:
   #    <<: *backend_config
@@ -98,10 +91,10 @@ services:
     build:
       context: ./frontend
       args:
-        VITE_BACKEND_SERVER: localhost # change localhost for ec2 public ip
+        VITE_BACKEND_SERVER: localhost   # change for server ip
         VITE_BACKEND_PORT: "8080"
-        VITE_KEYCLOAK_SERVER: localhost # change localhost for ec2 public ip
-        VITE_KEYCLOAK_PORT: "9090"
+        VITE_KEYCLOAK_SERVER: localhost  # change for server ip
+        VITE_KEYCLOAK_PORT: "7080"
         VITE_KEYCLOAK_REALM: tingeso-1-realm
         VITE_KEYCLOAK_CLIENT_ID: tingeso-1-frontend
     image: benjaminoq/ev-1-tingeso-frontend
@@ -150,8 +143,8 @@ services:
       - frontend-network
     depends_on:
       - frontend1
-#      - frontend2
-#      - frontend3
+  #      - frontend2
+  #      - frontend3
 
 networks:
   frontend-network:

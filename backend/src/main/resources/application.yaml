@@ -1,31 +1,24 @@
 server:
-  port: ${PORT}
+  port: ${PORT:8080}
   forward-headers-strategy: framework
+
 spring:
   application:
     name: backend
+
   datasource:
     url: ${DB_URL}
     username: ${DB_USER}
     password: ${DB_PASSWORD}
+
   jpa:
     show-sql: true
     hibernate:
       ddl-auto: update
+
   security:
     oauth2:
-      client:
-        registration:
-          keycloak:
-            client-id: ${KEYCLOAK_CLIENT_ID}
-            client-secret: ${KEYCLOAK_CLIENT_SECRET}
-            scope: openid,profile,email
-            authorization-grant-type: authorization_code
-            redirect-uri: "{baseUrl}/login/oauth2/code/keycloak"
-        provider:
-          keycloak:
-            issuer-uri: http://${KEYCLOAK_SERVER}:${KEYCLOAK_PORT}/realms/${KEYCLOAK_REALM}
       resourceserver:
-        jwt: # change to ${KEYCLOAK_ISSUER_URI} if dont work
-          issuer-uri: http://${KEYCLOAK_SERVER}:${KEYCLOAK_PORT}/realms/${KEYCLOAK_REALM}
-          jwk-set-uri: http://${KEYCLOAK_SERVER}:${KEYCLOAK_PORT}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/certs
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI}
+          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI}
