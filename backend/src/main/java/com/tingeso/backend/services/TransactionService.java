@@ -28,6 +28,9 @@ public class TransactionService {
         if (reservation.getReservationState() == ReservationState.CANCELED) {
             throw new IllegalStateException("Cannot create transaction because reservation is canceled.");
         }
+        if (reservation.getPaymentDate() != null) {
+            throw new IllegalStateException("Cannot create transaction because payment is already set.");
+        }
         if (transaction.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalStateException("Cannot create transaction because amount is less or equal to 0.");
         }

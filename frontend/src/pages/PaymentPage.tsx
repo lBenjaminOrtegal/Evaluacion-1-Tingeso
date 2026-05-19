@@ -133,22 +133,20 @@ function PaymentPage() {
 
   return (
     <Container className="py-4">
-      <Modal show={show} onHide={() => setShow(false)}>
+      <Modal show={show} onHide={() => navigate("/reservations")}>
         <Modal.Header closeButton>
-          <Modal.Title>Pago Exitoso</Modal.Title>
+          <Modal.Title>Transacción Confirmada</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Stack>
-            <p className="fw-semibold text-muted">
-              Tu transacción ha sido confirmada correctamente.
-            </p>
-            <p className="fw-medium">
-              Monto total pagado:{" "}
-              <span className="text-success">
+            <p className="fw-medium text-muted">
+              Monto de la transacción:{" "}
+              <span className="fw-semibold text-dark">
                 {formatCurrency(reservation.price)}
               </span>
             </p>
-            <p className="fw-medium">Método de pago: Tarjeta de crédito</p>
+            <p className="fw-medium text-muted">Método de pago: <span className="fw-semibold text-dark">Tarjeta de crédito</span></p>
+            <p className="fw-medium text-muted">Fecha de la transacción: <span className="fw-semibold text-dark">{new Date().toLocaleDateString('es-ES')}</span></p>
           </Stack>
         </Modal.Body>
         <Modal.Footer>

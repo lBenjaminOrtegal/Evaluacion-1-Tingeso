@@ -15,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -79,6 +80,17 @@ class TransactionServiceTest {
             transactionService.create(validTransaction);
         });
         assertTrue(exception.getMessage().contains("reservation is canceled"));
+        verify(transactionRepository, never()).save(any());
+    }
+
+    @Test
+    void createTransaction_ThrowsIllegalStateException_WhenReservationAlreadyPaid() {
+        validReservation.setPaymentDate(LocalDateTime.now());
+        when(reservationRepository.findById(1L)).thenReturn(Optional.of(validReservation));
+        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
+            transactionService.create(validTransaction);
+        });
+        assertTrue(exception.getMessage().contains("Cannot create transaction because payment is already set."));
         verify(transactionRepository, never()).save(any());
     }
 
