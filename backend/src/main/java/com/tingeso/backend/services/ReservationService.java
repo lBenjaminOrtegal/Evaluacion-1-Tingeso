@@ -158,6 +158,10 @@ public class ReservationService {
                 .orElseThrow(() -> new RuntimeException("Reservation not found with id: " + id));
         TourPackage tourPackage = tourPackageRepository.findById(reservationSaved.getTourPackageId())
                 .orElseThrow(() -> new RuntimeException("Tour package not found with id: " + reservationSaved.getTourPackageId()));
+        if (reservationSaved.getReservationState() == ReservationState.CANCELED) {
+            reservationRepository.deleteById(id);
+            return;
+        }
         tourPackage.setRemainingSpots(tourPackage.getRemainingSpots() + reservationSaved.getPassengersAmount());
         tourPackage.setTourPackageState(TourPackageState.AVAILABLE);
         tourPackageRepository.save(tourPackage);
