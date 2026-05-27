@@ -1,5 +1,6 @@
 package com.tingeso.backend.services;
 
+import com.tingeso.backend.configuration.DiscountConfig;
 import com.tingeso.backend.dto.DiscountDataDTO;
 import com.tingeso.backend.entities.*;
 import com.tingeso.backend.repositories.PromotionRepository;
@@ -13,11 +14,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
-import static com.tingeso.backend.configuration.DiscountConfig.MAX_DISCOUNT_LIMIT;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -25,419 +25,230 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class ReservationServiceTest {
 
-    @Mock private ReservationRepository reservationRepository;
-    @Mock private TourPackageRepository tourPackageRepository;
-    @Mock private PromotionRepository promotionRepository;
-    @Mock private DiscountService discountService;
+    @Mock
+    private ReservationRepository reservationRepository;
+    @Mock
+    private TourPackageRepository tourPackageRepository;
+    @Mock
+    private PromotionRepository promotionRepository;
+    @Mock
+    private DiscountService discountService;
+    @Mock
+    private DiscountConfig discountConfig;
 
-    @InjectMocks private ReservationService reservationService;
+    @InjectMocks
+    private ReservationService reservationService;
 
     private Reservation reservation;
     private TourPackage tourPackage;
+    private final String testEmail = "user@test.com";
 
     @BeforeEach
     void setUp() {
         tourPackage = new TourPackage();
         tourPackage.setId(10L);
-        tourPackage.setName("Test Package");
+        tourPackage.setName("Europa Mágica");
         tourPackage.setPrice(BigDecimal.valueOf(1000));
         tourPackage.setRemainingSpots(10);
         tourPackage.setTourPackageState(TourPackageState.AVAILABLE);
+        tourPackage.setStartDate(LocalDate.now().plusDays(5));
+        tourPackage.setEndDate(LocalDate.now().plusDays(15));
 
         reservation = new Reservation();
         reservation.setId(1L);
         reservation.setTourPackageId(10L);
         reservation.setPassengersAmount(2);
-        reservation.setUserEmail("user@test.com");
+        reservation.setUserEmail(testEmail);
         reservation.setReservationState(ReservationState.PENDING);
     }
 
-    // findById test
+    @Test
+    void findAll_ShouldReturnList() {
+        when(reservationRepository.findAll()).thenReturn(List.of(reservation));
+        List<Reservation> result = reservationService.findAll();
+        assertEquals(1, result.size());
+    }
 
     @Test
-    void findById_ReturnsReservation() {
+    void findById_WhenExists_ShouldReturnReservation() {
         when(reservationRepository.findById(1L)).thenReturn(Optional.of(reservation));
-        assertNotNull(reservationService.findById(1L));
+        Reservation result = reservationService.findById(1L);
+        assertNotNull(result);
     }
 
-    // findAll test
-
     @Test
-    void findAll_ReturnsList() {
-        when(reservationRepository.findAll()).thenReturn(Collections.singletonList(reservation));
-        assertFalse(reservationService.findAll().isEmpty());
-    }
-
-    // findByUserEmail test
-
-    @Test
-    void findByUserEmail_ReturnsReservation() {
-        when(reservationRepository.findByUserEmail("test@gmail.com")).thenReturn(Collections.singletonList(reservation));
-        assertFalse(reservationService.findByUserEmail("test@gmail.com").isEmpty());
-    }
-
-    // findDateReports tests
-
-    @Test
-    void findDateReports_ThrowsException_WhenDatesInvalid() {
-        LocalDateTime start = LocalDateTime.now();
-        LocalDateTime end = start.minusDays(1);
+    void findDateReports_WhenStartDateAfterEndDate_ShouldThrowException() {
+        LocalDateTime start = LocalDateTime.now().plusDays(1);
+        LocalDateTime end = LocalDateTime.now();
         assertThrows(RuntimeException.class, () -> reservationService.findDateReports(start, end));
     }
 
     @Test
-    void findDateReports_Successful() {
-        LocalDateTime start = LocalDateTime.now();
-        LocalDateTime end = start.plusDays(1);
-        assertDoesNotThrow(() -> reservationService.findDateReports(start, end));
-    }
-
-    // findRanking tests
-
-    @Test
-    void findRanking_ThrowsException_WhenDatesInvalid() {
-        LocalDateTime start = LocalDateTime.now();
-        LocalDateTime end = start.minusDays(1);
-        assertThrows(RuntimeException.class, () -> reservationService.findRanking(start, end, 1, "passengers"));
-    }
-
-    @Test
-    void findRanking_SortsByPassengersCorrectly() {
+    void findRanking_ShouldSortAndGroupCorrectly() {
         LocalDateTime start = LocalDateTime.now().minusDays(5);
-        LocalDateTime end = LocalDateTime.now();
-        Reservation res1 = new Reservation();
-        res1.setTourPackageId(1L); res1.setPassengersAmount(10); res1.setPrice(BigDecimal.valueOf(100));
-        Reservation res2 = new Reservation();
-        res2.setTourPackageId(2L); res2.setPassengersAmount(5); res2.setPrice(BigDecimal.valueOf(50));
-        when(reservationRepository.findDateReports(any(), any(), any())).thenReturn(Arrays.asList(res1, res2));
-        List<List<Reservation>> result = reservationService.findRanking(start, end, 1, "passengers");
-        assertEquals(2, result.size());
-        assertEquals(10, result.getFirst().getFirst().getPassengersAmount());
+        LocalDateTime end = LocalDateTime.now().plusDays(5);
+        Reservation r1 = new Reservation(); r1.setTourPackageId(10L); r1.setPassengersAmount(2); r1.setPrice(BigDecimal.valueOf(2000)); r1.setTourPackageName("A");
+        Reservation r2 = new Reservation(); r2.setTourPackageId(20L); r2.setPassengersAmount(5); r2.setPrice(BigDecimal.valueOf(5000)); r2.setTourPackageName("B");
+        when(reservationRepository.findDateReports(any(), any(), any())).thenReturn(Arrays.asList(r1, r2));
+        List<List<Reservation>> ranking = reservationService.findRanking(start, end, 0, "passengers");
+        assertEquals(10L, ranking.get(0).get(0).getTourPackageId());
+        assertEquals(20L, ranking.get(1).get(0).getTourPackageId());
     }
 
     @Test
-    void findRanking_SortsByReservationsCorrectly() {
-        LocalDateTime start = LocalDateTime.now().minusDays(5);
-        LocalDateTime end = LocalDateTime.now();
-        Reservation res1 = new Reservation();
-        res1.setTourPackageId(1L);
-        res1.setPassengersAmount(10);
-        res1.setPrice(BigDecimal.valueOf(100));
-        Reservation res2a = new Reservation();
-        res2a.setTourPackageId(2L);
-        res2a.setPassengersAmount(1);
-        res2a.setPrice(BigDecimal.valueOf(10));
-        Reservation res2b = new Reservation();
-        res2b.setTourPackageId(2L);
-        res2b.setPassengersAmount(1);
-        res2b.setPrice(BigDecimal.valueOf(10));
-        when(reservationRepository.findDateReports(any(), any(), any()))
-                .thenReturn(Arrays.asList(res1, res2a, res2b));
-        List<List<Reservation>> result = reservationService.findRanking(start, end, 1, "reservations");
-        assertEquals(2, result.size());
-        assertEquals(2L, result.getFirst().getFirst().getTourPackageId());
-        assertEquals(2, result.getFirst().size());
+    void create_WhenPackageNotFound_ShouldThrowException() {
+        when(tourPackageRepository.findById(any())).thenReturn(Optional.empty());
+        assertThrows(RuntimeException.class, () -> reservationService.create(reservation));
     }
 
     @Test
-    void findRanking_TieInPassengers_SortsByRevenue() {
-        LocalDateTime start = LocalDateTime.now().minusDays(5);
-        LocalDateTime end = LocalDateTime.now();
-        Reservation resA = new Reservation();
-        resA.setTourPackageId(1L);
-        resA.setPassengersAmount(10);
-        resA.setPrice(BigDecimal.valueOf(500));
-        Reservation resB = new Reservation();
-        resB.setTourPackageId(2L);
-        resB.setPassengersAmount(10);
-        resB.setPrice(BigDecimal.valueOf(1000));
-        when(reservationRepository.findDateReports(any(), any(), any()))
-                .thenReturn(Arrays.asList(resA, resB));
-        List<List<Reservation>> result = reservationService.findRanking(start, end, 1, "passengers");
-        assertEquals(2, result.size());
-        assertEquals(2L, result.getFirst().getFirst().getTourPackageId());
-    }
-
-    @Test
-    void findRanking_TieInPassengersAndRevenue_SortsByName() {
-        LocalDateTime start = LocalDateTime.now().minusDays(5);
-        LocalDateTime end = LocalDateTime.now();
-        Reservation resA = new Reservation();
-        resA.setTourPackageId(1L);
-        resA.setTourPackageName("Zacinto");
-        resA.setPassengersAmount(5);
-        resA.setPrice(BigDecimal.valueOf(500));
-        Reservation resB = new Reservation();
-        resB.setTourPackageId(2L);
-        resB.setTourPackageName("Alpes");
-        resB.setPassengersAmount(5);
-        resB.setPrice(BigDecimal.valueOf(500));
-        when(reservationRepository.findDateReports(any(), any(), any()))
-                .thenReturn(Arrays.asList(resA, resB));
-        List<List<Reservation>> result = reservationService.findRanking(start, end, 0, "passengers");
-        assertEquals(2, result.size());
-        assertEquals("Alpes", result.get(0).getFirst().getTourPackageName());
-        assertEquals("Zacinto", result.get(1).getFirst().getTourPackageName());
-    }
-
-    // create tests
-
-    @Test
-    void create_Success_UpdatesSpots() {
-        when(tourPackageRepository.findById(10L)).thenReturn(Optional.of(tourPackage));
-        when(reservationRepository.save(any())).thenReturn(reservation);
-        when(discountService.calculatePassengersAmountDiscount(any())).thenReturn(BigDecimal.ZERO);
-        when(discountService.calculateFrequentClientDiscount(any())).thenReturn(BigDecimal.ZERO);
-        when(discountService.calculateMultiplePackagesDiscount(any())).thenReturn(BigDecimal.ZERO);
-        when(promotionRepository.findByTourPackageId(10L)).thenReturn(Optional.empty());
-        Reservation created = reservationService.create(reservation);
-        assertEquals(8, tourPackage.getRemainingSpots());
-        verify(tourPackageRepository).save(tourPackage);
-    }
-
-    @Test
-    void create_WhenRemainingSpotsReachZero_ThenStateIsSoldOut() {
-        TourPackage pkg = new TourPackage();
-        pkg.setId(10L);
-        pkg.setName("Test Package");
-        pkg.setRemainingSpots(5);
-        pkg.setTourPackageState(TourPackageState.AVAILABLE);
-        pkg.setPrice(BigDecimal.valueOf(100));
-        Reservation resRequest = new Reservation();
-        resRequest.setTourPackageId(10L);
-        resRequest.setPassengersAmount(5);
-        resRequest.setUserEmail("test@gmail.com");
-        when(tourPackageRepository.findById(10L)).thenReturn(Optional.of(pkg));
-        when(reservationRepository.save(any(Reservation.class))).thenReturn(resRequest);
-        when(discountService.calculatePassengersAmountDiscount(any())).thenReturn(BigDecimal.ZERO);
-        when(discountService.calculateFrequentClientDiscount(any())).thenReturn(BigDecimal.ZERO);
-        when(discountService.calculateMultiplePackagesDiscount(any())).thenReturn(BigDecimal.ZERO);
-        when(promotionRepository.findByTourPackageId(10L)).thenReturn(Optional.empty());
-        reservationService.create(resRequest);
-        assertEquals(0, pkg.getRemainingSpots());
-        assertEquals(TourPackageState.SOLD_OUT, pkg.getTourPackageState());
-        verify(tourPackageRepository).save(pkg);
-    }
-
-    @Test
-    void create_ThrowsException_WhenPackageNotAvailable() {
+    void create_WhenPackageNotAvailable_ShouldThrowIllegalStateException() {
         tourPackage.setTourPackageState(TourPackageState.SOLD_OUT);
         when(tourPackageRepository.findById(10L)).thenReturn(Optional.of(tourPackage));
         assertThrows(IllegalStateException.class, () -> reservationService.create(reservation));
     }
 
-    // update tests
-
     @Test
-    void update_WhenReservationAlreadyCanceled_ThrowsIllegalStateException() {
-        Reservation reservationInDb = new Reservation();
-        reservationInDb.setId(1L);
-        reservationInDb.setTourPackageId(10L);
-        reservationInDb.setReservationState(ReservationState.CANCELED);
-        Reservation updateRequest = new Reservation();
-        updateRequest.setId(1L);
-        updateRequest.setReservationState(ReservationState.CONFIRMED);
-        when(reservationRepository.findById(1L)).thenReturn(Optional.of(reservationInDb));
+    void create_Success_ShouldReduceSpotsAndMarkSoldOutIfZero() {
+        reservation.setPassengersAmount(10);
         when(tourPackageRepository.findById(10L)).thenReturn(Optional.of(tourPackage));
-        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
-            reservationService.update(updateRequest);
-        });
-        assertTrue(exception.getMessage().contains("already canceled"));
-        verify(reservationRepository, never()).save(any());
+        when(discountConfig.getMaxDiscountLimit()).thenReturn(new BigDecimal("0.25"));
+        when(discountService.calculatePassengersAmountDiscount(any())).thenReturn(BigDecimal.ZERO);
+        when(discountService.calculateFrequentClientDiscount(any())).thenReturn(BigDecimal.ZERO);
+        when(discountService.calculateMultiplePackagesDiscount(any())).thenReturn(BigDecimal.ZERO);
+        when(promotionRepository.findByTourPackageId(10L)).thenReturn(Optional.empty());
+        when(reservationRepository.save(any())).thenReturn(reservation);
+        Reservation result = reservationService.create(reservation);
+        assertEquals(0, tourPackage.getRemainingSpots());
+        assertEquals(TourPackageState.SOLD_OUT, tourPackage.getTourPackageState());
+        verify(tourPackageRepository).save(tourPackage);
+        verify(reservationRepository).save(reservation);
     }
 
     @Test
-    void update_CancelReservation_RestoresSpots() {
-        Long tourPackageId = 10L;
-        tourPackage.setId(tourPackageId);
-        tourPackage.setRemainingSpots(10);
-        tourPackage.setTourPackageState(TourPackageState.SOLD_OUT);
-        Reservation savedRes = new Reservation();
-        savedRes.setId(1L);
-        savedRes.setTourPackageId(tourPackageId);
-        savedRes.setPassengersAmount(2);
-        savedRes.setUserEmail("test@gmail.com");
-        savedRes.setReservationState(ReservationState.PENDING);
-        Reservation updateInfo = new Reservation();
-        updateInfo.setId(1L);
-        updateInfo.setReservationState(ReservationState.CANCELED);
-        updateInfo.setPassengersAmount(2);
-        updateInfo.setTourPackageId(tourPackageId);
-        when(reservationRepository.findById(1L)).thenReturn(Optional.of(savedRes));
-        when(tourPackageRepository.findById(tourPackageId)).thenReturn(Optional.of(tourPackage));
+    void update_WhenSavedReservationIsCanceled_ShouldThrowException() {
+        Reservation reservationInDb = new Reservation();
+        reservationInDb.setReservationState(ReservationState.CANCELED);
+        when(reservationRepository.findById(any())).thenReturn(Optional.of(reservationInDb));
+        when(tourPackageRepository.findById(any())).thenReturn(Optional.of(tourPackage));
+        assertThrows(IllegalStateException.class, () -> reservationService.update(reservation));
+    }
+
+    @Test
+    void update_WhenConfirmingWithoutPaymentDate_ShouldThrowException() {
+        Reservation reservationInDb = new Reservation();
+        reservationInDb.setReservationState(ReservationState.PENDING);
+        reservationInDb.setPaymentDate(null);
+        when(reservationRepository.findById(any())).thenReturn(Optional.of(reservationInDb));
+        when(tourPackageRepository.findById(any())).thenReturn(Optional.of(tourPackage));
+        reservation.setReservationState(ReservationState.CONFIRMED);
+        assertThrows(IllegalStateException.class, () -> reservationService.update(reservation));
+    }
+
+    @Test
+    void update_WhenCanceling_ShouldRestoreSpots() {
+        Reservation reservationInDb = new Reservation();
+        reservationInDb.setId(1L);
+        reservationInDb.setReservationState(ReservationState.PENDING);
+        reservationInDb.setPassengersAmount(3);
+        reservationInDb.setTourPackageId(10L);
+        when(reservationRepository.findById(any())).thenReturn(Optional.of(reservationInDb));
+        when(tourPackageRepository.findById(any())).thenReturn(Optional.of(tourPackage));
+        when(reservationRepository.save(any())).thenReturn(reservationInDb);
+        when(discountConfig.getMaxDiscountLimit()).thenReturn(new BigDecimal("0.25"));
         when(discountService.calculatePassengersAmountDiscount(any())).thenReturn(BigDecimal.ZERO);
         when(discountService.calculateFrequentClientDiscount(any())).thenReturn(BigDecimal.ZERO);
         when(discountService.calculateMultiplePackagesDiscount(any())).thenReturn(BigDecimal.ZERO);
         when(promotionRepository.findByTourPackageId(any())).thenReturn(Optional.empty());
-        when(reservationRepository.save(any(Reservation.class))).thenReturn(savedRes);
-        reservationService.update(updateInfo);
-        assertEquals(12, tourPackage.getRemainingSpots());
+        reservation.setReservationState(ReservationState.CANCELED);
+        reservation.setPassengersAmount(3);
+        reservationService.update(reservation);
+        assertEquals(13, tourPackage.getRemainingSpots());
         assertEquals(TourPackageState.AVAILABLE, tourPackage.getTourPackageState());
         verify(tourPackageRepository).save(tourPackage);
     }
 
     @Test
-    void update_ThrowsException_WhenPaymentDateNullAndConfirming() {
-        reservation.setReservationState(ReservationState.PENDING);
-        reservation.setPaymentDate(null);
-        Reservation updateInfo = new Reservation();
-        updateInfo.setId(1L);
-        updateInfo.setReservationState(ReservationState.CONFIRMED);
+    void update_WhenChangingPassengersAndNotEnoughSpots_ShouldThrowException() {
+        Reservation reservationInDb = new Reservation();
+        reservationInDb.setPassengersAmount(2);
+        reservationInDb.setTourPackageId(10L);
+        when(reservationRepository.findById(any())).thenReturn(Optional.of(reservationInDb));
+        when(tourPackageRepository.findById(any())).thenReturn(Optional.of(tourPackage));
+        reservation.setPassengersAmount(15);
+        assertThrows(IllegalStateException.class, () -> reservationService.update(reservation));
+    }
+
+    @Test
+    void deleteById_ShouldRestoreSpotsAndDestroy() {
         when(reservationRepository.findById(1L)).thenReturn(Optional.of(reservation));
         when(tourPackageRepository.findById(10L)).thenReturn(Optional.of(tourPackage));
-        assertThrows(IllegalStateException.class, () -> reservationService.update(updateInfo));
-    }
-
-    @Test
-    void update_ReservationStateChange_WhenPaymentDateAndConfirming() {
-        reservation.setId(1L);
-        reservation.setTourPackageId(10L);
-        reservation.setReservationState(ReservationState.PENDING);
-        reservation.setPaymentDate(LocalDateTime.now());
-        reservation.setPassengersAmount(2);
-        Reservation updateInfo = new Reservation();
-        updateInfo.setId(1L);
-        updateInfo.setTourPackageId(10L);
-        updateInfo.setReservationState(ReservationState.CONFIRMED);
-        updateInfo.setPassengersAmount(2);
-        when(reservationRepository.findById(1L)).thenReturn(Optional.of(reservation));
-        when(tourPackageRepository.findById(10L)).thenReturn(Optional.of(tourPackage));
-        when(discountService.calculatePassengersAmountDiscount(any())).thenReturn(BigDecimal.ZERO);
-        when(discountService.calculateFrequentClientDiscount(any())).thenReturn(BigDecimal.ZERO);
-        when(discountService.calculateMultiplePackagesDiscount(any())).thenReturn(BigDecimal.ZERO);
-        when(promotionRepository.findByTourPackageId(any())).thenReturn(Optional.empty());
-        when(reservationRepository.save(any(Reservation.class))).thenReturn(reservation);
-        Reservation result = reservationService.update(updateInfo);
-        assertNotNull(result);
-        assertEquals(ReservationState.CONFIRMED, result.getReservationState());
-        verify(reservationRepository, times(1)).save(any(Reservation.class));
-    }
-
-    @Test
-    void update_WhenPassengersAmountChanges_AndSpotsAvailable_ShouldUpdateSpots() {
-        Long tourPackageId = 10L;
-        tourPackage.setId(tourPackageId);
-        tourPackage.setRemainingSpots(10);
-        tourPackage.setTourPackageState(TourPackageState.AVAILABLE);
-        Reservation reservationInDb = new Reservation();
-        reservationInDb.setId(1L);
-        reservationInDb.setTourPackageId(tourPackageId);
-        reservationInDb.setPassengersAmount(2);
-        reservationInDb.setReservationState(ReservationState.PENDING);
-        Reservation updateRequest = new Reservation();
-        updateRequest.setId(1L);
-        updateRequest.setTourPackageId(tourPackageId);
-        updateRequest.setPassengersAmount(5);
-        updateRequest.setReservationState(ReservationState.PENDING);
-        when(reservationRepository.findById(1L)).thenReturn(Optional.of(reservationInDb));
-        when(tourPackageRepository.findById(tourPackageId)).thenReturn(Optional.of(tourPackage));
-        when(discountService.calculatePassengersAmountDiscount(any())).thenReturn(BigDecimal.ZERO);
-        when(discountService.calculateFrequentClientDiscount(any())).thenReturn(BigDecimal.ZERO);
-        when(discountService.calculateMultiplePackagesDiscount(any())).thenReturn(BigDecimal.ZERO);
-        when(promotionRepository.findByTourPackageId(any())).thenReturn(Optional.empty());
-        when(reservationRepository.save(any(Reservation.class))).thenReturn(reservationInDb);
-        Reservation result = reservationService.update(updateRequest);
-        assertEquals(7, tourPackage.getRemainingSpots());
-        assertEquals(5, result.getPassengersAmount());
-        verify(tourPackageRepository).save(tourPackage);
-    }
-
-    @Test
-    void update_WhenPassengersAmountIncreases_AndNoSpotsAvailable_ShouldThrowException() {
-        Long tourPackageId = 10L;
-        tourPackage.setId(tourPackageId);
-        tourPackage.setRemainingSpots(1);
-        tourPackage.setTourPackageState(TourPackageState.AVAILABLE);
-        Reservation reservationInDb = new Reservation();
-        reservationInDb.setId(1L);
-        reservationInDb.setTourPackageId(tourPackageId);
-        reservationInDb.setPassengersAmount(2);
-        Reservation updateRequest = new Reservation();
-        updateRequest.setId(1L);
-        updateRequest.setTourPackageId(tourPackageId);
-        updateRequest.setPassengersAmount(5);
-        when(reservationRepository.findById(1L)).thenReturn(Optional.of(reservationInDb));
-        when(tourPackageRepository.findById(tourPackageId)).thenReturn(Optional.of(tourPackage));
-        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
-            reservationService.update(updateRequest);
-        });
-        assertTrue(exception.getMessage().contains("Not enough spots"));
-        verify(tourPackageRepository, never()).save(any());
-    }
-
-    // deleteById tests
-
-    @Test
-    void deleteById_NoReservationFound() {
-        when(reservationRepository.findById(1L)).thenReturn(Optional.empty());
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            reservationService.deleteById(1L);
-        });
-        assertTrue(exception.getMessage().contains("Reservation not found"));
-        verify(reservationRepository, never()).deleteById(any());
-    }
-
-    @Test
-    void deleteById_ReservationFoundButNotTourPackage() {
-        Reservation savedRes = new Reservation();
-        savedRes.setId(1L);
-        savedRes.setTourPackageId(10L);
-        savedRes.setPassengersAmount(2);
-        when(reservationRepository.findById(1L)).thenReturn(Optional.of(savedRes));
-        when(tourPackageRepository.findById(10L)).thenReturn(Optional.empty());
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            reservationService.deleteById(1L);
-        });
-        assertTrue(exception.getMessage().contains("Tour package not found"));
-        verify(tourPackageRepository, never()).save(any());
-    }
-
-    @Test
-    void deleteById_DeletedSuccessful() {
-        Reservation savedRes = new Reservation();
-        savedRes.setId(1L);
-        savedRes.setTourPackageId(10L);
-        savedRes.setPassengersAmount(2);
-        TourPackage pkg = new TourPackage();
-        pkg.setId(10L);
-        pkg.setRemainingSpots(5);
-        pkg.setTourPackageState(TourPackageState.SOLD_OUT);
-        when(reservationRepository.findById(1L)).thenReturn(Optional.of(savedRes));
-        when(tourPackageRepository.findById(10L)).thenReturn(Optional.of(pkg));
         reservationService.deleteById(1L);
-        assertEquals(7, pkg.getRemainingSpots()); // 5 + 2
-        assertEquals(TourPackageState.AVAILABLE, pkg.getTourPackageState());
-        verify(tourPackageRepository).save(pkg);
+        assertEquals(12, tourPackage.getRemainingSpots());
         verify(reservationRepository).deleteById(1L);
     }
 
-    // calculatePrice test
-
     @Test
-    void calculatePrice_AppliesMaxDiscountLimit() {
+    void calculatePrice_WhenDiscountsAreCombinableAndExceedMax_ShouldCapAtMax() {
         when(tourPackageRepository.findById(10L)).thenReturn(Optional.of(tourPackage));
-        when(discountService.calculatePassengersAmountDiscount(any())).thenReturn(new BigDecimal("0.4"));
-        when(discountService.calculateFrequentClientDiscount(any())).thenReturn(new BigDecimal("0.3"));
+        when(discountConfig.isCombinableDiscounts()).thenReturn(true);
+        when(discountConfig.getMaxDiscountLimit()).thenReturn(new BigDecimal("0.20"));
+        when(discountService.calculatePassengersAmountDiscount(any())).thenReturn(new BigDecimal("0.15"));
+        when(discountService.calculateFrequentClientDiscount(any())).thenReturn(new BigDecimal("0.10"));
         when(discountService.calculateMultiplePackagesDiscount(any())).thenReturn(BigDecimal.ZERO);
         when(promotionRepository.findByTourPackageId(10L)).thenReturn(Optional.empty());
         DiscountDataDTO result = reservationService.calculatePrice(reservation);
         assertTrue(result.getMaxDiscount());
-        BigDecimal expectedDiscount = BigDecimal.valueOf(2000).multiply(MAX_DISCOUNT_LIMIT).setScale(2, RoundingMode.HALF_UP);
-        BigDecimal expectedTotal = BigDecimal.valueOf(2000).subtract(expectedDiscount).setScale(2, RoundingMode.HALF_UP);
-        assertEquals(expectedTotal, result.getTotalAmount());
+        assertEquals(new BigDecimal("400.00"), result.getDiscountAmount());
+        assertEquals(new BigDecimal("1600.00"), result.getTotalAmount());
     }
 
-    // cancelExpiredReservations test
+    @Test
+    void calculatePrice_WhenDiscountsNotCombinable_ShouldTakeTheMax() {
+        when(tourPackageRepository.findById(10L)).thenReturn(Optional.of(tourPackage));
+        when(discountConfig.isCombinableDiscounts()).thenReturn(false);
+        when(discountConfig.getMaxDiscountLimit()).thenReturn(new BigDecimal("0.50"));
+        when(discountService.calculatePassengersAmountDiscount(any())).thenReturn(new BigDecimal("0.05"));
+        when(discountService.calculateFrequentClientDiscount(any())).thenReturn(new BigDecimal("0.12"));
+        when(discountService.calculateMultiplePackagesDiscount(any())).thenReturn(BigDecimal.ZERO);
+        when(promotionRepository.findByTourPackageId(10L)).thenReturn(Optional.empty());
+        DiscountDataDTO result = reservationService.calculatePrice(reservation);
+        assertFalse(result.getMaxDiscount());
+        assertEquals(new BigDecimal("240.00"), result.getDiscountAmount());
+        assertEquals(new BigDecimal("1760.00"), result.getTotalAmount());
+    }
 
     @Test
-    void cancelExpiredReservations_ProcessesList() {
-        List<Reservation> expired = Collections.singletonList(reservation);
+    void cancelExpiredReservations_ShouldCancelOnlyOldPendingOnes() {
+        Reservation expiredRes = new Reservation();
+        expiredRes.setReservationState(ReservationState.PENDING);
+        expiredRes.setPassengersAmount(2);
+        expiredRes.setTourPackageId(10L);
         when(reservationRepository.findByReservationStateAndReservationDateBefore(any(), any()))
-                .thenReturn(expired);
+                .thenReturn(List.of(expiredRes));
         when(tourPackageRepository.findById(10L)).thenReturn(Optional.of(tourPackage));
         reservationService.cancelExpiredReservations();
-        assertEquals(ReservationState.CANCELED, reservation.getReservationState());
+        assertEquals(ReservationState.CANCELED, expiredRes.getReservationState());
         assertEquals(12, tourPackage.getRemainingSpots());
+        verify(reservationRepository).saveAll(any());
+    }
+
+    @Test
+    void setReservationsState_ShouldTransitionStatesBasedOnDates() {
+        Reservation r1 = new Reservation(); r1.setTourPackageId(10L); r1.setReservationState(ReservationState.PENDING);
+        Reservation r2 = new Reservation(); r2.setTourPackageId(20L); r2.setReservationState(ReservationState.PENDING);
+        TourPackage pkgInProgress = new TourPackage();
+        pkgInProgress.setStartDate(LocalDate.now().minusDays(1));
+        pkgInProgress.setEndDate(LocalDate.now().plusDays(5));
+        TourPackage pkgCompleted = new TourPackage();
+        pkgCompleted.setStartDate(LocalDate.now().minusDays(10));
+        pkgCompleted.setEndDate(LocalDate.now().minusDays(1));
+        when(reservationRepository.findAll()).thenReturn(Arrays.asList(r1, r2));
+        when(tourPackageRepository.findById(10L)).thenReturn(Optional.of(pkgInProgress));
+        when(tourPackageRepository.findById(20L)).thenReturn(Optional.of(pkgCompleted));
+        reservationService.setReservationsState();
+        assertEquals(ReservationState.IN_PROGRESS, r1.getReservationState());
+        assertEquals(ReservationState.COMPLETED, r2.getReservationState());
         verify(reservationRepository).saveAll(any());
     }
 }

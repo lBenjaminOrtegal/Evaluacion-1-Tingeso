@@ -48,8 +48,6 @@ class TransactionServiceTest {
         validTransaction.setAmount(new BigDecimal("100.00"));
     }
 
-    // create tests
-
     @Test
     void createTransaction_Success() {
         when(reservationRepository.findById(1L)).thenReturn(Optional.of(validReservation));
@@ -108,12 +106,11 @@ class TransactionServiceTest {
     void createTransaction_ThrowsIllegalState_WhenAmountIsNegative() {
         validTransaction.setAmount(new BigDecimal("-10.0"));
         when(reservationRepository.findById(1L)).thenReturn(Optional.of(validReservation));
-        assertThrows(IllegalStateException.class, () -> {
+        assertThrows(IllegalStateException.class, () ->                                                                             {
             transactionService.create(validTransaction);
         });
     }
 
-    // successfulTransaction test
     @Test
     void successfulTransaction_ReturnsTrue() {
         assertTrue(transactionService.successfulTransaction());

@@ -1,5 +1,6 @@
 package com.tingeso.backend.services;
 
+import com.tingeso.backend.configuration.DiscountConfig;
 import com.tingeso.backend.dto.DiscountDataDTO;
 import com.tingeso.backend.entities.*;
 import com.tingeso.backend.repositories.PromotionRepository;
@@ -18,9 +19,6 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.tingeso.backend.configuration.DiscountConfig.COMBINABLE_DISCOUNTS;
-import static com.tingeso.backend.configuration.DiscountConfig.MAX_DISCOUNT_LIMIT;
-
 @Service
 @RequiredArgsConstructor
 public class ReservationService {
@@ -29,6 +27,7 @@ public class ReservationService {
     private final TourPackageRepository tourPackageRepository;
     private final PromotionRepository promotionRepository;
     private final DiscountService discountService;
+    private final DiscountConfig discountConfig;
 
     @Transactional(readOnly = true)
     public List<Reservation> findAll() {
@@ -189,7 +188,7 @@ public class ReservationService {
         discountDataDTO.setPromotionDiscount(totalWithoutDiscounts.multiply(promotionDiscountPercentage).setScale(2, RoundingMode.HALF_UP));
 
         BigDecimal accumulatedPercentage;
-        if (COMBINABLE_DISCOUNTS) {
+        if (discountConfig.isCombinableDiscounts()) {
             accumulatedPercentage = passengersDiscountPercentage.add(frequentClientDiscountPercentage)
                     .add(multiplePackagesDiscountPercentage)
                     .add(promotionDiscountPercentage);
@@ -199,8 +198,8 @@ public class ReservationService {
                     .max(promotionDiscountPercentage);
         }
 
-        if (accumulatedPercentage.subtract(MAX_DISCOUNT_LIMIT).compareTo(BigDecimal.ZERO) > 0) {
-            accumulatedPercentage = MAX_DISCOUNT_LIMIT;
+        if (accumulatedPercentage.subtract(discountConfig.getMaxDiscountLimit()).compareTo(BigDecimal.ZERO) > 0) {
+            accumulatedPercentage = discountConfig.getMaxDiscountLimit();
             discountDataDTO.setMaxDiscount(true);
         } else {
             discountDataDTO.setMaxDiscount(false);

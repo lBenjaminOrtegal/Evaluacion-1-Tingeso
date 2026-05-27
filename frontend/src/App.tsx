@@ -14,6 +14,7 @@ import ReservationsAdminPage from "./pages/ReservationsAdminPage";
 import PaymentPage from "./pages/PaymentPage";
 import ReportsPage from "./pages/ReportsPage";
 import ProfilePage from "./pages/ProfilePage";
+import DiscountsPage from "./pages/DiscountsPage";
 
 function App() {
   const { keycloak, initialized } = useKeycloak();
@@ -192,6 +193,16 @@ function App() {
             <PrivateRoute
               element={<ProfilePage />}
               rolesAllowed={["USER", "ADMIN"]}
+            />
+          }
+        />
+
+        <Route
+          path="/tour-packages-admin/discounts"
+          element={
+            <PrivateRoute
+              element={<DiscountsPage />}
+              rolesAllowed={["ADMIN"]}
             />
           }
         />

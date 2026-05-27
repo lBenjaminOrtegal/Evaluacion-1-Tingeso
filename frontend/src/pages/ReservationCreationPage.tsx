@@ -454,7 +454,7 @@ function ReservationCreationPage() {
 
                       {discountsData?.maxDiscount ? (
                         <p className="mb-1 fw-semibold">
-                          Descuentos totales aplicados (máximo del 25%):{" "}
+                          Descuentos totales aplicados (máximo de descuentos):{" "}
                           {formatCurrency(
                             Number(discountsData?.discountAmount),
                           )}

@@ -184,7 +184,7 @@ function AddEditTourPackageAdminPage() {
         </Button>
       </Stack>
 
-      <Card className="shadow-sm border-0 bg-light">
+      <Card className="border-1 bg-light">
         <Card.Body className="p-4">
           <Form onSubmit={handleSubmit}>
             <Row>

@@ -1,8 +1,12 @@
 package com.tingeso.backend.services;
 
+import com.tingeso.backend.configuration.DiscountConfig;
+import com.tingeso.backend.entities.Discount;
 import com.tingeso.backend.entities.Reservation;
 import com.tingeso.backend.entities.ReservationState;
+import com.tingeso.backend.repositories.DiscountRepository;
 import com.tingeso.backend.repositories.ReservationRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,12 +17,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
-import static com.tingeso.backend.configuration.DiscountConfig.*;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class DiscountServiceTest {
@@ -26,15 +30,37 @@ class DiscountServiceTest {
     @Mock
     private ReservationRepository reservationRepository;
 
+    @Mock
+    private DiscountRepository discountRepository;
+
+    @Mock
+    private DiscountConfig discountConfig;
+
     @InjectMocks
     private DiscountService discountService;
 
+    private Discount existingDiscount;
+    private Discount updateRequest;
     private Reservation completedReservation;
     private Reservation pendingReservation;
     private final String testEmail = "test@gmail.com";
 
     @BeforeEach
     void setUp() {
+        existingDiscount = new Discount(
+                1L, true, new BigDecimal("0.25"),
+                4, new BigDecimal("0.05"),
+                3, new BigDecimal("0.10"),
+                7, 3, new BigDecimal("0.15")
+        );
+
+        updateRequest = new Discount(
+                1L, false, new BigDecimal("0.30"),
+                5, new BigDecimal("0.08"),
+                4, new BigDecimal("0.12"),
+                10, 5, new BigDecimal("0.20")
+        );
+
         completedReservation = new Reservation();
         completedReservation.setReservationState(ReservationState.COMPLETED);
         completedReservation.setReservationDate(LocalDateTime.now());
@@ -44,23 +70,63 @@ class DiscountServiceTest {
         pendingReservation.setReservationDate(LocalDateTime.now());
     }
 
-    // calculatePassengersAmountDiscount tests
-
     @Test
-    void whenPassengersEqualThanMin_thenReturnDiscount() {
-        BigDecimal result = discountService.calculatePassengersAmountDiscount(MIN_PASSENGERS);
-        assertEquals(DISCOUNT_PASSENGERS, result);
+    void whenDiscountExists_thenFindDiscountShouldReturnIt() {
+        when(discountRepository.findById(1L)).thenReturn(Optional.of(existingDiscount));
+        Discount result = discountService.findDiscount();
+        assertNotNull(result);
+        assertEquals(1L, result.getId());
+        verify(discountRepository, times(1)).findById(1L);
     }
 
     @Test
-    void whenPassengersGreaterOrEqualThanMin_thenReturnDiscount() {
-        BigDecimal result = discountService.calculatePassengersAmountDiscount(MIN_PASSENGERS + 1);
-        assertEquals(DISCOUNT_PASSENGERS, result);
+    void whenDiscountDoesNotExist_thenFindDiscountShouldReturnNull() {
+        when(discountRepository.findById(1L)).thenReturn(Optional.empty());
+        Discount result = discountService.findDiscount();
+        assertNull(result);
+        verify(discountRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    void whenDiscountExists_thenUpdateShouldModifyFieldsAndSave() {
+        when(discountRepository.findById(1L)).thenReturn(Optional.of(existingDiscount));
+        when(discountRepository.save(any(Discount.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        Discount result = discountService.update(updateRequest);
+        assertNotNull(result);
+        assertFalse(result.isCombinableDiscounts());
+        assertEquals(new BigDecimal("0.30"), result.getMaxDiscountLimit());
+        assertEquals(5, result.getMinPassengers());
+        assertEquals(new BigDecimal("0.08"), result.getDiscountPassengers());
+        assertEquals(4, result.getMinReservations());
+        assertEquals(new BigDecimal("0.12"), result.getDiscountReservations());
+        assertEquals(10, result.getDaysWindow());
+        assertEquals(5, result.getMinReservationsMultiplePackages());
+        assertEquals(new BigDecimal("0.20"), result.getDiscountMultiplePackages());
+        verify(discountRepository, times(1)).findById(1L);
+        verify(discountRepository, times(1)).save(existingDiscount);
+    }
+
+    @Test
+    void whenDiscountDoesNotExist_thenUpdateShouldThrowEntityNotFoundException() {
+        when(discountRepository.findById(1L)).thenReturn(Optional.empty());
+        assertThrows(EntityNotFoundException.class, () -> discountService.update(updateRequest));
+        verify(discountRepository, never()).save(any(Discount.class));
+    }
+
+    @Test
+    void whenPassengersEqualOrGreaterChange_thenReturnDiscount() {
+        when(discountConfig.getMinPassengers()).thenReturn(4);
+        when(discountConfig.getDiscountPassengers()).thenReturn(new BigDecimal("0.05"));
+        BigDecimal resultEqual = discountService.calculatePassengersAmountDiscount(4);
+        BigDecimal resultGreater = discountService.calculatePassengersAmountDiscount(5);
+        assertEquals(new BigDecimal("0.05"), resultEqual);
+        assertEquals(new BigDecimal("0.05"), resultGreater);
     }
 
     @Test
     void whenPassengersLessThanMin_thenReturnZero() {
-        BigDecimal result = discountService.calculatePassengersAmountDiscount(MIN_PASSENGERS - 1);
+        when(discountConfig.getMinPassengers()).thenReturn(4);
+        BigDecimal result = discountService.calculatePassengersAmountDiscount(3);
         assertEquals(BigDecimal.ZERO, result);
     }
 
@@ -70,84 +136,63 @@ class DiscountServiceTest {
         assertEquals(BigDecimal.ZERO, result);
     }
 
-    // calculateFrequentClientDiscount tests
-
     @Test
-    void whenFrequentClientHasEnoughValidReservations_thenReturnDiscount() {
+    void whenClientHasEnoughValidReservations_thenReturnDiscount() {
+        when(discountConfig.getMinReservations()).thenReturn(3);
+        when(discountConfig.getDiscountReservations()).thenReturn(new BigDecimal("0.10"));
         List<Reservation> reservations = Arrays.asList(completedReservation, completedReservation, completedReservation);
         when(reservationRepository.findByUserEmail(testEmail)).thenReturn(reservations);
         BigDecimal result = discountService.calculateFrequentClientDiscount(testEmail);
-        BigDecimal expected = reservations.size() >= MIN_RESERVATIONS ? DISCOUNT_RESERVATIONS : BigDecimal.ZERO;
-        assertEquals(expected, result);
+        assertEquals(new BigDecimal("0.10"), result);
     }
 
     @Test
-    void whenClientHasReservationsButArePending_thenReturnZero() {
-        when(reservationRepository.findByUserEmail(testEmail)).thenReturn(Collections.singletonList(pendingReservation));
+    void whenClientHasReservationsButNotEnoughValid_thenReturnZero() {
+        when(discountConfig.getMinReservations()).thenReturn(3);
+        List<Reservation> reservations = Arrays.asList(completedReservation, pendingReservation, completedReservation);
+        when(reservationRepository.findByUserEmail(testEmail)).thenReturn(reservations);
         BigDecimal result = discountService.calculateFrequentClientDiscount(testEmail);
         assertEquals(BigDecimal.ZERO, result);
     }
 
-    // calculateMultiplePackagesDiscount tests
-
     @Test
     void whenRecentReservationsWithinWindow_thenReturnDiscount() {
-        completedReservation.setReservationDate(LocalDateTime.now());
-        List<Reservation> reservations = Collections.nCopies(MIN_RESERVATIONS_MULTIPLE_PACKAGES, completedReservation);
+        when(discountConfig.getDaysWindow()).thenReturn(7);
+        when(discountConfig.getMinReservationsMultiplePackages()).thenReturn(3);
+        when(discountConfig.getDiscountMultiplePackages()).thenReturn(new BigDecimal("0.15"));
+        completedReservation.setReservationDate(LocalDateTime.now().minusDays(2));
+        List<Reservation> reservations = Arrays.asList(completedReservation, completedReservation, completedReservation);
         when(reservationRepository.findByUserEmail(testEmail)).thenReturn(reservations);
         BigDecimal result = discountService.calculateMultiplePackagesDiscount(testEmail);
-        assertEquals(DISCOUNT_MULTIPLE_PACKAGES, result);
+        assertEquals(new BigDecimal("0.15"), result);
     }
 
     @Test
-    void whenRecentReservationsOutsideWindow_thenReturnZero() {
+    void whenReservationsOutsideWindow_thenReturnZero() {
+        when(discountConfig.getDaysWindow()).thenReturn(7);
+        when(discountConfig.getMinReservationsMultiplePackages()).thenReturn(3);
         Reservation oldReservation = new Reservation();
-        oldReservation.setReservationState(ReservationState.CONFIRMED);
-        oldReservation.setReservationDate(LocalDateTime.now().minusDays(DAYS_WINDOW + 1));
-        when(reservationRepository.findByUserEmail(testEmail)).thenReturn(Collections.singletonList(oldReservation));
+        oldReservation.setReservationState(ReservationState.COMPLETED);
+        oldReservation.setReservationDate(LocalDateTime.now().minusDays(9));
+        List<Reservation> reservations = Arrays.asList(oldReservation, oldReservation, oldReservation);
+        when(reservationRepository.findByUserEmail(testEmail)).thenReturn(reservations);
         BigDecimal result = discountService.calculateMultiplePackagesDiscount(testEmail);
         assertEquals(BigDecimal.ZERO, result);
     }
 
-    // isCompletedReservation tests
-
     @Test
-    void shouldReturnFalseWhenReservationIsPending() {
-        Reservation reservation = new Reservation();
-        reservation.setReservationState(ReservationState.PENDING);
-        boolean result = discountService.isCompletedReservation(reservation);
-        assertFalse(result);
-    }
-
-    @Test
-    void shouldReturnFalseWhenReservationIsCanceled() {
-        Reservation reservation = new Reservation();
-        reservation.setReservationState(ReservationState.CANCELED);
-        boolean result = discountService.isCompletedReservation(reservation);
-        assertFalse(result);
-    }
-
-    @Test
-    void shouldReturnTrueWhenReservationIsConfirmed() {
-        Reservation reservation = new Reservation();
-        reservation.setReservationState(ReservationState.CONFIRMED);
-        boolean result = discountService.isCompletedReservation(reservation);
-        assertTrue(result);
-    }
-
-    @Test
-    void shouldReturnTrueWhenReservationIsCompleted() {
-        Reservation reservation = new Reservation();
-        reservation.setReservationState(ReservationState.COMPLETED);
-        boolean result = discountService.isCompletedReservation(reservation);
-        assertTrue(result);
-    }
-
-    @Test
-    void shouldReturnTrueWhenReservationIsInProgress() {
-        Reservation reservation = new Reservation();
-        reservation.setReservationState(ReservationState.IN_PROGRESS);
-        boolean result = discountService.isCompletedReservation(reservation);
-        assertTrue(result);
+    void isCompletedReservation_ShouldEvaluateStatesCorrectly() {
+        Reservation resPending = new Reservation();
+        resPending.setReservationState(ReservationState.PENDING);
+        Reservation resCanceled = new Reservation();
+        resCanceled.setReservationState(ReservationState.CANCELED);
+        Reservation resCompleted = new Reservation();
+        resCompleted.setReservationState(ReservationState.COMPLETED);
+        Reservation resConfirmed = new Reservation();
+        resConfirmed.setReservationState(ReservationState.CONFIRMED);
+        assertFalse(discountService.isCompletedReservation(resPending));
+        assertFalse(discountService.isCompletedReservation(resCanceled));
+        assertTrue(discountService.isCompletedReservation(resCompleted));
+        assertTrue(discountService.isCompletedReservation(resConfirmed));
     }
 }

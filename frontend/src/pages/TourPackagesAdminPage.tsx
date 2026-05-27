@@ -66,7 +66,7 @@ function TourPackagesAdminPage() {
       <Stack
         direction="horizontal"
         gap={3}
-        className="mb-4 pb-3 border-bottom align-items-center"
+        className="mb-4 pb-3 border-bottom align-items-center justify-content-between"
       >
         <div>
           <h1 className="fs-3 fw-bold text-primary">Paquetes Turísticos</h1>
@@ -74,14 +74,25 @@ function TourPackagesAdminPage() {
             Publicación y gestión de paquetes turísticos.
           </p>
         </div>
-        <Button
-          as={Link as any}
-          to="/tour-packages-admin/add"
-          variant="outline-success"
-          className="ms-auto fw-semibold"
-        >
-          Agregar paquete
-        </Button>
+        <Stack direction="horizontal" gap={2}>
+          <Button
+            as={Link as any}
+            to="/tour-packages-admin/discounts"
+            variant="outline-secondary"
+            className="m-2 fw-semibold"
+          >
+            Configurar descuentos
+          </Button>
+
+          <Button
+            as={Link as any}
+            to="/tour-packages-admin/add"
+            variant="outline-success"
+            className="m-2 fw-semibold"
+          >
+            Agregar paquete
+          </Button>
+        </Stack>
       </Stack>
 
       <Table bordered hover responsive className="align-middle">

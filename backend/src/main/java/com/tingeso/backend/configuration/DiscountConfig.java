@@ -1,23 +1,58 @@
 package com.tingeso.backend.configuration;
 
+import com.tingeso.backend.entities.Discount;
+import com.tingeso.backend.repositories.DiscountRepository;
+import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 
+@Component
 public class DiscountConfig {
 
-    // global discounts configuration
-    public static final boolean COMBINABLE_DISCOUNTS = true;
-    public static final BigDecimal MAX_DISCOUNT_LIMIT = new BigDecimal("0.25");
+    private final DiscountRepository discountRepository;
+    private static final Long CONFIG_ID = 1L;
 
-    // discounts configuration for passengers amount
-    public static final Integer MIN_PASSENGERS = 4;
-    public static final BigDecimal DISCOUNT_PASSENGERS = new BigDecimal("0.05");
+    public DiscountConfig(DiscountRepository discountRepository) {
+        this.discountRepository = discountRepository;
+    }
 
-    // discounts configuration for reservations amount
-    public static final Integer MIN_RESERVATIONS = 3;
-    public static final BigDecimal DISCOUNT_RESERVATIONS = new BigDecimal("0.10");
+    private Discount getDiscountConfig() {
+        return discountRepository.findById(CONFIG_ID)
+                .orElseThrow(() -> new IllegalStateException("discount not found"));
+    }
 
-    // discounts configuration for multiple packages amount
-    public static final Integer DAYS_WINDOW = 7;
-    public static final Integer MIN_RESERVATIONS_MULTIPLE_PACKAGES = 3;
-    public static final BigDecimal DISCOUNT_MULTIPLE_PACKAGES = new BigDecimal("0.15");
+    public boolean isCombinableDiscounts() {
+        return getDiscountConfig().isCombinableDiscounts();
+    }
+
+    public BigDecimal getMaxDiscountLimit() {
+        return getDiscountConfig().getMaxDiscountLimit();
+    }
+
+    public Integer getMinPassengers() {
+        return getDiscountConfig().getMinPassengers();
+    }
+
+    public BigDecimal getDiscountPassengers() {
+        return getDiscountConfig().getDiscountPassengers();
+    }
+
+    public Integer getMinReservations() {
+        return getDiscountConfig().getMinReservations();
+    }
+
+    public BigDecimal getDiscountReservations() {
+        return getDiscountConfig().getDiscountReservations();
+    }
+
+    public Integer getDaysWindow() {
+        return getDiscountConfig().getDaysWindow();
+    }
+
+    public Integer getMinReservationsMultiplePackages() {
+        return getDiscountConfig().getMinReservationsMultiplePackages();
+    }
+
+    public BigDecimal getDiscountMultiplePackages() {
+        return getDiscountConfig().getDiscountMultiplePackages();
+    }
 }

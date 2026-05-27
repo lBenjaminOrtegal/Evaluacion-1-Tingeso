@@ -46,23 +46,17 @@ class TourPackageServiceTest {
         tourPackage.setTourPackageState(TourPackageState.AVAILABLE);
     }
 
-    // findById test
-
     @Test
     void findById_ReturnsPackage() {
         when(tourPackageRepository.findById(1L)).thenReturn(Optional.of(tourPackage));
         assertNotNull(tourPackageService.findById(1L));
     }
 
-    // findAll test
-
     @Test
     void findAll_ReturnsList() {
         when(tourPackageRepository.findAll()).thenReturn(Collections.singletonList(tourPackage));
         assertFalse(tourPackageService.findAll().isEmpty());
     }
-
-    // findCustomFilters tests
 
     @Test
     void findCustomFilters_ReturnsList() {
@@ -73,8 +67,6 @@ class TourPackageServiceTest {
         assertEquals(1, result.size());
         verify(tourPackageRepository).findCustomFilters(filters);
     }
-
-    // createTourPackage tests
 
     @Test
     void create_ThrowsException_WhenPriceIsZeroOrNegative() {
@@ -107,8 +99,6 @@ class TourPackageServiceTest {
         assertNotNull(saved);
         verify(tourPackageRepository).save(tourPackage);
     }
-
-    // update tests
 
     @Test
     void update_WithReservations_ValidSpots() {
@@ -161,8 +151,6 @@ class TourPackageServiceTest {
         assertNotNull(result);
     }
 
-    // deleteById tests
-
     @Test
     void deleteById_NoReservations_DeletesFromDb() {
         when(tourPackageRepository.findById(1L)).thenReturn(Optional.of(tourPackage));
@@ -179,8 +167,6 @@ class TourPackageServiceTest {
         verify(tourPackageRepository, never()).delete(any());
         assertEquals(TourPackageState.NOT_AVAILABLE, tourPackage.getTourPackageState());
     }
-
-    // cancelStartedTourPackages test
 
     @Test
     void cancelStartedTourPackages_ChangesStateIfToday() {
