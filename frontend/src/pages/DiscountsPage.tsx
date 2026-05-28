@@ -133,7 +133,6 @@ function DiscountsPage() {
               label="Descuentos acumulables"
               checked={combinableDiscounts}
               onChange={(e) => setCombinableDiscounts(e.target.checked)}
-              required
             />
 
             <Form.Label className="fw-medium small">
