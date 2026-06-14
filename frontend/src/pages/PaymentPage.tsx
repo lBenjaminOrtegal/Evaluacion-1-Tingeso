@@ -145,8 +145,16 @@ function PaymentPage() {
                 {formatCurrency(reservation.price)}
               </span>
             </p>
-            <p className="fw-medium text-muted">Método de pago: <span className="fw-semibold text-dark">Tarjeta de crédito</span></p>
-            <p className="fw-medium text-muted">Fecha de la transacción: <span className="fw-semibold text-dark">{new Date().toLocaleDateString('es-ES')}</span></p>
+            <p className="fw-medium text-muted">
+              Método de pago:{" "}
+              <span className="fw-semibold text-dark">Tarjeta de crédito</span>
+            </p>
+            <p className="fw-medium text-muted">
+              Fecha de la transacción:{" "}
+              <span className="fw-semibold text-dark">
+                {new Date().toLocaleDateString("es-ES")}
+              </span>
+            </p>
           </Stack>
         </Modal.Body>
         <Modal.Footer>
@@ -178,25 +186,25 @@ function PaymentPage() {
       <Row>
         <Col className="border-end">
           <Stack gap={3} className="p-3">
-            <h2 className="fs-4 fw-bold text-center mb-2">
-              Resumen de la reserva (#{reservation.id})
+            <h2 className="fs-5 fw-bold text-center mb-2">
+              Resumen de la reserva
             </h2>
 
             <Stack gap={3}>
               <div className="border-bottom pb-3">
-                <small className="text-uppercase text-muted fw-bold">
-                  Paquete Turístico
-                </small>
-                <p className="fs-5 fw-bold text-primary mb-1">
-                  {tourPackage?.name}
-                </p>
-                <p className="text-muted mb-0">
+                <small className="text-muted fw-bold">Paquete Turístico</small>
+                <p className="fs-6 fw-bold mb-1">{tourPackage?.name}</p>
+                <p className="fs-6 text-muted mb-0">
                   Del <strong>{tourPackage?.startDate}</strong> al{" "}
                   <strong>{tourPackage?.endDate}</strong>
                 </p>
               </div>
 
               <div className="border-bottom pb-3">
+                <div className="d-flex justify-content-between mb-2">
+                  <span className="text-muted fw-medium">ID de la reserva</span>
+                  <span className="fw-bold text-dark"># {reservation.id}</span>
+                </div>
                 <div className="d-flex justify-content-between mb-2">
                   <span className="text-muted fw-medium">
                     Cantidad de pasajeros
@@ -234,7 +242,7 @@ function PaymentPage() {
         </Col>
         <Col>
           <Stack gap={3} className="p-3">
-            <h2 className="fs-4 fw-bold text-center mb-2">Método de pago</h2>
+            <h2 className="fs-5 fw-bold text-center mb-2">Método de pago</h2>
             <Form onSubmit={handleSubmit}>
               <div>
                 <Form.Check
@@ -242,6 +250,7 @@ function PaymentPage() {
                   label="Tarjeta de Crédito / Débito"
                   checked={true}
                   className="p-3 m-3 border rounded"
+                  onChange={() => null}
                 />
 
                 <Stack gap={3} className="px-3 pb-3">
@@ -298,16 +307,17 @@ function PaymentPage() {
                       </Form.Group>
                     </Col>
                   </Row>
+                  <Col>
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      className="w-100 fw-bold fs-5"
+                    >
+                      Confirmar Pago
+                    </Button>
+                  </Col>
                 </Stack>
               </div>
-
-              <Button
-                type="submit"
-                variant="primary"
-                className="w-100 fw-bold fs-5"
-              >
-                Confirmar Pago
-              </Button>
             </Form>
           </Stack>
         </Col>

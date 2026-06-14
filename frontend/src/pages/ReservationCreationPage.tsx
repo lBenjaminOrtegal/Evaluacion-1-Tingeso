@@ -389,15 +389,14 @@ function ReservationCreationPage() {
                     </Form.Group>
                   </Col>
                 )}
-                <Button
-                  onClick={getPrice}
-                  variant="outline-primary"
-                  className="w-100 fw-semibold"
-                >
-                  Calcular precio
-                </Button>
               </Row>
-
+              <Button
+                onClick={getPrice}
+                variant="outline-primary"
+                className="w-100 fw-semibold"
+              >
+                Calcular precio
+              </Button>
               <hr></hr>
               <Row>
                 <Stack gap={2}>

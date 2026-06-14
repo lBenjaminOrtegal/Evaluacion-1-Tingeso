@@ -8,6 +8,8 @@ import {
   Container,
   FloatingLabel,
   Form,
+  ListGroup,
+  ListGroupItem,
   Modal,
   Row,
   Spinner,
@@ -312,7 +314,7 @@ function TourPackagesViewPage() {
                   </div>
 
                   <Card.Text className="text-muted mb-4 small flex-grow-1">
-                    {tour.description.length > 100
+                    {tour.description?.length > 100
                       ? `${tour.description.substring(0, 100)}...`
                       : tour.description}
                   </Card.Text>
@@ -426,13 +428,11 @@ function TourPackagesViewPage() {
                       <h6 className="text-uppercase text-primary fw-bold small mb-2">
                         Servicios incluidos
                       </h6>
-                      <ul className="list-unstyled row g-2">
-                        {tour.services.map((service, index) => (
-                          <Col sm={6} key={index}>
-                            <li className="small fw-bold">{service}</li>
-                          </Col>
+                      <ListGroup>
+                        {tour?.services.map((s, index) => (
+                          <ListGroupItem key={index}>{s}</ListGroupItem>
                         ))}
-                      </ul>
+                      </ListGroup>
                     </section>
                   </Col>
 
@@ -458,7 +458,7 @@ function TourPackagesViewPage() {
                       </p>
                     </div>
 
-                    <div className="p-3 rounded-4 bg-primary bg-opacity-10 border border-primary border-opacity-25 mb-4">
+                    <div className="p-3 rounded-4 bg-light border mb-4">
                       <div className="d-flex justify-content-between align-items-center mb-3">
                         <span className="text-secondary">
                           Precio por persona
@@ -477,14 +477,8 @@ function TourPackagesViewPage() {
                       </Button>
                     </div>
 
-                    <section>
-                      <h6 className="text-uppercase text-danger fw-bold small mb-2">
-                        Importante
-                      </h6>
-                      <div
-                        className="small text-muted overflow-auto"
-                        style={{ maxHeight: "100px" }}
-                      >
+                    <Stack>
+                      <div className="small text-muted">
                         <p className="mb-1">
                           <strong>Condiciones:</strong>{" "}
                         </p>
@@ -502,7 +496,7 @@ function TourPackagesViewPage() {
                           ))}
                         </ol>
                       </div>
-                    </section>
+                    </Stack>
                   </Col>
                 </Row>
               </Modal.Body>
