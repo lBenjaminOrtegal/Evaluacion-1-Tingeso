@@ -13,7 +13,7 @@ import {
 import reservationService from "../services/reservation.service";
 import type { Reservation } from "../interfaces/reservation.interface";
 import formatCurrency from "../utils/formatUtils";
-import { getStateColor } from "../utils/colorUtils";
+import { getReservationStateWord, getStateColor } from "../utils/colorUtils";
 
 function ReportsPage() {
   const [startDate, setStartDate] = useState<string>("");
@@ -197,7 +197,7 @@ function ReportsPage() {
                     <Badge
                       className={`fw-semibold ${getStateColor(reservation.reservationState)}`}
                     >
-                      {reservation.reservationState}
+                      {getReservationStateWord(reservation.reservationState)}
                     </Badge>
                   </td>
                 </tr>

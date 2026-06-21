@@ -15,6 +15,12 @@ public class TransactionController {
     private final TransactionService transactionService;
 
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @GetMapping("/{id}")
+    public ResponseEntity<Transaction> findByReservationId(@PathVariable Long id) {
+        return ResponseEntity.ok(transactionService.findByReservationId(id));
+    }
+
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @PostMapping
     public ResponseEntity<Transaction> create(@RequestBody Transaction transaction) {
         return ResponseEntity.ok(transactionService.create(transaction));

@@ -12,7 +12,7 @@ import { Link } from "react-router-dom";
 import reservationService from "../services/reservation.service";
 import type { Reservation } from "../interfaces/reservation.interface";
 import formatCurrency from "../utils/formatUtils";
-import { getStateColor } from "../utils/colorUtils";
+import { getReservationStateWord, getStateColor } from "../utils/colorUtils";
 
 function ReservationsAdminPage() {
   const [reservations, setReservations] = useState<Reservation[]>([]);
@@ -23,7 +23,9 @@ function ReservationsAdminPage() {
     try {
       setLoading(true);
       const response = await reservationService.getAll();
-      setReservations(response.data);
+      var reservations = response.data;
+      reservations.reverse();
+      setReservations(reservations);
     } catch (error) {
       console.error("Error cargando reservas:", error);
     } finally {
@@ -107,7 +109,7 @@ function ReservationsAdminPage() {
                 <Badge
                   className={`fw-semibold ${getStateColor(reservation.reservationState)}`}
                 >
-                  {reservation.reservationState}
+                  {getReservationStateWord(reservation.reservationState)}
                 </Badge>
               </td>
               <td>

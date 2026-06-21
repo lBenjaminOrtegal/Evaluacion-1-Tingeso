@@ -1,9 +1,9 @@
 package com.tingeso.backend.services;
 
 import com.tingeso.backend.entities.Reservation;
-import com.tingeso.backend.entities.ReservationState;
+import com.tingeso.backend.enums.ReservationState;
 import com.tingeso.backend.entities.Transaction;
-import com.tingeso.backend.entities.TransactionState;
+import com.tingeso.backend.enums.TransactionState;
 import com.tingeso.backend.repositories.ReservationRepository;
 import com.tingeso.backend.repositories.TransactionRepository;
 import jakarta.persistence.EntityNotFoundException;

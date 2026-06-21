@@ -3,6 +3,8 @@ package com.tingeso.backend.services;
 import com.tingeso.backend.configuration.DiscountConfig;
 import com.tingeso.backend.dto.DiscountDataDTO;
 import com.tingeso.backend.entities.*;
+import com.tingeso.backend.enums.ReservationState;
+import com.tingeso.backend.enums.TourPackageState;
 import com.tingeso.backend.repositories.PromotionRepository;
 import com.tingeso.backend.repositories.ReservationRepository;
 import com.tingeso.backend.repositories.TourPackageRepository;
@@ -241,12 +243,14 @@ public class ReservationService {
         reservations.forEach(reservation -> {
             Optional<TourPackage> tourPackage = tourPackageRepository.findById(reservation.getTourPackageId());
             if (tourPackage.isPresent()) {
-                if ((today.isEqual(tourPackage.get().getStartDate()) || today.isAfter(tourPackage.get().getStartDate()))
-                        && today.isBefore(tourPackage.get().getEndDate())) {
-                    reservation.setReservationState(ReservationState.IN_PROGRESS);
-                }
-                else if (today.isEqual(tourPackage.get().getEndDate()) || today.isAfter(tourPackage.get().getEndDate())) {
-                    reservation.setReservationState(ReservationState.COMPLETED);
+                if (reservation.getReservationState() == ReservationState.CONFIRMED || reservation.getReservationState() == ReservationState.IN_PROGRESS) {
+                    if ((today.isEqual(tourPackage.get().getStartDate()) || today.isAfter(tourPackage.get().getStartDate()))
+                            && today.isBefore(tourPackage.get().getEndDate())) {
+                        reservation.setReservationState(ReservationState.IN_PROGRESS);
+                    }
+                    else if (today.isEqual(tourPackage.get().getEndDate()) || today.isAfter(tourPackage.get().getEndDate())) {
+                        reservation.setReservationState(ReservationState.COMPLETED);
+                    }
                 }
             }
         });

@@ -12,7 +12,12 @@ import { Link } from "react-router-dom";
 import tourPackageService from "../services/tourPackage.service";
 import type { TourPackage } from "../interfaces/tourPackage.interface";
 import formatCurrency from "../utils/formatUtils";
-import { getCategoryColor, getStateColor } from "../utils/colorUtils";
+import {
+  getCategoryColor,
+  getCategoryWord,
+  getStateColor,
+  getTourPackageStateWord,
+} from "../utils/colorUtils";
 
 function TourPackagesAdminPage() {
   const [tourPackages, setTourPackages] = useState<TourPackage[]>([]);
@@ -25,7 +30,9 @@ function TourPackagesAdminPage() {
     try {
       setLoading(true);
       const response = await tourPackageService.getAll();
-      setTourPackages(response.data);
+      var tourPackages = response.data;
+      tourPackages.reverse();
+      setTourPackages(tourPackages);
     } catch (error) {
       console.error("Error cargando paquetes:", error);
     } finally {
@@ -134,14 +141,14 @@ function TourPackagesAdminPage() {
                 <Badge
                   className={`fw-semibold ${getCategoryColor(tour.category)}`}
                 >
-                  {tour.category}
+                  {getCategoryWord(tour.category)}
                 </Badge>
               </td>
               <td className="text-center">
                 <Badge
                   className={`fw-semibold ${getStateColor(tour.tourPackageState)}`}
                 >
-                  {tour.tourPackageState}
+                  {getTourPackageStateWord(tour.tourPackageState)}
                 </Badge>
               </td>
               <td>

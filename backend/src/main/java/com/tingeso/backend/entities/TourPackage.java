@@ -1,5 +1,9 @@
 package com.tingeso.backend.entities;
 
+import com.tingeso.backend.enums.Category;
+import com.tingeso.backend.enums.Season;
+import com.tingeso.backend.enums.TourPackageState;
+import com.tingeso.backend.enums.TripType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;

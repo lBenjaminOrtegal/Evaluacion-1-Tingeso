@@ -3,6 +3,8 @@ package com.tingeso.backend.services;
 import com.tingeso.backend.configuration.DiscountConfig;
 import com.tingeso.backend.dto.DiscountDataDTO;
 import com.tingeso.backend.entities.*;
+import com.tingeso.backend.enums.ReservationState;
+import com.tingeso.backend.enums.TourPackageState;
 import com.tingeso.backend.repositories.PromotionRepository;
 import com.tingeso.backend.repositories.ReservationRepository;
 import com.tingeso.backend.repositories.TourPackageRepository;

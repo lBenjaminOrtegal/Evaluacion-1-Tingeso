@@ -1,7 +1,7 @@
 package com.tingeso.backend.repositories;
 
 import com.tingeso.backend.entities.Reservation;
-import com.tingeso.backend.entities.ReservationState;
+import com.tingeso.backend.enums.ReservationState;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

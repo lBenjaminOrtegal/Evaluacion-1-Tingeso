@@ -1,5 +1,7 @@
 package com.tingeso.backend.entities;
 
+import com.tingeso.backend.enums.PaymentMethod;
+import com.tingeso.backend.enums.TransactionState;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,5 +1,6 @@
 package com.tingeso.backend.repositories;
 
+import com.tingeso.backend.dto.TourPackageFiltersDTO;
 import com.tingeso.backend.entities.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -21,5 +22,5 @@ public interface TourPackageRepository extends JpaRepository<TourPackage, Long> 
             "(:#{#tourPackageFilters.startDate} IS NULL OR t.startDate >= :#{#tourPackageFilters.startDate}) AND " +
             "(:#{#tourPackageFilters.endDate} IS NULL OR t.endDate <= :#{#tourPackageFilters.endDate}) AND " +
             "(:#{#tourPackageFilters.state} IS NULL OR t.tourPackageState = :#{#tourPackageFilters.state})")
-    List<TourPackage> findCustomFilters(@Param("tourPackageFilters") TourPackageFilters tourPackageFilters);
+    List<TourPackage> findCustomFilters(@Param("tourPackageFilters") TourPackageFiltersDTO tourPackageFiltersDTO);
 }

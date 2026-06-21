@@ -20,7 +20,7 @@ import {
 import type { TourPackage } from "../interfaces/tourPackage.interface";
 import reservationService from "../services/reservation.service";
 import formatCurrency from "../utils/formatUtils";
-import { getCategoryColor } from "../utils/colorUtils";
+import { getCategoryColor, getCategoryWord } from "../utils/colorUtils";
 import type { DiscountData } from "../interfaces/discountData.interface";
 
 function ReservationCreationPage() {
@@ -34,6 +34,8 @@ function ReservationCreationPage() {
   const [show, setShow] = useState(false);
 
   const [passengersAmount, setPassengersAmount] = useState<number>(1);
+  const [originalPassengers, setOriginalPassengers] = useState<number>(0);
+
   const [preferences, setPreferences] = useState<string[]>([]);
   const [specialRequests, setSpecialRequests] = useState<string[]>([]);
   const [reservationState, setReservationState] = useState<string>("PENDING");
@@ -44,17 +46,20 @@ function ReservationCreationPage() {
       setLoading(true);
       const responseTourPackage = await tourPackageService.getById(Number(id));
       setTourPackage(responseTourPackage.data);
+      var passengers = 1;
       if (reservationId) {
         const responseReservation = await reservationService.getById(
           Number(reservationId),
         );
         const responseReservationData: Reservation = responseReservation.data;
-        setPassengersAmount(responseReservationData.passengersAmount);
+        passengers = responseReservationData.passengersAmount;
+        setPassengersAmount(passengers);
+        setOriginalPassengers(passengers);
         setPreferences(responseReservationData.preferences);
         setSpecialRequests(responseReservationData.specialRequests);
         setReservationState(responseReservationData.reservationState);
       }
-      await getPrice();
+      await getPrice(passengers);
     } catch (error) {
       console.error("No se pudieron cargar los datos:", error);
     } finally {
@@ -62,11 +67,11 @@ function ReservationCreationPage() {
     }
   };
 
-  const getPrice = async () => {
+  const getPrice = async (passengers: number) => {
     const reservationData: Partial<Reservation> = {
       userEmail: keycloak.tokenParsed?.email || "",
       tourPackageId: Number(id),
-      passengersAmount: passengersAmount,
+      passengersAmount: passengers,
     };
     try {
       const priceResponse = await reservationService.calculatePrice(
@@ -224,7 +229,9 @@ function ReservationCreationPage() {
                     <Badge
                       className={`fw-semibold ${getCategoryColor(tourPackage?.category ? tourPackage?.category : "")}`}
                     >
-                      {tourPackage?.category}
+                      {tourPackage
+                        ? getCategoryWord(tourPackage.category)
+                        : "No Definida"}
                     </Badge>
                   </div>
                 </Stack>
@@ -332,25 +339,20 @@ function ReservationCreationPage() {
                     </Form.Label>
                     <Form.Select
                       value={passengersAmount}
-                      onChange={(e) =>
-                        setPassengersAmount(Number(e.target.value))
-                      }
-                      disabled={
-                        !tourPackage ||
-                        (tourPackage.remainingSpots === 0 && !reservationId)
-                      }
+                      onChange={(e) => {
+                        const selectedAmount = Number(e.target.value);
+                        setPassengersAmount(selectedAmount);
+                        getPrice(selectedAmount);
+                      }}
+                      disabled={!tourPackage}
                     >
-                      {tourPackage?.remainingSpots === 0 && !reservationId && (
-                        <option value="0">No hay cupos disponibles</option>
-                      )}
-
                       {(() => {
                         if (!tourPackage)
                           return <option value="0">Cargando...</option>;
 
-                        const maxAvailable = reservationId
-                          ? tourPackage.remainingSpots + (passengersAmount || 0)
-                          : tourPackage.remainingSpots;
+                        const maxAvailable =
+                          (tourPackage.remainingSpots || 0) +
+                          originalPassengers;
 
                         if (maxAvailable === 0) {
                           return (
@@ -380,7 +382,7 @@ function ReservationCreationPage() {
                         value={reservationState}
                         onChange={(e) => setReservationState(e.target.value)}
                       >
-                        <option value="PENDINGs">Pendiente</option>
+                        <option value="PENDING">Pendiente</option>
                         <option value="CONFIRMED">Confirmado</option>
                         <option value="CANCELED">Cancelado</option>
                         <option value="COMPLETED">Completado</option>
@@ -390,13 +392,6 @@ function ReservationCreationPage() {
                   </Col>
                 )}
               </Row>
-              <Button
-                onClick={getPrice}
-                variant="outline-primary"
-                className="w-100 fw-semibold"
-              >
-                Calcular precio
-              </Button>
               <hr></hr>
               <Row>
                 <Stack gap={2}>

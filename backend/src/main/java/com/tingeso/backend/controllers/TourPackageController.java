@@ -1,6 +1,11 @@
 package com.tingeso.backend.controllers;
 
+import com.tingeso.backend.dto.TourPackageFiltersDTO;
 import com.tingeso.backend.entities.*;
+import com.tingeso.backend.enums.Category;
+import com.tingeso.backend.enums.Season;
+import com.tingeso.backend.enums.TourPackageState;
+import com.tingeso.backend.enums.TripType;
 import com.tingeso.backend.services.TourPackageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -40,7 +45,7 @@ public class TourPackageController {
             @RequestParam(required = false) LocalDate startDate,
             @RequestParam(required = false) LocalDate endDate,
             @RequestParam(required = false) TourPackageState state) {
-        TourPackageFilters tourPackageFilters = new TourPackageFilters(
+        TourPackageFiltersDTO tourPackageFiltersDTO = new TourPackageFiltersDTO(
                 name,
                 destiny,
                 category,
@@ -51,7 +56,7 @@ public class TourPackageController {
                 endDate,
                 state
         );
-        return ResponseEntity.ok(tourPackageService.findCustomFilters(tourPackageFilters));
+        return ResponseEntity.ok(tourPackageService.findCustomFilters(tourPackageFiltersDTO));
     }
 
     @PreAuthorize("hasRole('ADMIN')")

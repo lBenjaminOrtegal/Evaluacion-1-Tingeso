@@ -1,5 +1,6 @@
 package com.tingeso.backend.entities;
 
+import com.tingeso.backend.enums.ReservationState;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;

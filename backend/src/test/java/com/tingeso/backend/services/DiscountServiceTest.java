@@ -3,7 +3,7 @@ package com.tingeso.backend.services;
 import com.tingeso.backend.configuration.DiscountConfig;
 import com.tingeso.backend.entities.Discount;
 import com.tingeso.backend.entities.Reservation;
-import com.tingeso.backend.entities.ReservationState;
+import com.tingeso.backend.enums.ReservationState;
 import com.tingeso.backend.repositories.DiscountRepository;
 import com.tingeso.backend.repositories.ReservationRepository;
 import jakarta.persistence.EntityNotFoundException;

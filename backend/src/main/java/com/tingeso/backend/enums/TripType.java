@@ -1,4 +1,4 @@
-package com.tingeso.backend.entities;
+package com.tingeso.backend.enums;
 
 public enum TripType {
     ADVENTURE,

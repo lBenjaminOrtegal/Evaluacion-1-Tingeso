@@ -17,7 +17,16 @@ import { Link } from "react-router-dom";
 import tourPackageService from "../services/tourPackage.service";
 import type { TourPackage } from "../interfaces/tourPackage.interface";
 import formatCurrency from "../utils/formatUtils";
-import { getCategoryColor, getStateColor } from "../utils/colorUtils";
+import {
+  getCategoryColor,
+  getCategoryWord,
+  getPaymentMethodWord,
+  getReservationStateWord,
+  getStateColor,
+  getTransactionStateWord,
+} from "../utils/colorUtils";
+import type { Transaction } from "../interfaces/transaction.interface";
+import transactionService from "../services/transaction.service";
 
 function ReservationsViewPage() {
   const { keycloak } = useKeycloak();
@@ -25,9 +34,11 @@ function ReservationsViewPage() {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [selectedReservation, setSelectedReservation] = useState<Reservation>();
   const [tourPackage, setTourPackage] = useState<TourPackage>();
+  const [transaction, setTransaction] = useState<Transaction>();
 
   const [show, setShow] = useState<boolean>();
   const [showCancel, setShowCancel] = useState<boolean>();
+  const [showTransaction, setShowTransaction] = useState<boolean>();
   const [loading, setLoading] = useState<boolean>(false);
 
   const handleShow = (reservation: Reservation) => {
@@ -41,6 +52,26 @@ function ReservationsViewPage() {
     setSelectedReservation(reservation);
   };
 
+  const handleTransactionShow = (reservationId: number) => {
+    setShowTransaction(true);
+    getTransaction(reservationId);
+  };
+
+  const getTransaction = async (reservationId: number) => {
+    try {
+      setLoading(true);
+      const response =
+        await transactionService.getByReservationId(reservationId);
+      const responseData = response.data;
+      setTransaction(responseData);
+      console.log(transaction);
+    } catch (error) {
+      console.error("Error cargando transacción:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const getReservations = async () => {
     if (!keycloak.authenticated) {
       return;
@@ -49,7 +80,9 @@ function ReservationsViewPage() {
     try {
       setLoading(true);
       const response = await reservationService.getByEmail(email);
-      setReservations(response.data);
+      var reservations = response.data;
+      reservations.reverse();
+      setReservations(reservations);
     } catch (error) {
       console.error("Error cargando reservas:", error);
     } finally {
@@ -131,7 +164,7 @@ function ReservationsViewPage() {
   return (
     <Container className="mt-4">
       <Modal show={showCancel} onHide={() => setShowCancel(false)}>
-        <Modal.Header closeButton>
+        <Modal.Header closeButton className="bg-light border-0 py-3">
           <Modal.Title className="fw-bold text-center">
             Cancelar reserva
           </Modal.Title>
@@ -149,6 +182,57 @@ function ReservationsViewPage() {
           </Button>
           <Button className="fw-bold btn-danger" onClick={handleCancel}>
             Cancelar Reserva
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      <Modal show={showTransaction} onHide={() => setShowTransaction(false)}>
+        <Modal.Header closeButton className="bg-light border-0 py-3">
+          <Modal.Title className="fw-bold text-center">
+            Transacción # {transaction?.id}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p className="fw-medium text-muted">
+            Monto de la transacción:{" "}
+            <span className="fw-semibold text-dark">
+              {formatCurrency(Number(transaction?.amount))}
+            </span>
+          </p>
+          <p className="fw-medium text-muted">
+            Reserva asociada:{" "}
+            <span className="fw-semibold text-dark">
+              # {transaction?.reservationId}
+            </span>
+          </p>
+          <p className="fw-medium text-muted">
+            Fecha de la transacción:{" "}
+            <span className="fw-semibold text-dark">
+              {transaction?.date.substring(0, 10) +
+                " (" +
+                transaction?.date.substring(11, 19) +
+                ")"}
+            </span>
+          </p>
+          <p className="fw-medium text-muted">
+            Método de pago:{" "}
+            <span className="fw-semibold text-dark">
+              {getPaymentMethodWord(String(transaction?.paymentMethod))}
+            </span>
+          </p>
+          <p className="fw-medium text-muted">
+            Estado de la transacción:{" "}
+            <span className="fw-semibold text-dark">
+              {getTransactionStateWord(String(transaction?.state))}
+            </span>
+          </p>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            className="fw-bold btn-secondary"
+            onClick={() => setShowTransaction(false)}
+          >
+            Atrás
           </Button>
         </Modal.Footer>
       </Modal>
@@ -183,8 +267,7 @@ function ReservationsViewPage() {
                       Detalles de la reserva
                     </h6>
                     <p className="fw-medium small text-muted">
-                      Número de la reserva: #
-                      {selectedReservation?.tourPackageId}
+                      Número de la reserva: #{selectedReservation?.id}
                     </p>
                     <p className="fw-medium small text-muted">
                       Realizada el:{" "}
@@ -220,7 +303,7 @@ function ReservationsViewPage() {
                         <Badge
                           className={`fw-semibold ${getCategoryColor(tourPackage.category)}`}
                         >
-                          {tourPackage.category}
+                          {getCategoryWord(tourPackage.category)}
                         </Badge>
                       </div>
                     </Col>
@@ -238,7 +321,11 @@ function ReservationsViewPage() {
                         <Badge
                           className={`${selectedReservation ? getStateColor(selectedReservation.reservationState) : "bg-primary"}`}
                         >
-                          {selectedReservation?.reservationState}
+                          {selectedReservation
+                            ? getReservationStateWord(
+                                selectedReservation.reservationState,
+                              )
+                            : "No Definida"}
                         </Badge>
                       </div>
                     </Col>
@@ -346,7 +433,7 @@ function ReservationsViewPage() {
               <Badge
                 className={`px-3 py-2 fw-semibold ${getStateColor(reservation.reservationState)}`}
               >
-                {reservation.reservationState}
+                {getReservationStateWord(reservation.reservationState)}
               </Badge>
 
               <Button
@@ -354,8 +441,20 @@ function ReservationsViewPage() {
                 variant="link"
                 className="text-muted fw-medium fs-6"
               >
-                Ver más detalles
+                Más detalles
               </Button>
+
+              {reservation.paymentDate ? (
+                <Button
+                  onClick={() => handleTransactionShow(reservation.id)}
+                  variant="link"
+                  className="text-muted fw-medium fs-6"
+                >
+                  Transacción
+                </Button>
+              ) : (
+                ""
+              )}
 
               <span className="fw-bold fs-5 text-success">
                 {formatCurrency(reservation.price)}
@@ -364,14 +463,17 @@ function ReservationsViewPage() {
           </Card.Header>
 
           <Card.Body>
-            <Card.Title className="fs-4 fw-bold mb-1">
-              {reservation.tourPackageName}
+            <Card.Title className="fs-4 fw-bold mb-3">
+              Reserva #{reservation.id}
             </Card.Title>
             <Card.Subtitle className="text-muted mb-3">
-              ID de Reserva: #{reservation.id} • {reservation.userEmail}
+              <p className="mb-0">
+                Paquete túristico: {reservation.tourPackageName}
+              </p>
+              <p className="mb-0">Correo asociado: {reservation.userEmail}</p>
             </Card.Subtitle>
 
-            <Row className="mb-3 g-2">
+            <Row className="mb-0 g-2">
               <Col xs={6} md={4}>
                 <div className="fw-medium text-muted"> Realizada el:</div>
                 <div className="fs-5 fw-medium">
@@ -401,28 +503,26 @@ function ReservationsViewPage() {
 
           {reservation.reservationState !== "CANCELED" &&
             reservation.reservationState !== "COMPLETED" && (
-              <Card.Footer className="bg-white border-top-0 pb-3">
-                <Stack direction="horizontal" gap={2}>
-                  <Button
-                    variant="outline-danger"
-                    className="w-25 fw-semibold"
-                    onClick={() => handleCancelShow(reservation)}
-                  >
-                    Cancelar reserva
-                  </Button>
+              <Stack direction="horizontal" className="m-0 p-3" gap={2}>
+                <Button
+                  variant="outline-danger"
+                  className="w-25 fw-semibold"
+                  onClick={() => handleCancelShow(reservation)}
+                >
+                  Cancelar reserva
+                </Button>
 
-                  {reservation.reservationState === "PENDING" && (
-                    <Button
-                      as={Link as any}
-                      variant="primary"
-                      className="w-75 fw-bold"
-                      to={`/reservations/payment/${reservation.id}`}
-                    >
-                      Pagar Ahora
-                    </Button>
-                  )}
-                </Stack>
-              </Card.Footer>
+                {reservation.reservationState === "PENDING" && (
+                  <Button
+                    as={Link as any}
+                    variant="primary"
+                    className="w-75 fw-bold"
+                    to={`/reservations/payment/${reservation.id}`}
+                  >
+                    Pagar Ahora
+                  </Button>
+                )}
+              </Stack>
             )}
         </Card>
       ))}

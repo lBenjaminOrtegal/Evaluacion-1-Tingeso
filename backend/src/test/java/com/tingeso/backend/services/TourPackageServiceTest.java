@@ -1,6 +1,8 @@
 package com.tingeso.backend.services;
 
+import com.tingeso.backend.dto.TourPackageFiltersDTO;
 import com.tingeso.backend.entities.*;
+import com.tingeso.backend.enums.TourPackageState;
 import com.tingeso.backend.repositories.ReservationRepository;
 import com.tingeso.backend.repositories.TourPackageRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -60,7 +62,7 @@ class TourPackageServiceTest {
 
     @Test
     void findCustomFilters_ReturnsList() {
-        TourPackageFilters filters = new TourPackageFilters("Paris", null, null, null, null, BigDecimal.valueOf(5000), LocalDate.now(), LocalDate.now().plusDays(7), null);
+        TourPackageFiltersDTO filters = new TourPackageFiltersDTO("Paris", null, null, null, null, BigDecimal.valueOf(5000), LocalDate.now(), LocalDate.now().plusDays(7), null);
         when(tourPackageRepository.findCustomFilters(filters)).thenReturn(Collections.singletonList(tourPackage));
         List<TourPackage> result = tourPackageService.findCustomFilters(filters);
         assertNotNull(result);

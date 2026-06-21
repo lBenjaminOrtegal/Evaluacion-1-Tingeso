@@ -20,7 +20,13 @@ import type { TourPackage } from "../interfaces/tourPackage.interface";
 import { useKeycloak } from "@react-keycloak/web";
 import tourPackageService from "../services/tourPackage.service";
 import formatCurrency from "../utils/formatUtils";
-import { getCategoryColor } from "../utils/colorUtils";
+import {
+  getCategoryColor,
+  getCategoryWord,
+  getSeasonWord,
+  getTourPackageStateWord,
+  getTripTypeWord,
+} from "../utils/colorUtils";
 
 function TourPackagesViewPage() {
   const [tourPackages, setTourPackages] = useState<TourPackage[]>([]);
@@ -121,7 +127,7 @@ function TourPackagesViewPage() {
         </div>
       </Stack>
 
-      <Accordion defaultActiveKey="0">
+      <Accordion defaultActiveKey="1">
         <Accordion.Item eventKey="0">
           <Accordion.Header className="text-primary">
             Filtros de Búsqueda
@@ -298,7 +304,7 @@ function TourPackagesViewPage() {
                   />
                   <div className="position-absolute top-0 end-0 m-3">
                     <span className="badge bg-white text-dark shadow-sm py-2 px-3 fw-bold">
-                      ${tour.price}
+                      {formatCurrency(tour.price)}
                     </span>
                   </div>
                 </div>
@@ -374,7 +380,7 @@ function TourPackagesViewPage() {
                   <Badge
                     className={`fw-semibold ${getCategoryColor(tour.category)}`}
                   >
-                    {tour.category}
+                    {getCategoryWord(tour.category)}
                   </Badge>
                 </div>
               </Modal.Header>
@@ -401,7 +407,9 @@ function TourPackagesViewPage() {
                       <Col xs={6}>
                         <div className="p-3 border rounded-3 bg-light-subtle">
                           <h6 className="small text-muted mb-1">Temporada</h6>
-                          <p className="fw-bold mb-0">{tour.season}</p>
+                          <p className="fw-bold mb-0">
+                            {getSeasonWord(tour.season)}
+                          </p>
                         </div>
                       </Col>
                       <Col xs={6}>
@@ -409,7 +417,9 @@ function TourPackagesViewPage() {
                           <h6 className="small text-muted mb-1">
                             Tipo de viaje
                           </h6>
-                          <p className="fw-bold mb-0">{tour.tripType}</p>
+                          <p className="fw-bold mb-0">
+                            {getTripTypeWord(tour.tripType)}
+                          </p>
                         </div>
                       </Col>
                       <Col xs={6}>
@@ -418,7 +428,7 @@ function TourPackagesViewPage() {
                           <p
                             className={`fw-bold mb-0 ${tour.tourPackageState === "AVAILABLE" ? "text-success" : "text-secondary"}`}
                           >
-                            {tour.tourPackageState}
+                            {getTourPackageStateWord(tour.tourPackageState)}
                           </p>
                         </div>
                       </Col>

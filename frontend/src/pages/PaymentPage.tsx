@@ -17,6 +17,10 @@ import tourPackageService from "../services/tourPackage.service";
 import transactionService from "../services/transaction.service";
 import type { Transaction } from "../interfaces/transaction.interface";
 import formatCurrency from "../utils/formatUtils";
+import {
+  getPaymentMethodWord,
+  getTransactionStateWord,
+} from "../utils/colorUtils";
 
 function PaymentPage() {
   const { id } = useParams();
@@ -29,6 +33,7 @@ function PaymentPage() {
   const [cvv, setCvv] = useState<string>("");
   const [expirationDate, setExpirationDate] = useState<string>("");
   const [show, setShow] = useState<boolean>(false);
+  const [createdTransaction, setCreatedTransaction] = useState<Transaction>();
 
   const getData = useCallback(async () => {
     if (!id) return;
@@ -72,7 +77,7 @@ function PaymentPage() {
       return;
     }
 
-    const newTransaction: Partial<Transaction> = {
+    var newTransaction: Partial<Transaction> = {
       amount: reservation.price,
       reservationId: reservation.id,
       paymentMethod: "CREDIT_CARD",
@@ -85,9 +90,12 @@ function PaymentPage() {
       console.log(isSuccess);
 
       if (isSuccess === true) {
-        await transactionService.create(newTransaction as Transaction);
+        const response = await transactionService.create(
+          newTransaction as Transaction,
+        );
+        const transactionData = response.data;
+        setCreatedTransaction(transactionData);
         setShow(true);
-        console.log("se creo la transaccion");
       } else {
         console.log("pago rechazado");
         alert("El pago fue rechazado.");
@@ -134,31 +142,57 @@ function PaymentPage() {
   return (
     <Container className="py-4">
       <Modal show={show} onHide={() => navigate("/reservations")}>
-        <Modal.Header closeButton>
-          <Modal.Title>Transacción Confirmada</Modal.Title>
+        <Modal.Header closeButton className="bg-light border-0 py-3">
+          <Modal.Title className="fw-bold text-center">
+            Transacción{" "}
+            {getTransactionStateWord(String(createdTransaction?.state))}
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Stack>
             <p className="fw-medium text-muted">
+              ID de la transacción:{" "}
+              <span className="fw-semibold text-dark">
+                # {createdTransaction?.id}
+              </span>
+            </p>
+            <p className="fw-medium text-muted">
               Monto de la transacción:{" "}
               <span className="fw-semibold text-dark">
-                {formatCurrency(reservation.price)}
+                {formatCurrency(Number(createdTransaction?.amount))}
               </span>
             </p>
             <p className="fw-medium text-muted">
               Método de pago:{" "}
-              <span className="fw-semibold text-dark">Tarjeta de crédito</span>
+              <span className="fw-semibold text-dark">
+                {getPaymentMethodWord(
+                  String(createdTransaction?.paymentMethod),
+                )}
+              </span>
             </p>
             <p className="fw-medium text-muted">
               Fecha de la transacción:{" "}
               <span className="fw-semibold text-dark">
-                {new Date().toLocaleDateString("es-ES")}
+                {createdTransaction?.date.substring(0, 10) +
+                  " (" +
+                  createdTransaction?.date.substring(11, 19) +
+                  ")"}
+              </span>
+            </p>
+            <p className="fw-medium text-muted">
+              Reserva asociada:{" "}
+              <span className="fw-semibold text-dark">
+                # {createdTransaction?.reservationId}
               </span>
             </p>
           </Stack>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="primary" onClick={() => navigate("/reservations")}>
+          <Button
+            className="fw-bold"
+            variant="primary"
+            onClick={() => navigate("/reservations")}
+          >
             Aceptar
           </Button>
         </Modal.Footer>

@@ -1,6 +1,8 @@
 package com.tingeso.backend.services;
 
+import com.tingeso.backend.dto.TourPackageFiltersDTO;
 import com.tingeso.backend.entities.*;
+import com.tingeso.backend.enums.TourPackageState;
 import com.tingeso.backend.repositories.ReservationRepository;
 import com.tingeso.backend.repositories.TourPackageRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -32,8 +34,8 @@ public class TourPackageService {
     }
 
     @Transactional(readOnly = true)
-    public List<TourPackage> findCustomFilters(TourPackageFilters tourPackageFilters) {
-        return tourPackageRepository.findCustomFilters(tourPackageFilters);
+    public List<TourPackage> findCustomFilters(TourPackageFiltersDTO tourPackageFiltersDTO) {
+        return tourPackageRepository.findCustomFilters(tourPackageFiltersDTO);
     }
 
     @Transactional
@@ -106,7 +108,7 @@ public class TourPackageService {
     public void cancelStartedTourPackages() {
         List<TourPackage> tourPackageList = tourPackageRepository.findAll();
         for (TourPackage tourPackage : tourPackageList) {
-            if (LocalDate.now().isEqual(tourPackage.getStartDate())) {
+            if (tourPackage.getStartDate().isAfter(LocalDate.now()) || tourPackage.getStartDate().isEqual(LocalDate.now())) {
                 tourPackage.setTourPackageState(TourPackageState.NOT_AVAILABLE);
             }
         }
