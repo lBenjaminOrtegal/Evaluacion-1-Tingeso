@@ -237,8 +237,12 @@ class ReservationServiceTest {
 
     @Test
     void setReservationsState_ShouldTransitionStatesBasedOnDates() {
-        Reservation r1 = new Reservation(); r1.setTourPackageId(10L); r1.setReservationState(ReservationState.PENDING);
-        Reservation r2 = new Reservation(); r2.setTourPackageId(20L); r2.setReservationState(ReservationState.PENDING);
+        Reservation r1 = new Reservation();
+        r1.setTourPackageId(10L);
+        r1.setReservationState(ReservationState.CONFIRMED);
+        Reservation r2 = new Reservation();
+        r2.setTourPackageId(20L);
+        r2.setReservationState(ReservationState.IN_PROGRESS);
         TourPackage pkgInProgress = new TourPackage();
         pkgInProgress.setStartDate(LocalDate.now().minusDays(1));
         pkgInProgress.setEndDate(LocalDate.now().plusDays(5));
@@ -251,6 +255,6 @@ class ReservationServiceTest {
         reservationService.setReservationsState();
         assertEquals(ReservationState.IN_PROGRESS, r1.getReservationState());
         assertEquals(ReservationState.COMPLETED, r2.getReservationState());
-        verify(reservationRepository).saveAll(any());
+        verify(reservationRepository).saveAll(anyList());
     }
 }
