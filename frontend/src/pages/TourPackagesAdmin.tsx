@@ -18,12 +18,15 @@ import {
   getStateColor,
   getTourPackageStateWord,
 } from "../utils/colorUtils";
+import { ErrorResponseModal } from "../components/ErrorResponseModal";
 
 function TourPackagesAdminPage() {
   const [tourPackages, setTourPackages] = useState<TourPackage[]>([]);
 
   const [idToDelete, setIdToDelete] = useState<number | null>(null);
 
+  const [showError, setShowError] = useState<boolean>(false);
+  const [apiError, setApiError] = useState<unknown>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
   const getTourPackages = async () => {
@@ -35,6 +38,8 @@ function TourPackagesAdminPage() {
       setTourPackages(tourPackages);
     } catch (error) {
       console.error("Error cargando paquetes:", error);
+      setApiError(error);
+      setShowError(true);
     } finally {
       setLoading(false);
     }
@@ -49,6 +54,8 @@ function TourPackagesAdminPage() {
       await getTourPackages();
     } catch (error) {
       console.error("No se pudo eliminar el paquete:", error);
+      setApiError(error);
+      setShowError(true);
     } finally {
       setLoading(false);
     }
@@ -70,6 +77,7 @@ function TourPackagesAdminPage() {
 
   return (
     <Container className="py-4">
+      <ErrorResponseModal show={showError} onClose={() => setShowError(false)} error={apiError}/>
       <Stack
         direction="horizontal"
         gap={3}

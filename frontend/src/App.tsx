@@ -1,20 +1,20 @@
 import React from "react";
-import NavbarComponent from "./components/NavbarComponent";
+import Navbar from "./components/Navbar";
 import { Route, Routes, useNavigate } from "react-router-dom";
-import HomePage from "./pages/HomePage";
-import TourPackagesAdminPage from "./pages/TourPackagesAdminPage";
-import AddEditTourPackageAdminPage from "./pages/AddEditTourPackageAdminPage";
-import TourPackagesViewPage from "./pages/TourPackagesViewPage";
+import Home from "./pages/Home";
+import TourPackagesAdmin from "./pages/TourPackagesAdmin";
+import AddEditTourPackageAdmin from "./pages/TourPackagesCreationEdition";
+import TourPackagesView from "./pages/TourPackagesView";
 import { useKeycloak } from "@react-keycloak/web";
 import type { PrivateRouteProps } from "./interfaces/privateRouteProps.interface";
 import { Alert, Button, Container, Spinner } from "react-bootstrap";
-import ReservationsViewPage from "./pages/ReservationsViewPage";
-import ReservationCreationPage from "./pages/ReservationCreationPage";
-import ReservationsAdminPage from "./pages/ReservationsAdminPage";
-import PaymentPage from "./pages/PaymentPage";
-import ReportsPage from "./pages/ReportsPage";
-import ProfilePage from "./pages/ProfilePage";
-import DiscountsPage from "./pages/DiscountsPage";
+import ReservationsView from "./pages/ReservationsView";
+import ReservationCreation from "./pages/ReservationCreation";
+import ReservationsAdmin from "./pages/ReservationsAdmin";
+import Payment from "./pages/Payment";
+import Reports from "./pages/Reports";
+import Profile from "./pages/Profile";
+import Discounts from "./pages/Discounts";
 
 function App() {
   const { keycloak, initialized } = useKeycloak();
@@ -102,15 +102,15 @@ function App() {
 
   return (
     <div>
-      <NavbarComponent />
+      <Navbar />
       <Routes>
-        <Route path="/" element={<HomePage />} />
+        <Route path="/" element={<Home />} />
 
         <Route
           path="/tour-packages-admin"
           element={
             <PrivateRoute
-              element={<TourPackagesAdminPage />}
+              element={<TourPackagesAdmin />}
               rolesAllowed={["ADMIN"]}
             />
           }
@@ -120,7 +120,7 @@ function App() {
           path="/tour-packages-admin/add"
           element={
             <PrivateRoute
-              element={<AddEditTourPackageAdminPage />}
+              element={<AddEditTourPackageAdmin />}
               rolesAllowed={["ADMIN"]}
             />
           }
@@ -130,21 +130,21 @@ function App() {
           path="/tour-packages-admin/edit/:id"
           element={
             <PrivateRoute
-              element={<AddEditTourPackageAdminPage />}
+              element={<AddEditTourPackageAdmin />}
               rolesAllowed={["ADMIN"]}
             />
           }
         />
 
-        <Route path="/tour-packages" element={<TourPackagesViewPage />} />
+        <Route path="/tour-packages" element={<TourPackagesView />} />
 
-        <Route path="/reservations" element={<ReservationsViewPage />} />
+        <Route path="/reservations" element={<ReservationsView />} />
 
         <Route
           path="/tour-packages/reservation/:id"
           element={
             <PrivateRoute
-              element={<ReservationCreationPage />}
+              element={<ReservationCreation />}
               rolesAllowed={["USER", "ADMIN"]}
             />
           }
@@ -154,7 +154,7 @@ function App() {
           path="/tour-packages/reservation/:id/:reservationId"
           element={
             <PrivateRoute
-              element={<ReservationCreationPage />}
+              element={<ReservationCreation />}
               rolesAllowed={["ADMIN"]}
             />
           }
@@ -164,7 +164,7 @@ function App() {
           path="/reservations-admin"
           element={
             <PrivateRoute
-              element={<ReservationsAdminPage />}
+              element={<ReservationsAdmin />}
               rolesAllowed={["ADMIN"]}
             />
           }
@@ -174,7 +174,7 @@ function App() {
           path="/reservations/payment/:id"
           element={
             <PrivateRoute
-              element={<PaymentPage />}
+              element={<Payment />}
               rolesAllowed={["USER", "ADMIN"]}
             />
           }
@@ -183,7 +183,7 @@ function App() {
         <Route
           path="/reports"
           element={
-            <PrivateRoute element={<ReportsPage />} rolesAllowed={["ADMIN"]} />
+            <PrivateRoute element={<Reports />} rolesAllowed={["ADMIN"]} />
           }
         />
 
@@ -191,7 +191,7 @@ function App() {
           path="/profile"
           element={
             <PrivateRoute
-              element={<ProfilePage />}
+              element={<Profile />}
               rolesAllowed={["USER", "ADMIN"]}
             />
           }
@@ -201,7 +201,7 @@ function App() {
           path="/tour-packages-admin/discounts"
           element={
             <PrivateRoute
-              element={<DiscountsPage />}
+              element={<Discounts />}
               rolesAllowed={["ADMIN"]}
             />
           }

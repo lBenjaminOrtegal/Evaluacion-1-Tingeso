@@ -11,10 +11,13 @@ import {
 import { useNavigate } from "react-router-dom";
 import type { Discount } from "../interfaces/discount.interface";
 import discountService from "../services/discount.service";
+import { ErrorResponseModal } from "../components/ErrorResponseModal";
 
 function DiscountsPage() {
   const navigate = useNavigate();
 
+  const [showError, setShowError] = useState<boolean>(false);
+  const [apiError, setApiError] = useState<unknown>(null);
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -52,6 +55,8 @@ function DiscountsPage() {
       setShow(true);
     } catch (error) {
       console.error("No se pudieron realizar los cambios:", error);
+      setApiError(error);
+      setShowError(true);
     } finally {
       setLoading(false);
     }
@@ -82,6 +87,8 @@ function DiscountsPage() {
       );
     } catch (error) {
       console.error("Error al cargar los descuentos", error);
+      setApiError(error);
+      setShowError(true);
     } finally {
       setLoading(false);
     }
@@ -99,6 +106,27 @@ function DiscountsPage() {
 
   return (
     <Container className="py-4">
+      <ErrorResponseModal
+        show={showError}
+        onClose={() => setShowError(false)}
+        error={apiError}
+      />
+      <Modal show={show} onHide={() => setShow(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Cambios realizados</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Se han actualizado correctamente los descuentos a los paquetes.
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="primary"
+            onClick={() => navigate("/tour-packages-admin")}
+          >
+            Aceptar
+          </Button>
+        </Modal.Footer>
+      </Modal>
       <Stack
         direction="horizontal"
         gap={3}
@@ -303,23 +331,6 @@ function DiscountsPage() {
           </Button>
         </Form>
       </Stack>
-
-      <Modal show={show} onHide={() => setShow(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Cambios realizados</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          Se han actualizado correctamente los descuentos a los paquetes.
-        </Modal.Body>
-        <Modal.Footer>
-          <Button
-            variant="primary"
-            onClick={() => navigate("/tour-packages-admin")}
-          >
-            Aceptar
-          </Button>
-        </Modal.Footer>
-      </Modal>
     </Container>
   );
 }

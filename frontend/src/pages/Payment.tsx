@@ -21,18 +21,22 @@ import {
   getPaymentMethodWord,
   getTransactionStateWord,
 } from "../utils/colorUtils";
+import { ErrorResponseModal } from "../components/ErrorResponseModal";
 
 function PaymentPage() {
   const { id } = useParams();
   const navigate = useNavigate();
 
+  const [show, setShow] = useState<boolean>(false);
+  const [showError, setShowError] = useState<boolean>(false);
+  const [apiError, setApiError] = useState<unknown>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+
   const [reservation, setReservation] = useState<Reservation>();
   const [tourPackage, setTourPackage] = useState<TourPackage>();
-  const [loading, setLoading] = useState<boolean>(false);
   const [creditCard, setCreditCard] = useState<string>("");
   const [cvv, setCvv] = useState<string>("");
   const [expirationDate, setExpirationDate] = useState<string>("");
-  const [show, setShow] = useState<boolean>(false);
   const [createdTransaction, setCreatedTransaction] = useState<Transaction>();
 
   const getData = useCallback(async () => {
@@ -49,6 +53,8 @@ function PaymentPage() {
       setTourPackage(tourPackageResponse.data);
     } catch (error) {
       console.error("Error cargando datos:", error);
+      setApiError(error);
+      setShowError(true);
     } finally {
       setLoading(false);
     }
@@ -102,7 +108,8 @@ function PaymentPage() {
       }
     } catch (error) {
       console.error("Error procesando la transacción:", error);
-      alert("Ocurrió un error técnico al procesar el pago.");
+      setApiError(error);
+      setShowError(true);
     } finally {
       setLoading(false);
     }
@@ -141,6 +148,11 @@ function PaymentPage() {
 
   return (
     <Container className="py-4">
+      <ErrorResponseModal
+        show={showError}
+        onClose={() => setShowError(false)}
+        error={apiError}
+      />
       <Modal show={show} onHide={() => navigate("/reservations")}>
         <Modal.Header closeButton className="bg-light border-0 py-3">
           <Modal.Title className="fw-bold text-center">

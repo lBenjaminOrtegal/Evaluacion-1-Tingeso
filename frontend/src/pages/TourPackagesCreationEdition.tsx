@@ -14,6 +14,7 @@ import {
 import { useNavigate, useParams } from "react-router-dom";
 import tourPackageService from "../services/tourPackage.service";
 import type { TourPackage } from "../interfaces/tourPackage.interface";
+import { ErrorResponseModal } from "../components/ErrorResponseModal";
 
 function AddEditTourPackageAdminPage() {
   const navigate = useNavigate();
@@ -24,6 +25,8 @@ function AddEditTourPackageAdminPage() {
   );
 
   const [show, setShow] = useState(false);
+  const [showError, setShowError] = useState<boolean>(false);
+  const [apiError, setApiError] = useState<unknown>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
   const [name, setName] = useState("");
@@ -66,6 +69,8 @@ function AddEditTourPackageAdminPage() {
       setTripType(pkg.tripType || "STANDARD");
     } catch (error) {
       console.error("Error al cargar paquete", error);
+      setApiError(error);
+      setShowError(true);
     } finally {
       setLoading(false);
     }
@@ -133,6 +138,8 @@ function AddEditTourPackageAdminPage() {
       setShow(true);
     } catch (error) {
       console.error("No se pudo realizar la transacción:", error);
+      setApiError(error);
+      setShowError(true);
     } finally {
       setLoading(false);
     }
@@ -150,13 +157,15 @@ function AddEditTourPackageAdminPage() {
 
   return (
     <Container className="py-4">
+      <ErrorResponseModal show={showError} onClose={() => setShowError(false)} error={apiError}/>
       <Modal show={show} onHide={() => setShow(false)}>
-        <Modal.Header closeButton>
+        <Modal.Header closeButton className="bg-light border-0 py-3">
           <Modal.Title>Transacción completa</Modal.Title>
         </Modal.Header>
         <Modal.Body>Se ha actualizado correctamente el paquete.</Modal.Body>
         <Modal.Footer>
           <Button
+            className="fw-bold"
             variant="primary"
             onClick={() => navigate("/tour-packages-admin")}
           >

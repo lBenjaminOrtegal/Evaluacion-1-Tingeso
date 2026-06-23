@@ -27,14 +27,18 @@ import {
   getTourPackageStateWord,
   getTripTypeWord,
 } from "../utils/colorUtils";
+import { ErrorResponseModal } from "../components/ErrorResponseModal";
 
 function TourPackagesViewPage() {
   const [tourPackages, setTourPackages] = useState<TourPackage[]>([]);
   const { keycloak } = useKeycloak();
-  const [show, setShow] = useState(false);
   const [tour, setTour] = useState<TourPackage | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
+
+  const [show, setShow] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [showError, setShowError] = useState<boolean>(false);
+  const [apiError, setApiError] = useState<unknown>(null);
 
   const [maxPrice, setMaxPrice] = useState<number>(1000000);
   const [category, setCategory] = useState<string>("");
@@ -75,6 +79,8 @@ function TourPackagesViewPage() {
       setTourPackages(response.data);
     } catch (error) {
       console.error("Error cargando paquetes:", error);
+      setApiError(error);
+      setShowError(true);
     } finally {
       setLoading(false);
     }
@@ -114,6 +120,7 @@ function TourPackagesViewPage() {
 
   return (
     <Container className="py-4">
+      <ErrorResponseModal show={showError} onClose={() => setShowError(false)} error={apiError}/>
       <Stack
         direction="horizontal"
         gap={3}

@@ -22,6 +22,7 @@ import reservationService from "../services/reservation.service";
 import formatCurrency from "../utils/formatUtils";
 import { getCategoryColor, getCategoryWord } from "../utils/colorUtils";
 import type { DiscountData } from "../interfaces/discountData.interface";
+import { ErrorResponseModal } from "../components/ErrorResponseModal";
 
 function ReservationCreationPage() {
   const { keycloak } = useKeycloak();
@@ -31,6 +32,8 @@ function ReservationCreationPage() {
   const [tourPackage, setTourPackage] = useState<TourPackage>();
 
   const [loading, setLoading] = useState<boolean>(true);
+  const [showError, setShowError] = useState<boolean>(false);
+  const [apiError, setApiError] = useState<unknown>(null);
   const [show, setShow] = useState(false);
 
   const [passengersAmount, setPassengersAmount] = useState<number>(1);
@@ -62,6 +65,8 @@ function ReservationCreationPage() {
       await getPrice(passengers);
     } catch (error) {
       console.error("No se pudieron cargar los datos:", error);
+      setApiError(error);
+      setShowError(true);
     } finally {
       setLoading(false);
     }
@@ -81,6 +86,8 @@ function ReservationCreationPage() {
       console.log(discountsData);
     } catch (error) {
       console.error("Error cargando el monto final:", error);
+      setApiError(error);
+      setShowError(true);
     }
   };
 
@@ -113,6 +120,8 @@ function ReservationCreationPage() {
       setShow(true);
     } catch (error) {
       console.error("Error en la transacción:", error);
+      setApiError(error);
+      setShowError(true);
     } finally {
       setLoading(false);
     }
@@ -134,6 +143,11 @@ function ReservationCreationPage() {
 
   return (
     <Container className="align-items-center justify-content-center mt-4">
+      <ErrorResponseModal
+        show={showError}
+        onClose={() => setShowError(false)}
+        error={apiError}
+      />
       <Modal show={show} onHide={() => setShow(false)}>
         <Modal.Header closeButton>
           <Modal.Title>
@@ -384,9 +398,9 @@ function ReservationCreationPage() {
                       >
                         <option value="PENDING">Pendiente</option>
                         <option value="CONFIRMED">Confirmado</option>
-                        <option value="CANCELED">Cancelado</option>
-                        <option value="COMPLETED">Completado</option>
                         <option value="IN_PROGRESS">En Progreso</option>
+                        <option value="COMPLETED">Completado</option>
+                        <option value="CANCELED">Cancelado</option>
                       </Form.Select>
                     </Form.Group>
                   </Col>

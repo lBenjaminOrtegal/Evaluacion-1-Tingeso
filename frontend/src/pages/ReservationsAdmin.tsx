@@ -13,11 +13,14 @@ import reservationService from "../services/reservation.service";
 import type { Reservation } from "../interfaces/reservation.interface";
 import formatCurrency from "../utils/formatUtils";
 import { getReservationStateWord, getStateColor } from "../utils/colorUtils";
+import { ErrorResponseModal } from "../components/ErrorResponseModal";
 
 function ReservationsAdminPage() {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [idToDelete, setIdToDelete] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [showError, setShowError] = useState<boolean>(false);
+  const [apiError, setApiError] = useState<unknown>(null);
 
   const getreservations = async () => {
     try {
@@ -28,6 +31,8 @@ function ReservationsAdminPage() {
       setReservations(reservations);
     } catch (error) {
       console.error("Error cargando reservas:", error);
+      setApiError(error);
+      setShowError(true);
     } finally {
       setLoading(false);
     }
@@ -41,6 +46,10 @@ function ReservationsAdminPage() {
       await getreservations();
     } catch (error) {
       console.error("No se pudo eliminar la reserva:", error);
+      setApiError(error);
+      setShowError(true);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -60,6 +69,31 @@ function ReservationsAdminPage() {
 
   return (
     <Container className="py-4">
+      <ErrorResponseModal
+        show={showError}
+        onClose={() => setShowError(false)}
+        error={apiError}
+      />
+      <Modal show={idToDelete !== null} onHide={() => setIdToDelete(null)}>
+        <Modal.Header closeButton>
+          <Modal.Title className="fw-bold text-center">Eliminar</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          ¿Estás seguro de que deseas eliminar la reserva con ID:{" "}
+          <strong>#{idToDelete}</strong>? Esta acción no se puede deshacer.
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            className="fw-bold btn-secondary"
+            onClick={() => setIdToDelete(null)}
+          >
+            Cancelar
+          </Button>
+          <Button className="fw-bold btn-danger" onClick={handleDelete}>
+            Eliminar
+          </Button>
+        </Modal.Footer>
+      </Modal>
       <Stack
         direction="horizontal"
         gap={3}
@@ -141,27 +175,6 @@ function ReservationsAdminPage() {
           ))}
         </tbody>
       </Table>
-
-      <Modal show={idToDelete !== null} onHide={() => setIdToDelete(null)}>
-        <Modal.Header closeButton>
-          <Modal.Title className="fw-bold text-center">Eliminar</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          ¿Estás seguro de que deseas eliminar la reserva con ID:{" "}
-          <strong>#{idToDelete}</strong>? Esta acción no se puede deshacer.
-        </Modal.Body>
-        <Modal.Footer>
-          <Button
-            className="fw-bold btn-secondary"
-            onClick={() => setIdToDelete(null)}
-          >
-            Cancelar
-          </Button>
-          <Button className="fw-bold btn-danger" onClick={handleDelete}>
-            Eliminar
-          </Button>
-        </Modal.Footer>
-      </Modal>
     </Container>
   );
 }

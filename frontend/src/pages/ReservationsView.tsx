@@ -27,6 +27,7 @@ import {
 } from "../utils/colorUtils";
 import type { Transaction } from "../interfaces/transaction.interface";
 import transactionService from "../services/transaction.service";
+import { ErrorResponseModal } from "../components/ErrorResponseModal";
 
 function ReservationsViewPage() {
   const { keycloak } = useKeycloak();
@@ -39,6 +40,8 @@ function ReservationsViewPage() {
   const [show, setShow] = useState<boolean>();
   const [showCancel, setShowCancel] = useState<boolean>();
   const [showTransaction, setShowTransaction] = useState<boolean>();
+  const [showError, setShowError] = useState<boolean>(false);
+  const [apiError, setApiError] = useState<unknown>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
   const handleShow = (reservation: Reservation) => {
@@ -67,6 +70,8 @@ function ReservationsViewPage() {
       console.log(transaction);
     } catch (error) {
       console.error("Error cargando transacción:", error);
+      setApiError(error);
+      setShowError(true);
     } finally {
       setLoading(false);
     }
@@ -85,6 +90,8 @@ function ReservationsViewPage() {
       setReservations(reservations);
     } catch (error) {
       console.error("Error cargando reservas:", error);
+      setApiError(error);
+      setShowError(true);
     } finally {
       setLoading(false);
     }
@@ -97,6 +104,8 @@ function ReservationsViewPage() {
       setTourPackage(response.data);
     } catch (error) {
       console.error("Error cargando paquete túristico:", error);
+      setApiError(error);
+      setShowError(true);
     } finally {
       setLoading(false);
     }
@@ -116,6 +125,8 @@ function ReservationsViewPage() {
       getReservations();
     } catch (error) {
       console.error("Error cancelando la reserva:", error);
+      setApiError(error);
+      setShowError(true);
     } finally {
       setShowCancel(false);
       setLoading(false);
@@ -163,6 +174,7 @@ function ReservationsViewPage() {
 
   return (
     <Container className="mt-4">
+      <ErrorResponseModal show={showError} onClose={() => setShowError(false)} error={apiError}/>
       <Modal show={showCancel} onHide={() => setShowCancel(false)}>
         <Modal.Header closeButton className="bg-light border-0 py-3">
           <Modal.Title className="fw-bold text-center">

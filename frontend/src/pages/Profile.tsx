@@ -11,10 +11,13 @@ import keycloak from "../services/keycloak";
 import { useEffect, useState } from "react";
 import type { Reservation } from "../interfaces/reservation.interface";
 import reservationService from "../services/reservation.service";
+import { ErrorResponseModal } from "../components/ErrorResponseModal";
 
 function ProfilePage() {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [showError, setShowError] = useState<boolean>(false);
+  const [apiError, setApiError] = useState<unknown>(null);
 
   const getreservations = async () => {
     try {
@@ -25,6 +28,8 @@ function ProfilePage() {
       setReservations(response.data);
     } catch (error) {
       console.error("Error cargando reservas:", error);
+      setApiError(error);
+      setShowError(true);
     } finally {
       setLoading(false);
     }
@@ -46,6 +51,11 @@ function ProfilePage() {
 
   return (
     <Container className="py-4">
+      <ErrorResponseModal
+        show={showError}
+        onClose={() => setShowError(false)}
+        error={apiError}
+      />
       <Stack
         direction="horizontal"
         gap={3}

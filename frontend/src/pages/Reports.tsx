@@ -14,6 +14,7 @@ import reservationService from "../services/reservation.service";
 import type { Reservation } from "../interfaces/reservation.interface";
 import formatCurrency from "../utils/formatUtils";
 import { getReservationStateWord, getStateColor } from "../utils/colorUtils";
+import { ErrorResponseModal } from "../components/ErrorResponseModal";
 
 function ReportsPage() {
   const [startDate, setStartDate] = useState<string>("");
@@ -23,6 +24,8 @@ function ReportsPage() {
   const [order, setOrder] = useState<number>(0);
   const [type, setType] = useState<string>("");
 
+  const [showError, setShowError] = useState<boolean>(false);
+  const [apiError, setApiError] = useState<unknown>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
   const [reservations, setReservations] = useState<Reservation[]>([]);
@@ -50,6 +53,8 @@ function ReportsPage() {
       setRanking(response.data);
     } catch (error) {
       console.error("No se ha podido generar el reporte:", error);
+      setApiError(error);
+      setShowError(true);
     } finally {
       setLoading(false);
     }
@@ -75,6 +80,8 @@ function ReportsPage() {
       setReservations(response.data);
     } catch (error) {
       console.error("No se ha podido generar el reporte:", error);
+      setApiError(error);
+      setShowError(true);
     } finally {
       setLoading(false);
     }
@@ -92,6 +99,11 @@ function ReportsPage() {
 
   return (
     <Container className="py-4">
+      <ErrorResponseModal
+        show={showError}
+        onClose={() => setShowError(false)}
+        error={apiError}
+      />
       <Stack
         direction="horizontal"
         gap={3}
