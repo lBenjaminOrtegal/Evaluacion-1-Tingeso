@@ -3,6 +3,7 @@ package com.tingeso.backend.services;
 import com.tingeso.backend.dto.TourPackageFiltersDTO;
 import com.tingeso.backend.entities.*;
 import com.tingeso.backend.enums.TourPackageState;
+import com.tingeso.backend.exceptions.BusinessRuleException;
 import com.tingeso.backend.repositories.ReservationRepository;
 import com.tingeso.backend.repositories.TourPackageRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -73,25 +74,25 @@ class TourPackageServiceTest {
     @Test
     void create_ThrowsException_WhenPriceIsZeroOrNegative() {
         tourPackage.setPrice(BigDecimal.ZERO);
-        assertThrows(IllegalStateException.class, () -> tourPackageService.createTourPackage(tourPackage));
+        assertThrows(BusinessRuleException.class, () -> tourPackageService.createTourPackage(tourPackage));
     }
 
     @Test
     void create_ThrowsException_WhenDatesAreInvalid() {
         tourPackage.setEndDate(tourPackage.getStartDate().minusDays(1));
-        assertThrows(IllegalStateException.class, () -> tourPackageService.createTourPackage(tourPackage));
+        assertThrows(BusinessRuleException.class, () -> tourPackageService.createTourPackage(tourPackage));
     }
 
     @Test
     void create_ThrowsException_WhenSpotsEqualZero() {
         tourPackage.setInitialSpots(0);
-        assertThrows(IllegalStateException.class, () -> tourPackageService.createTourPackage(tourPackage));
+        assertThrows(BusinessRuleException.class, () -> tourPackageService.createTourPackage(tourPackage));
     }
 
     @Test
     void create_ThrowsException_WhenSpotsLessThanZero() {
         tourPackage.setInitialSpots(-1);
-        assertThrows(IllegalStateException.class, () -> tourPackageService.createTourPackage(tourPackage));
+        assertThrows(BusinessRuleException.class, () -> tourPackageService.createTourPackage(tourPackage));
     }
 
     @Test
@@ -125,7 +126,7 @@ class TourPackageServiceTest {
         tourPackage.setRemainingSpots(5);
         when(tourPackageRepository.findById(1L)).thenReturn(Optional.of(tourPackage));
         when(reservationRepository.findByTourPackageId(1L)).thenReturn(Collections.singletonList(new Reservation()));
-        assertThrows(IllegalStateException.class, () -> tourPackageService.update(updatedData));
+        assertThrows(BusinessRuleException.class, () -> tourPackageService.update(updatedData));
     }
 
     @Test

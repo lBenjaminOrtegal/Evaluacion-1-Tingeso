@@ -3,16 +3,17 @@ package com.tingeso.backend.entities;
 import com.tingeso.backend.enums.PaymentMethod;
 import com.tingeso.backend.enums.TransactionState;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "transactions")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Transaction {
@@ -21,13 +22,13 @@ public class Transaction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @NotNull(message = "Amount cannot be null")
+    @Positive(message = "Price must be greater than zero")
     private BigDecimal amount;
 
-    @Column(nullable = false)
+    @NotNull(message = "Reservation id cannot be null")
     private Long reservationId;
 
-    @Column(nullable = false)
     private LocalDateTime date;
 
     @Enumerated(EnumType.STRING)

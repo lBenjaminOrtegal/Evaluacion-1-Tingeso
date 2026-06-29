@@ -3,13 +3,13 @@ import Navbar from "./components/Navbar";
 import { Route, Routes, useNavigate } from "react-router-dom";
 import Home from "./pages/Home";
 import TourPackagesAdmin from "./pages/TourPackagesAdmin";
-import AddEditTourPackageAdmin from "./pages/TourPackagesCreationEdition";
+import TourPackageCreationEdition from "./pages/TourPackagesCreationEdition";
 import TourPackagesView from "./pages/TourPackagesView";
 import { useKeycloak } from "@react-keycloak/web";
 import type { PrivateRouteProps } from "./interfaces/privateRouteProps.interface";
 import { Alert, Button, Container, Spinner } from "react-bootstrap";
 import ReservationsView from "./pages/ReservationsView";
-import ReservationCreation from "./pages/ReservationCreation";
+import ReservationCreationEdition from "./pages/ReservationCreationEdition";
 import ReservationsAdmin from "./pages/ReservationsAdmin";
 import Payment from "./pages/Payment";
 import Reports from "./pages/Reports";
@@ -120,7 +120,7 @@ function App() {
           path="/tour-packages-admin/add"
           element={
             <PrivateRoute
-              element={<AddEditTourPackageAdmin />}
+              element={<TourPackageCreationEdition />}
               rolesAllowed={["ADMIN"]}
             />
           }
@@ -130,7 +130,7 @@ function App() {
           path="/tour-packages-admin/edit/:id"
           element={
             <PrivateRoute
-              element={<AddEditTourPackageAdmin />}
+              element={<TourPackageCreationEdition />}
               rolesAllowed={["ADMIN"]}
             />
           }
@@ -144,7 +144,7 @@ function App() {
           path="/tour-packages/reservation/:id"
           element={
             <PrivateRoute
-              element={<ReservationCreation />}
+              element={<ReservationCreationEdition />}
               rolesAllowed={["USER", "ADMIN"]}
             />
           }
@@ -154,7 +154,7 @@ function App() {
           path="/tour-packages/reservation/:id/:reservationId"
           element={
             <PrivateRoute
-              element={<ReservationCreation />}
+              element={<ReservationCreationEdition />}
               rolesAllowed={["ADMIN"]}
             />
           }

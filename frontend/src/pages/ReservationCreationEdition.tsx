@@ -24,7 +24,7 @@ import { getCategoryColor, getCategoryWord } from "../utils/colorUtils";
 import type { DiscountData } from "../interfaces/discountData.interface";
 import { ErrorResponseModal } from "../components/ErrorResponseModal";
 
-function ReservationCreationPage() {
+function ReservationCreationEdition() {
   const { keycloak } = useKeycloak();
   const { id, reservationId } = useParams();
   const navigate = useNavigate();
@@ -501,4 +501,4 @@ function ReservationCreationPage() {
   );
 }
 
-export default ReservationCreationPage;
+export default ReservationCreationEdition;

@@ -16,7 +16,7 @@ import formatCurrency from "../utils/formatUtils";
 import { getReservationStateWord, getStateColor } from "../utils/colorUtils";
 import { ErrorResponseModal } from "../components/ErrorResponseModal";
 
-function ReportsPage() {
+function Reports() {
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
   const [startDateSales, setStartDateSales] = useState<string>("");
@@ -374,4 +374,4 @@ function ReportsPage() {
   );
 }
 
-export default ReportsPage;
+export default Reports;

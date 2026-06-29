@@ -4,9 +4,9 @@ import com.tingeso.backend.configuration.DiscountConfig;
 import com.tingeso.backend.entities.Discount;
 import com.tingeso.backend.entities.Reservation;
 import com.tingeso.backend.enums.ReservationState;
+import com.tingeso.backend.exceptions.ResourceNotFoundException;
 import com.tingeso.backend.repositories.DiscountRepository;
 import com.tingeso.backend.repositories.ReservationRepository;
-import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -82,8 +82,7 @@ class DiscountServiceTest {
     @Test
     void whenDiscountDoesNotExist_thenFindDiscountShouldReturnNull() {
         when(discountRepository.findById(1L)).thenReturn(Optional.empty());
-        Discount result = discountService.findDiscount();
-        assertNull(result);
+        assertThrows(ResourceNotFoundException.class, () -> discountService.findDiscount());
         verify(discountRepository, times(1)).findById(1L);
     }
 
@@ -109,7 +108,7 @@ class DiscountServiceTest {
     @Test
     void whenDiscountDoesNotExist_thenUpdateShouldThrowEntityNotFoundException() {
         when(discountRepository.findById(1L)).thenReturn(Optional.empty());
-        assertThrows(EntityNotFoundException.class, () -> discountService.update(updateRequest));
+        assertThrows(ResourceNotFoundException.class, () -> discountService.update(updateRequest));
         verify(discountRepository, never()).save(any(Discount.class));
     }
 

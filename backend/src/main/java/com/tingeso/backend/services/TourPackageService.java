@@ -3,11 +3,11 @@ package com.tingeso.backend.services;
 import com.tingeso.backend.dto.TourPackageFiltersDTO;
 import com.tingeso.backend.entities.*;
 import com.tingeso.backend.enums.TourPackageState;
+import com.tingeso.backend.exceptions.BusinessRuleException;
+import com.tingeso.backend.exceptions.ResourceNotFoundException;
 import com.tingeso.backend.repositories.ReservationRepository;
 import com.tingeso.backend.repositories.TourPackageRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,13 +24,14 @@ public class TourPackageService {
     private final ReservationRepository reservationRepository;
 
     @Transactional(readOnly = true)
-    public TourPackage findById(Long id) {
-        return tourPackageRepository.findById(id).orElse(null);
+    public List<TourPackage> findAll() {
+        return tourPackageRepository.findAll();
     }
 
     @Transactional(readOnly = true)
-    public List<TourPackage> findAll() {
-        return tourPackageRepository.findAll();
+    public TourPackage findById(Long id) {
+        return tourPackageRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Tour package with id " + id + " not found"));
     }
 
     @Transactional(readOnly = true)
@@ -41,13 +42,13 @@ public class TourPackageService {
     @Transactional
     public TourPackage createTourPackage(TourPackage tourPackage) {
         if (tourPackage.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalStateException("Price must be greater than zero");
+            throw new BusinessRuleException("Price must be greater than zero");
         }
         if (tourPackage.getEndDate().isBefore(tourPackage.getStartDate())) {
-            throw new IllegalStateException("Start date must be before end date");
+            throw new BusinessRuleException("Start date must be before end date");
         }
         if (tourPackage.getInitialSpots() <= 0) {
-            throw new IllegalStateException("Initial spots must be greater than zero");
+            throw new BusinessRuleException("Initial spots must be greater than zero");
         }
         tourPackage.calculateDuration();
         return tourPackageRepository.save(tourPackage);
@@ -56,7 +57,7 @@ public class TourPackageService {
     @Transactional
     public TourPackage update(TourPackage tourPackage) {
         TourPackage existingPackage = tourPackageRepository.findById(tourPackage.getId())
-                .orElseThrow(() -> new EntityNotFoundException("TourPackage not found with id: " + tourPackage.getId()));
+                .orElseThrow(() -> new ResourceNotFoundException("TourPackage not found with id: " + tourPackage.getId()));
         List<Reservation> reservations = reservationRepository.findByTourPackageId(tourPackage.getId());
         existingPackage.setName(tourPackage.getName());
         existingPackage.setPrice(tourPackage.getPrice());
@@ -69,9 +70,8 @@ public class TourPackageService {
         int occupiedSpots = existingPackage.getInitialSpots() - existingPackage.getRemainingSpots();
         if (!reservations.isEmpty()) { // if had reservations
             if (tourPackage.getInitialSpots() < occupiedSpots) {
-                throw new IllegalStateException("New initial spots are less tan occupied spots.");
-            }
-            else {
+                throw new BusinessRuleException("New initial spots are less tan occupied spots.");
+            } else {
                 existingPackage.setInitialSpots(tourPackage.getInitialSpots());
                 existingPackage.setRemainingSpots(tourPackage.getInitialSpots() - occupiedSpots);
             }
@@ -85,22 +85,22 @@ public class TourPackageService {
         if (existingPackage.getRemainingSpots() <= 0) {
             existingPackage.setTourPackageState(TourPackageState.SOLD_OUT);
         } else {
-            existingPackage.setTourPackageState(TourPackageState.AVAILABLE);
+            existingPackage.setTourPackageState(tourPackage.getTourPackageState());
         }
         return tourPackageRepository.save(existingPackage);
     }
 
     @Transactional
-    public void deleteById(Long id) throws EmptyResultDataAccessException {
+    public void deleteById(Long id) {
         TourPackage tourPackage = tourPackageRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("TourPackage not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("TourPackage not found with id: " + id));
         List<Reservation> reservations = reservationRepository.findByTourPackageId(id);
         if (reservations.isEmpty()) {
             tourPackageRepository.delete(tourPackage);
-            return;
+        } else {
+            tourPackage.setTourPackageState(TourPackageState.NOT_AVAILABLE);
+            tourPackageRepository.save(tourPackage);
         }
-        tourPackage.setTourPackageState(TourPackageState.NOT_AVAILABLE);
-        tourPackageRepository.save(tourPackage);
     }
 
     @Scheduled(cron = "0 0 0 * * *")

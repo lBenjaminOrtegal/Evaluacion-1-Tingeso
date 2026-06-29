@@ -23,7 +23,7 @@ import {
 } from "../utils/colorUtils";
 import { ErrorResponseModal } from "../components/ErrorResponseModal";
 
-function PaymentPage() {
+function Payment() {
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -372,4 +372,4 @@ function PaymentPage() {
   );
 }
 
-export default PaymentPage;
+export default Payment;

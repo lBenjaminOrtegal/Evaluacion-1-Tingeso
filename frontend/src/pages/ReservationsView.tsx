@@ -29,7 +29,7 @@ import type { Transaction } from "../interfaces/transaction.interface";
 import transactionService from "../services/transaction.service";
 import { ErrorResponseModal } from "../components/ErrorResponseModal";
 
-function ReservationsViewPage() {
+function ReservationsView() {
   const { keycloak } = useKeycloak();
 
   const [reservations, setReservations] = useState<Reservation[]>([]);
@@ -542,4 +542,4 @@ function ReservationsViewPage() {
   );
 }
 
-export default ReservationsViewPage;
+export default ReservationsView;

@@ -5,18 +5,21 @@ import com.tingeso.backend.enums.Season;
 import com.tingeso.backend.enums.TourPackageState;
 import com.tingeso.backend.enums.TripType;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "tour_packages")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class TourPackage {
@@ -25,20 +28,40 @@ public class TourPackage {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Name cannot be null")
     private String name;
+
+    @NotBlank(message = "Destiny cannot be null")
     private String destiny;
 
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @NotNull(message = "Start date cannot be null")
     private LocalDate startDate;
+
+    @NotNull(message = "Start date cannot be null")
     private LocalDate endDate;
+
     private String duration;
+
+    @NotNull(message = "Price cannot be null")
+    @Positive(message = "Price must be greater than zero")
     private BigDecimal price;
-    private List<String> services;
-    private List<String> conditions;
-    private List<String> restrictions;
+
+    @ElementCollection
+    private List<String> services = new ArrayList<>();
+
+    @ElementCollection
+    private List<String> conditions = new ArrayList<>();
+
+    @ElementCollection
+    private List<String> restrictions = new ArrayList<>();
+
+    @NotNull(message = "Initial spots cannot be null")
+    @Positive(message = "Initial spots must be greater than 0")
     private Integer initialSpots;
+
     private Integer remainingSpots;
 
     @Enumerated(EnumType.STRING)

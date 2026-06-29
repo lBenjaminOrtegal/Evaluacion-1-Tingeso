@@ -16,7 +16,7 @@ import tourPackageService from "../services/tourPackage.service";
 import type { TourPackage } from "../interfaces/tourPackage.interface";
 import { ErrorResponseModal } from "../components/ErrorResponseModal";
 
-function AddEditTourPackageAdminPage() {
+function TourPackageCreationEdition() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
 
@@ -477,4 +477,4 @@ function AddEditTourPackageAdminPage() {
   );
 }
 
-export default AddEditTourPackageAdminPage;
+export default TourPackageCreationEdition;

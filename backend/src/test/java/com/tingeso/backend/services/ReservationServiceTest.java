@@ -5,6 +5,7 @@ import com.tingeso.backend.dto.DiscountDataDTO;
 import com.tingeso.backend.entities.*;
 import com.tingeso.backend.enums.ReservationState;
 import com.tingeso.backend.enums.TourPackageState;
+import com.tingeso.backend.exceptions.BusinessRuleException;
 import com.tingeso.backend.repositories.PromotionRepository;
 import com.tingeso.backend.repositories.ReservationRepository;
 import com.tingeso.backend.repositories.TourPackageRepository;
@@ -43,7 +44,6 @@ class ReservationServiceTest {
 
     private Reservation reservation;
     private TourPackage tourPackage;
-    private final String testEmail = "user@test.com";
 
     @BeforeEach
     void setUp() {
@@ -60,6 +60,7 @@ class ReservationServiceTest {
         reservation.setId(1L);
         reservation.setTourPackageId(10L);
         reservation.setPassengersAmount(2);
+        String testEmail = "user@test.com";
         reservation.setUserEmail(testEmail);
         reservation.setReservationState(ReservationState.PENDING);
     }
@@ -93,8 +94,8 @@ class ReservationServiceTest {
         Reservation r2 = new Reservation(); r2.setTourPackageId(20L); r2.setPassengersAmount(5); r2.setPrice(BigDecimal.valueOf(5000)); r2.setTourPackageName("B");
         when(reservationRepository.findDateReports(any(), any(), any())).thenReturn(Arrays.asList(r1, r2));
         List<List<Reservation>> ranking = reservationService.findRanking(start, end, 0, "passengers");
-        assertEquals(10L, ranking.get(0).get(0).getTourPackageId());
-        assertEquals(20L, ranking.get(1).get(0).getTourPackageId());
+        assertEquals(10L, ranking.get(0).getFirst().getTourPackageId());
+        assertEquals(20L, ranking.get(1).getFirst().getTourPackageId());
     }
 
     @Test
@@ -107,7 +108,7 @@ class ReservationServiceTest {
     void create_WhenPackageNotAvailable_ShouldThrowIllegalStateException() {
         tourPackage.setTourPackageState(TourPackageState.SOLD_OUT);
         when(tourPackageRepository.findById(10L)).thenReturn(Optional.of(tourPackage));
-        assertThrows(IllegalStateException.class, () -> reservationService.create(reservation));
+        assertThrows(BusinessRuleException.class, () -> reservationService.create(reservation));
     }
 
     @Test
@@ -133,7 +134,7 @@ class ReservationServiceTest {
         reservationInDb.setReservationState(ReservationState.CANCELED);
         when(reservationRepository.findById(any())).thenReturn(Optional.of(reservationInDb));
         when(tourPackageRepository.findById(any())).thenReturn(Optional.of(tourPackage));
-        assertThrows(IllegalStateException.class, () -> reservationService.update(reservation));
+        assertThrows(BusinessRuleException.class, () -> reservationService.update(reservation));
     }
 
     @Test
@@ -144,7 +145,7 @@ class ReservationServiceTest {
         when(reservationRepository.findById(any())).thenReturn(Optional.of(reservationInDb));
         when(tourPackageRepository.findById(any())).thenReturn(Optional.of(tourPackage));
         reservation.setReservationState(ReservationState.CONFIRMED);
-        assertThrows(IllegalStateException.class, () -> reservationService.update(reservation));
+        assertThrows(BusinessRuleException.class, () -> reservationService.update(reservation));
     }
 
     @Test
@@ -178,7 +179,7 @@ class ReservationServiceTest {
         when(reservationRepository.findById(any())).thenReturn(Optional.of(reservationInDb));
         when(tourPackageRepository.findById(any())).thenReturn(Optional.of(tourPackage));
         reservation.setPassengersAmount(15);
-        assertThrows(IllegalStateException.class, () -> reservationService.update(reservation));
+        assertThrows(BusinessRuleException.class, () -> reservationService.update(reservation));
     }
 
     @Test

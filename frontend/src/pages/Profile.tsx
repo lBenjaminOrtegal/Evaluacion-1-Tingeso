@@ -13,7 +13,7 @@ import type { Reservation } from "../interfaces/reservation.interface";
 import reservationService from "../services/reservation.service";
 import { ErrorResponseModal } from "../components/ErrorResponseModal";
 
-function ProfilePage() {
+function Profile() {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [showError, setShowError] = useState<boolean>(false);
@@ -116,4 +116,4 @@ function ProfilePage() {
   );
 }
 
-export default ProfilePage;
+export default Profile;

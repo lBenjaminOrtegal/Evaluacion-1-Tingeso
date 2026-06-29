@@ -4,9 +4,10 @@ import com.tingeso.backend.entities.Reservation;
 import com.tingeso.backend.enums.ReservationState;
 import com.tingeso.backend.entities.Transaction;
 import com.tingeso.backend.enums.TransactionState;
+import com.tingeso.backend.exceptions.BusinessRuleException;
+import com.tingeso.backend.exceptions.ResourceNotFoundException;
 import com.tingeso.backend.repositories.ReservationRepository;
 import com.tingeso.backend.repositories.TransactionRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,15 +30,15 @@ public class TransactionService {
     @Transactional
     public Transaction create(Transaction transaction) {
         Reservation reservation = reservationRepository.findById(transaction.getReservationId())
-                .orElseThrow(() -> new EntityNotFoundException("Reservation not found with id: " + transaction.getReservationId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + transaction.getReservationId()));
         if (reservation.getReservationState() == ReservationState.CANCELED) {
-            throw new IllegalStateException("Cannot create transaction because reservation is canceled.");
+            throw new BusinessRuleException("Cannot create transaction because reservation is canceled.");
         }
         if (reservation.getPaymentDate() != null) {
-            throw new IllegalStateException("Cannot create transaction because payment is already set.");
+            throw new BusinessRuleException("Cannot create transaction because payment is already set.");
         }
         if (transaction.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalStateException("Cannot create transaction because amount is less or equal to 0.");
+            throw new BusinessRuleException("Cannot create transaction because amount is less or equal to 0.");
         }
         reservation.setReservationState(ReservationState.CONFIRMED);
         reservation.setPaymentDate(LocalDateTime.now());

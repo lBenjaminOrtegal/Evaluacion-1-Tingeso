@@ -13,7 +13,7 @@ import type { Discount } from "../interfaces/discount.interface";
 import discountService from "../services/discount.service";
 import { ErrorResponseModal } from "../components/ErrorResponseModal";
 
-function DiscountsPage() {
+function Discounts() {
   const navigate = useNavigate();
 
   const [showError, setShowError] = useState<boolean>(false);
@@ -174,7 +174,7 @@ function DiscountsPage() {
                 max={100}
                 value={maxDiscountLimit}
                 onChange={(e) => setMaxDiscountLimit(Number(e.target.value))}
-                onFocus={(e) => e.target.select()} // Se añade selección automática
+                onFocus={(e) => e.target.select()}
                 required
               />
               <InputGroup.Text id="basic-addon3">%</InputGroup.Text>
@@ -197,7 +197,7 @@ function DiscountsPage() {
                 max={100}
                 value={minPassengers}
                 onChange={(e) => setMinPassengers(Number(e.target.value))}
-                onFocus={(e) => e.target.select()} // Se añade selección automática
+                onFocus={(e) => e.target.select()}
                 required
               />
               <InputGroup.Text id="basic-addon3">pasajeros</InputGroup.Text>
@@ -214,7 +214,7 @@ function DiscountsPage() {
                 max={100}
                 value={discountPassengers}
                 onChange={(e) => setDiscountPassengers(Number(e.target.value))}
-                onFocus={(e) => e.target.select()} // Se añade selección automática
+                onFocus={(e) => e.target.select()}
                 required
               />
               <InputGroup.Text id="basic-addon3">%</InputGroup.Text>
@@ -237,7 +237,7 @@ function DiscountsPage() {
                 max={100}
                 value={minReservations}
                 onChange={(e) => setMinReservations(Number(e.target.value))}
-                onFocus={(e) => e.target.select()} // Se añade selección automática
+                onFocus={(e) => e.target.select()}
                 required
               />
               <InputGroup.Text id="basic-addon3">reservas</InputGroup.Text>
@@ -256,7 +256,7 @@ function DiscountsPage() {
                 onChange={(e) =>
                   setDiscountReservations(Number(e.target.value))
                 }
-                onFocus={(e) => e.target.select()} // Se añade selección automática
+                onFocus={(e) => e.target.select()}
                 required
               />
               <InputGroup.Text id="basic-addon3">%</InputGroup.Text>
@@ -277,7 +277,7 @@ function DiscountsPage() {
                 min={0}
                 value={daysWindow}
                 onChange={(e) => setDaysWindow(Number(e.target.value))}
-                onFocus={(e) => e.target.select()} // Se añade selección automática
+                onFocus={(e) => e.target.select()}
                 required
               />
               <InputGroup.Text id="basic-addon3">días</InputGroup.Text>
@@ -296,7 +296,7 @@ function DiscountsPage() {
                 onChange={(e) =>
                   setMinReservationsMultiplePackages(Number(e.target.value))
                 }
-                onFocus={(e) => e.target.select()} // Se añade selección automática
+                onFocus={(e) => e.target.select()}
                 required
               />
               <InputGroup.Text id="basic-addon3">paquetes</InputGroup.Text>
@@ -315,7 +315,7 @@ function DiscountsPage() {
                 onChange={(e) =>
                   setDiscountMultiplePackages(Number(e.target.value))
                 }
-                onFocus={(e) => e.target.select()} // Se añade selección automática
+                onFocus={(e) => e.target.select()}
                 required
               />
               <InputGroup.Text id="basic-addon3">%</InputGroup.Text>
@@ -335,4 +335,4 @@ function DiscountsPage() {
   );
 }
 
-export default DiscountsPage;
+export default Discounts;

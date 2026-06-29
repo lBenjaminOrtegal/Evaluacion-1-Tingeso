@@ -5,10 +5,11 @@ import com.tingeso.backend.dto.DiscountDataDTO;
 import com.tingeso.backend.entities.*;
 import com.tingeso.backend.enums.ReservationState;
 import com.tingeso.backend.enums.TourPackageState;
+import com.tingeso.backend.exceptions.BusinessRuleException;
+import com.tingeso.backend.exceptions.ResourceNotFoundException;
 import com.tingeso.backend.repositories.PromotionRepository;
 import com.tingeso.backend.repositories.ReservationRepository;
 import com.tingeso.backend.repositories.TourPackageRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -38,7 +39,8 @@ public class ReservationService {
 
     @Transactional(readOnly = true)
     public Reservation findById(Long id) {
-        return reservationRepository.findById(id).orElse(null);
+        return reservationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Reservation with id " + id + " not found"));
     }
 
     @Transactional(readOnly = true)
@@ -49,7 +51,7 @@ public class ReservationService {
     @Transactional(readOnly = true)
     public List<Reservation> findDateReports(LocalDateTime startDate, LocalDateTime endDate) {
         if (startDate.isAfter(endDate)) {
-            throw new RuntimeException("Start date is after end date");
+            throw new BusinessRuleException("Start date must be before end date");
         }
         LocalDateTime startDateTime = startDate.withHour(0).withMinute(0).withSecond(0).withNano(0);
         LocalDateTime endDateTime = endDate.withHour(23).withMinute(59).withSecond(59).withNano(0);
@@ -59,7 +61,7 @@ public class ReservationService {
     @Transactional(readOnly = true)
     public List<List<Reservation>> findRanking(LocalDateTime startDate, LocalDateTime endDate, Integer order, String type) {
         if (startDate.isAfter(endDate)) {
-            throw new RuntimeException("Start date is after end date");
+            throw new BusinessRuleException("Start date must be before end date");
         }
         List<Reservation> reservations = findDateReports(startDate, endDate);
         Map<Long, List<Reservation>> groupedByPackage = reservations
@@ -72,8 +74,7 @@ public class ReservationService {
                 Long totalA = groupA.stream().mapToLong(Reservation::getPassengersAmount).sum();
                 Long totalB = groupB.stream().mapToLong(Reservation::getPassengersAmount).sum();
                 result = totalA.compareTo(totalB);
-            }
-            else {
+            } else {
                 result = Integer.compare(groupA.size(), groupB.size());
             }
             if (result == 0) {
@@ -98,9 +99,9 @@ public class ReservationService {
     @Transactional
     public Reservation create(Reservation reservation) {
         TourPackage tourPackage = tourPackageRepository.findById(reservation.getTourPackageId())
-                .orElseThrow(() -> new RuntimeException("Tour package not found with id: " + reservation.getTourPackageId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Tour package not found with id: " + reservation.getTourPackageId()));
         if (tourPackage.getTourPackageState() != TourPackageState.AVAILABLE) {
-            throw new IllegalStateException("Tour package not available for reservations");
+            throw new BusinessRuleException("Tour package not available for reservations because it is not available");
         }
         tourPackage.setRemainingSpots(tourPackage.getRemainingSpots() - reservation.getPassengersAmount());
         if (tourPackage.getRemainingSpots() <= 0) {
@@ -116,11 +117,11 @@ public class ReservationService {
     @Transactional
     public Reservation update(Reservation reservation) {
         Reservation reservationSaved = reservationRepository.findById(reservation.getId())
-                .orElseThrow(() -> new EntityNotFoundException("Reservation not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id " + reservation.getId()));
         TourPackage tourPackage = tourPackageRepository.findById(reservationSaved.getTourPackageId())
-                .orElseThrow(() -> new EntityNotFoundException("Tour package not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Tour package not found with id: " + reservationSaved.getTourPackageId()));
         if (reservationSaved.getReservationState() == ReservationState.CANCELED) {
-            throw new IllegalStateException("Cannot modify reservation because reservation is already canceled.");
+            throw new BusinessRuleException("Cannot modify reservation because reservation is already canceled.");
         }
         if (reservation.getReservationState() == ReservationState.CONFIRMED
                 || reservation.getReservationState() == ReservationState.COMPLETED
@@ -128,17 +129,16 @@ public class ReservationService {
             if (reservationSaved.getPaymentDate() != null) {
                 reservationSaved.setReservationState(reservation.getReservationState());
             } else {
-                throw new IllegalStateException("Cannot modify reservation because payment date is null (not transaction done).");
+                throw new BusinessRuleException("Cannot modify reservation because payment date is null (not transaction done).");
             }
         }
         if (reservation.getReservationState() == ReservationState.CANCELED) {
             tourPackage.setRemainingSpots(tourPackage.getRemainingSpots() + reservationSaved.getPassengersAmount());
             tourPackage.setTourPackageState(TourPackageState.AVAILABLE);
-        }
-        else if (!Objects.equals(reservationSaved.getPassengersAmount(), reservation.getPassengersAmount())) {
+        } else if (!Objects.equals(reservationSaved.getPassengersAmount(), reservation.getPassengersAmount())) {
             int difference = reservation.getPassengersAmount() - reservationSaved.getPassengersAmount();
             if (tourPackage.getRemainingSpots() < difference) {
-                throw new IllegalStateException("Not enough spots for reservation.");
+                throw new BusinessRuleException("Not enough spots for reservation.");
             }
             tourPackage.setRemainingSpots(tourPackage.getRemainingSpots() - difference);
             tourPackage.setTourPackageState(tourPackage.getRemainingSpots() <= 0
@@ -157,9 +157,9 @@ public class ReservationService {
     @Transactional
     public void deleteById(Long id) {
         Reservation reservationSaved = reservationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Reservation not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + id));
         TourPackage tourPackage = tourPackageRepository.findById(reservationSaved.getTourPackageId())
-                .orElseThrow(() -> new RuntimeException("Tour package not found with id: " + reservationSaved.getTourPackageId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Tour package not found with id: " + reservationSaved.getTourPackageId()));
         if (reservationSaved.getReservationState() == ReservationState.CANCELED) {
             reservationRepository.deleteById(id);
             return;
@@ -172,7 +172,7 @@ public class ReservationService {
 
     public DiscountDataDTO calculatePrice(Reservation reservation) {
         TourPackage tourPackage = tourPackageRepository.findById(reservation.getTourPackageId())
-                .orElseThrow(() -> new EntityNotFoundException("Tour package not found with id: " + reservation.getTourPackageId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Tour package not found with id: " + reservation.getTourPackageId()));
 
         DiscountDataDTO discountDataDTO = new DiscountDataDTO();
         BigDecimal basePrice = tourPackage.getPrice();
@@ -247,8 +247,7 @@ public class ReservationService {
                     if ((today.isEqual(tourPackage.get().getStartDate()) || today.isAfter(tourPackage.get().getStartDate()))
                             && today.isBefore(tourPackage.get().getEndDate())) {
                         reservation.setReservationState(ReservationState.IN_PROGRESS);
-                    }
-                    else if (today.isEqual(tourPackage.get().getEndDate()) || today.isAfter(tourPackage.get().getEndDate())) {
+                    } else if (today.isEqual(tourPackage.get().getEndDate()) || today.isAfter(tourPackage.get().getEndDate())) {
                         reservation.setReservationState(ReservationState.COMPLETED);
                     }
                 }

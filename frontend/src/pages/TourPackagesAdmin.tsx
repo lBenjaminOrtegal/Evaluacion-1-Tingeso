@@ -20,7 +20,7 @@ import {
 } from "../utils/colorUtils";
 import { ErrorResponseModal } from "../components/ErrorResponseModal";
 
-function TourPackagesAdminPage() {
+function TourPackagesAdmin() {
   const [tourPackages, setTourPackages] = useState<TourPackage[]>([]);
 
   const [idToDelete, setIdToDelete] = useState<number | null>(null);
@@ -213,4 +213,4 @@ function TourPackagesAdminPage() {
   );
 }
 
-export default TourPackagesAdminPage;
+export default TourPackagesAdmin;

@@ -29,7 +29,7 @@ import {
 } from "../utils/colorUtils";
 import { ErrorResponseModal } from "../components/ErrorResponseModal";
 
-function TourPackagesViewPage() {
+function TourPackagesView() {
   const [tourPackages, setTourPackages] = useState<TourPackage[]>([]);
   const { keycloak } = useKeycloak();
   const [tour, setTour] = useState<TourPackage | null>(null);
@@ -525,4 +525,4 @@ function TourPackagesViewPage() {
   );
 }
 
-export default TourPackagesViewPage;
+export default TourPackagesView;

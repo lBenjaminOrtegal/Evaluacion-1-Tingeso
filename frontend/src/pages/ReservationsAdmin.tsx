@@ -15,7 +15,7 @@ import formatCurrency from "../utils/formatUtils";
 import { getReservationStateWord, getStateColor } from "../utils/colorUtils";
 import { ErrorResponseModal } from "../components/ErrorResponseModal";
 
-function ReservationsAdminPage() {
+function ReservationsAdmin() {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [idToDelete, setIdToDelete] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -179,4 +179,4 @@ function ReservationsAdminPage() {
   );
 }
 
-export default ReservationsAdminPage;
+export default ReservationsAdmin;

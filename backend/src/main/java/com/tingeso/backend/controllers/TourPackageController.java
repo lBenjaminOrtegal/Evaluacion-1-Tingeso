@@ -7,6 +7,7 @@ import com.tingeso.backend.enums.Season;
 import com.tingeso.backend.enums.TourPackageState;
 import com.tingeso.backend.enums.TripType;
 import com.tingeso.backend.services.TourPackageService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -61,13 +62,13 @@ public class TourPackageController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<TourPackage> create(@RequestBody TourPackage tourPackage) {
+    public ResponseEntity<TourPackage> create(@Valid @RequestBody TourPackage tourPackage) {
         return ResponseEntity.status(HttpStatus.CREATED).body(tourPackageService.createTourPackage(tourPackage));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping
-    public ResponseEntity<TourPackage> update(@RequestBody TourPackage tourPackage) {
+    public ResponseEntity<TourPackage> update(@Valid @RequestBody TourPackage tourPackage) {
         return ResponseEntity.ok(tourPackageService.update(tourPackage));
     }
 
@@ -75,6 +76,6 @@ public class TourPackageController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Boolean> delete(@PathVariable Long id) {
         tourPackageService.deleteById(id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 }

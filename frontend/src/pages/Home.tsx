@@ -1,6 +1,6 @@
 import { Container, Stack } from 'react-bootstrap'
 
-function HomePage() {
+function Home() {
   return (
     <Container>
       <Stack className='py-3 border-bottom fw-bold fs-3 text-primary align-items-center justify-content-center text-center'>
@@ -11,4 +11,4 @@ function HomePage() {
   )
 }
 
-export default HomePage
+export default Home;

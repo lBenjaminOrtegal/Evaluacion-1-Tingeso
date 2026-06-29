@@ -2,6 +2,7 @@ package com.tingeso.backend.controllers;
 
 import com.tingeso.backend.entities.Transaction;
 import com.tingeso.backend.services.TransactionService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,7 +23,7 @@ public class TransactionController {
 
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @PostMapping
-    public ResponseEntity<Transaction> create(@RequestBody Transaction transaction) {
+    public ResponseEntity<Transaction> create(@Valid @RequestBody Transaction transaction) {
         return ResponseEntity.ok(transactionService.create(transaction));
     }
 

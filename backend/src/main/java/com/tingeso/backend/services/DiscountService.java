@@ -4,9 +4,9 @@ import com.tingeso.backend.configuration.DiscountConfig;
 import com.tingeso.backend.entities.Discount;
 import com.tingeso.backend.entities.Reservation;
 import com.tingeso.backend.enums.ReservationState;
+import com.tingeso.backend.exceptions.ResourceNotFoundException;
 import com.tingeso.backend.repositories.DiscountRepository;
 import com.tingeso.backend.repositories.ReservationRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,13 +24,14 @@ public class DiscountService {
 
     @Transactional(readOnly = true)
     public Discount findDiscount() {
-        return discountRepository.findById(1L).orElse(null);
+        return discountRepository.findById(1L)
+                .orElseThrow(() -> new ResourceNotFoundException("Discount not found"));
     }
 
     @Transactional
     public Discount update(Discount discount) {
         Discount discountSaved = discountRepository.findById(1L)
-                .orElseThrow(() -> new EntityNotFoundException("Discount not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Discount not found"));
         discountSaved.setCombinableDiscounts(discount.isCombinableDiscounts());
         discountSaved.setMaxDiscountLimit(discount.getMaxDiscountLimit());
         discountSaved.setMinPassengers(discount.getMinPassengers());

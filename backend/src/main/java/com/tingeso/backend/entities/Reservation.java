@@ -2,17 +2,20 @@ package com.tingeso.backend.entities;
 
 import com.tingeso.backend.enums.ReservationState;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "reservations")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Reservation {
@@ -21,10 +24,10 @@ public class Reservation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @NotBlank(message = "User email cannot be null")
     private String userEmail;
 
-    @Column(nullable = false)
+    @NotNull(message = "Tour package id cannot be null")
     private Long tourPackageId;
 
     private String tourPackageName;
@@ -37,7 +40,14 @@ public class Reservation {
 
     private LocalDateTime reservationDate;
     private LocalDateTime paymentDate;
+
+    @NotNull(message = "Passengers amount cannot be null")
+    @Positive(message = "Passengers amount must be greater than zero")
     private Integer passengersAmount;
-    private List<String> preferences;
-    private List<String> specialRequests;
+
+    @ElementCollection
+    private List<String> preferences = new ArrayList<>();
+
+    @ElementCollection
+    private List<String> specialRequests = new ArrayList<>();
 }

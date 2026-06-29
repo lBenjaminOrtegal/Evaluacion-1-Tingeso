@@ -3,6 +3,7 @@ package com.tingeso.backend.controllers;
 import com.tingeso.backend.dto.DiscountDataDTO;
 import com.tingeso.backend.entities.Reservation;
 import com.tingeso.backend.services.ReservationService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -50,13 +51,13 @@ public class ReservationController {
 
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @PostMapping
-    public ResponseEntity<Reservation> create(@RequestBody Reservation reservation) {
+    public ResponseEntity<Reservation> create(@Valid @RequestBody Reservation reservation) {
         return ResponseEntity.ok(reservationService.create(reservation));
     }
 
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @PutMapping
-    public ResponseEntity<Reservation> update(@RequestBody Reservation reservation) {
+    public ResponseEntity<Reservation> update(@Valid @RequestBody Reservation reservation) {
         return ResponseEntity.ok(reservationService.update(reservation));
     }
 
