@@ -1,6 +1,6 @@
 services:
   db:
-    image: mysql:lts
+    image: mysql:8.0
     environment:
       MYSQL_DATABASE: tingeso_db
       MYSQL_ROOT_PASSWORD: root_password
@@ -28,7 +28,7 @@ services:
       KC_DB_URL: jdbc:mysql://db:3306/tingeso_db
       KC_DB_USERNAME: user_tingeso
       KC_DB_PASSWORD: pass_tingeso
-      KC_PROXY_HEADERS: "xforwarded"
+      KC_PROXY_HEADERS: xforwarded
       KC_HTTP_ENABLED: "true"
       KC_HEALTH_ENABLED: "true"
       KC_HOSTNAME: http://localhost:7080    # change localhost for server ip
@@ -62,9 +62,6 @@ services:
       DB_PASSWORD: pass_tingeso
       KEYCLOAK_ISSUER_URI: http://localhost:7080/realms/tingeso-1-realm   # change localhost for server ip
       KEYCLOAK_JWK_SET_URI: http://keycloak:7080/realms/tingeso-1-realm/protocol/openid-connect/certs
-      KEYCLOAK_CLIENT_ID: tingeso-1-backend
-      KEYCLOAK_CLIENT_SECRET: Z5uuNMVdXMPEvzUkYm5jjwadC50gmakA
-      TZ: America/Santiago
       ALLOWED_ORIGINS: http://localhost:8070 # change localhost for server ip
     expose:
       - "8080"
@@ -91,15 +88,15 @@ services:
     hostname: frontend1
     build:
       context: ./frontend
-      args:
-        VITE_BACKEND_SERVER: localhost  # github secrets change for server ip
-        VITE_BACKEND_PORT: "8080"
-        VITE_KEYCLOAK_SERVER: localhost  # github secrets change for server ip
-        VITE_KEYCLOAK_PORT: "7080"
-        VITE_KEYCLOAK_REALM: tingeso-1-realm
-        VITE_KEYCLOAK_CLIENT_ID: tingeso-1-frontend
     image: benjaminoq/ev-1-tingeso-frontend
     restart: on-failure
+    environment:
+      VITE_BACKEND_SERVER: localhost  # change for server ip
+      VITE_BACKEND_PORT: "8080"
+      VITE_KEYCLOAK_SERVER: localhost # change for server ip
+      VITE_KEYCLOAK_PORT: "7080"
+      VITE_KEYCLOAK_REALM: tingeso-1-realm
+      VITE_KEYCLOAK_CLIENT_ID: tingeso-1-frontend
     networks:
       - frontend-network
     depends_on:
@@ -117,7 +114,7 @@ services:
     hostname: frontend3
 
   nginx-backend:
-    image: nginx:latest
+    image: nginx:alpine
     container_name: nginx-backend
     restart: always
     ports:
@@ -133,7 +130,7 @@ services:
       - backend3
 
   nginx-frontend:
-    image: nginx:latest
+    image: nginx:alpine
     container_name: nginx-frontend
     restart: always
     ports:
@@ -153,4 +150,3 @@ networks:
 
 volumes:
   db_data:
-  keycloak_data:
