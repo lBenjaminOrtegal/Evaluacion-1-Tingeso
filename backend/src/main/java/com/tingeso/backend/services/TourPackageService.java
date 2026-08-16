@@ -1,5 +1,6 @@
 package com.tingeso.backend.services;
 
+import com.tingeso.backend.dto.TourPackageDTO;
 import com.tingeso.backend.dto.TourPackageFiltersDTO;
 import com.tingeso.backend.entities.*;
 import com.tingeso.backend.enums.TourPackageState;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -24,70 +26,94 @@ public class TourPackageService {
     private final ReservationRepository reservationRepository;
 
     @Transactional(readOnly = true)
-    public List<TourPackage> findAll() {
-        return tourPackageRepository.findAll();
+    public List<TourPackageDTO> findAll() {
+        return tourPackageRepository.findAll()
+                .stream()
+                .map(this::tourPackageToDTO)
+                .toList();
     }
 
     @Transactional(readOnly = true)
-    public TourPackage findById(Long id) {
-        return tourPackageRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Tour package with id " + id + " not found"));
+    public TourPackageDTO findById(Long id) {
+        Optional<TourPackage> tourPackage = tourPackageRepository.findById(id);
+        if (tourPackage.isPresent()) {
+            return tourPackageToDTO(tourPackage.get());
+        } else throw new ResourceNotFoundException("Tour package with id " + id + " not found");
     }
 
     @Transactional(readOnly = true)
-    public List<TourPackage> findCustomFilters(TourPackageFiltersDTO tourPackageFiltersDTO) {
-        return tourPackageRepository.findCustomFilters(tourPackageFiltersDTO);
+    public List<TourPackageDTO> findCustomFilters(TourPackageFiltersDTO tourPackageFiltersDTO) {
+        return tourPackageRepository.findCustomFilters(tourPackageFiltersDTO)
+                .stream()
+                .map(this::tourPackageToDTO)
+                .toList();
     }
 
     @Transactional
-    public TourPackage createTourPackage(TourPackage tourPackage) {
-        if (tourPackage.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
+    public TourPackageDTO createTourPackage(TourPackageDTO tourPackageDTO) {
+        if (tourPackageDTO.price().compareTo(BigDecimal.ZERO) <= 0) {
             throw new BusinessRuleException("Price must be greater than zero");
         }
-        if (tourPackage.getEndDate().isBefore(tourPackage.getStartDate())) {
+        if (tourPackageDTO.endDate().isBefore(tourPackageDTO.startDate())) {
             throw new BusinessRuleException("Start date must be before end date");
         }
-        if (tourPackage.getInitialSpots() <= 0) {
+        if (tourPackageDTO.initialSpots() <= 0) {
             throw new BusinessRuleException("Initial spots must be greater than zero");
         }
+        TourPackage tourPackage = new TourPackage();
+        tourPackage.setName(tourPackageDTO.name());
+        tourPackage.setDestiny(tourPackageDTO.destiny());
+        tourPackage.setDescription(tourPackageDTO.description());
+        tourPackage.setStartDate(tourPackageDTO.startDate());
+        tourPackage.setEndDate(tourPackageDTO.endDate());
         tourPackage.calculateDuration();
-        return tourPackageRepository.save(tourPackage);
+        tourPackage.setPrice(tourPackageDTO.price());
+        tourPackage.setServices(tourPackageDTO.services());
+        tourPackage.setConditions(tourPackageDTO.conditions());
+        tourPackage.setRestrictions(tourPackageDTO.restrictions());
+        tourPackage.setInitialSpots(tourPackageDTO.initialSpots());
+        tourPackage.setRemainingSpots(tourPackageDTO.remainingSpots());
+        tourPackage.setTripType(tourPackageDTO.tripType());
+        tourPackage.setSeason(tourPackageDTO.season());
+        tourPackage.setCategory(tourPackageDTO.category());
+        tourPackage.setTourPackageState(tourPackageDTO.tourPackageState());
+        return tourPackageToDTO(tourPackageRepository.save(tourPackage));
     }
 
     @Transactional
-    public TourPackage update(TourPackage tourPackage) {
-        TourPackage existingPackage = tourPackageRepository.findById(tourPackage.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("TourPackage not found with id: " + tourPackage.getId()));
-        List<Reservation> reservations = reservationRepository.findByTourPackageId(tourPackage.getId());
-        existingPackage.setName(tourPackage.getName());
-        existingPackage.setPrice(tourPackage.getPrice());
-        existingPackage.setSeason(tourPackage.getSeason());
-        existingPackage.setCategory(tourPackage.getCategory());
-        existingPackage.setTripType(tourPackage.getTripType());
-        existingPackage.setServices(tourPackage.getServices());
-        existingPackage.setConditions(tourPackage.getConditions());
-        existingPackage.setRestrictions(tourPackage.getRestrictions());
+    public TourPackageDTO update(TourPackageDTO tourPackageDTO) {
+        TourPackage existingPackage = tourPackageRepository.findById(tourPackageDTO.id())
+                .orElseThrow(() -> new ResourceNotFoundException("TourPackage not found with id: " + tourPackageDTO.id()));
+        List<Reservation> reservations = reservationRepository.findByTourPackageId(tourPackageDTO.id());
+        existingPackage.setName(tourPackageDTO.name());
+        existingPackage.setPrice(tourPackageDTO.price());
+        existingPackage.setSeason(tourPackageDTO.season());
+        existingPackage.setCategory(tourPackageDTO.category());
+        existingPackage.setTripType(tourPackageDTO.tripType());
+        existingPackage.setServices(tourPackageDTO.services());
+        existingPackage.setConditions(tourPackageDTO.conditions());
+        existingPackage.setRestrictions(tourPackageDTO.restrictions());
         int occupiedSpots = existingPackage.getInitialSpots() - existingPackage.getRemainingSpots();
         if (!reservations.isEmpty()) { // if had reservations
-            if (tourPackage.getInitialSpots() < occupiedSpots) {
+            if (tourPackageDTO.initialSpots() < occupiedSpots) {
                 throw new BusinessRuleException("New initial spots are less tan occupied spots.");
             } else {
-                existingPackage.setInitialSpots(tourPackage.getInitialSpots());
-                existingPackage.setRemainingSpots(tourPackage.getInitialSpots() - occupiedSpots);
+                existingPackage.setInitialSpots(tourPackageDTO.initialSpots());
+                existingPackage.setRemainingSpots(tourPackageDTO.initialSpots() - occupiedSpots);
             }
         } else {
-            existingPackage.setStartDate(tourPackage.getStartDate());
-            existingPackage.setEndDate(tourPackage.getEndDate());
+            existingPackage.setStartDate(tourPackageDTO.startDate());
+            existingPackage.setEndDate(tourPackageDTO.endDate());
             existingPackage.calculateDuration();
-            existingPackage.setInitialSpots(tourPackage.getInitialSpots());
-            existingPackage.setRemainingSpots(tourPackage.getInitialSpots());
+            existingPackage.setInitialSpots(tourPackageDTO.initialSpots());
+            existingPackage.setRemainingSpots(tourPackageDTO.initialSpots());
         }
         if (existingPackage.getRemainingSpots() <= 0) {
             existingPackage.setTourPackageState(TourPackageState.SOLD_OUT);
         } else {
-            existingPackage.setTourPackageState(tourPackage.getTourPackageState());
+            existingPackage.setTourPackageState(tourPackageDTO.tourPackageState());
         }
-        return tourPackageRepository.save(existingPackage);
+        return tourPackageToDTO(tourPackageRepository.save(existingPackage));
     }
 
     @Transactional
@@ -113,5 +139,27 @@ public class TourPackageService {
             }
         }
         tourPackageRepository.saveAll(tourPackageList);
+    }
+
+    public TourPackageDTO tourPackageToDTO(TourPackage tourPackage) {
+        return new TourPackageDTO(
+                tourPackage.getId(),
+                tourPackage.getName(),
+                tourPackage.getDestiny(),
+                tourPackage.getDescription(),
+                tourPackage.getStartDate(),
+                tourPackage.getEndDate(),
+                tourPackage.getDuration(),
+                tourPackage.getPrice(),
+                tourPackage.getServices(),
+                tourPackage.getConditions(),
+                tourPackage.getRestrictions(),
+                tourPackage.getInitialSpots(),
+                tourPackage.getRemainingSpots(),
+                tourPackage.getTripType(),
+                tourPackage.getSeason(),
+                tourPackage.getCategory(),
+                tourPackage.getTourPackageState()
+        );
     }
 }

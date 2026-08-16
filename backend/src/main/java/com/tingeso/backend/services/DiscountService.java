@@ -1,6 +1,7 @@
 package com.tingeso.backend.services;
 
 import com.tingeso.backend.configuration.DiscountConfig;
+import com.tingeso.backend.dto.DiscountDTO;
 import com.tingeso.backend.entities.Discount;
 import com.tingeso.backend.entities.Reservation;
 import com.tingeso.backend.enums.ReservationState;
@@ -29,19 +30,19 @@ public class DiscountService {
     }
 
     @Transactional
-    public Discount update(Discount discount) {
+    public DiscountDTO update(DiscountDTO dto) {
         Discount discountSaved = discountRepository.findById(1L)
-                .orElseThrow(() -> new ResourceNotFoundException("Discount not found"));
-        discountSaved.setCombinableDiscounts(discount.isCombinableDiscounts());
-        discountSaved.setMaxDiscountLimit(discount.getMaxDiscountLimit());
-        discountSaved.setMinPassengers(discount.getMinPassengers());
-        discountSaved.setDiscountPassengers(discount.getDiscountPassengers());
-        discountSaved.setMinReservations(discount.getMinReservations());
-        discountSaved.setDiscountReservations(discount.getDiscountReservations());
-        discountSaved.setDaysWindow(discount.getDaysWindow());
-        discountSaved.setMinReservationsMultiplePackages(discount.getMinReservationsMultiplePackages());
-        discountSaved.setDiscountMultiplePackages(discount.getDiscountMultiplePackages());
-        return discountRepository.save(discountSaved);
+                .orElseThrow(() -> new ResourceNotFoundException("Discount not found when updating"));
+        discountSaved.setCombinableDiscounts(dto.combinableDiscounts());
+        discountSaved.setMaxDiscountLimit(dto.maxDiscountLimit());
+        discountSaved.setMinPassengers(dto.minPassengers());
+        discountSaved.setDiscountPassengers(dto.discountPassengers());
+        discountSaved.setMinReservations(dto.minReservations());
+        discountSaved.setDiscountReservations(dto.discountReservations());
+        discountSaved.setDaysWindow(dto.daysWindow());
+        discountSaved.setMinReservationsMultiplePackages(dto.minReservationsMultiplePackages());
+        discountSaved.setDiscountMultiplePackages(dto.discountMultiplePackages());
+        return discountToDTO(discountRepository.save(discountSaved));
     }
 
     // only if passengersAmount >= MIN_PASSENGERS
@@ -77,5 +78,19 @@ public class DiscountService {
     public boolean isCompletedReservation(Reservation reservation) {
         return reservation.getReservationState() != ReservationState.PENDING &&
                 reservation.getReservationState() != ReservationState.CANCELED;
+    }
+
+    public DiscountDTO discountToDTO(Discount discount) {
+        return new DiscountDTO(
+                discount.isCombinableDiscounts(),
+                discount.getMaxDiscountLimit(),
+                discount.getMinPassengers(),
+                discount.getDiscountPassengers(),
+                discount.getMinReservations(),
+                discount.getDiscountReservations(),
+                discount.getDaysWindow(),
+                discount.getMinReservationsMultiplePackages(),
+                discount.getDiscountMultiplePackages()
+        );
     }
 }

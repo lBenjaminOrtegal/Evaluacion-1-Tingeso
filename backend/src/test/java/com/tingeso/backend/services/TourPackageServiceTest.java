@@ -1,5 +1,6 @@
 package com.tingeso.backend.services;
 
+import com.tingeso.backend.dto.TourPackageDTO;
 import com.tingeso.backend.dto.TourPackageFiltersDTO;
 import com.tingeso.backend.entities.*;
 import com.tingeso.backend.enums.TourPackageState;
@@ -36,6 +37,7 @@ class TourPackageServiceTest {
     private TourPackageService tourPackageService;
 
     private TourPackage tourPackage;
+    private TourPackageDTO tourPackageDTO;
 
     @BeforeEach
     void setUp() {
@@ -47,6 +49,8 @@ class TourPackageServiceTest {
         tourPackage.setInitialSpots(10);
         tourPackage.setRemainingSpots(10);
         tourPackage.setTourPackageState(TourPackageState.AVAILABLE);
+
+        tourPackageDTO = tourPackageService.tourPackageToDTO(tourPackage);
     }
 
     @Test
@@ -65,7 +69,7 @@ class TourPackageServiceTest {
     void findCustomFilters_ReturnsList() {
         TourPackageFiltersDTO filters = new TourPackageFiltersDTO("Paris", null, null, null, null, BigDecimal.valueOf(5000), LocalDate.now(), LocalDate.now().plusDays(7), null);
         when(tourPackageRepository.findCustomFilters(filters)).thenReturn(Collections.singletonList(tourPackage));
-        List<TourPackage> result = tourPackageService.findCustomFilters(filters);
+        List<TourPackageDTO> result = tourPackageService.findCustomFilters(filters);
         assertNotNull(result);
         assertEquals(1, result.size());
         verify(tourPackageRepository).findCustomFilters(filters);
@@ -74,33 +78,37 @@ class TourPackageServiceTest {
     @Test
     void create_ThrowsException_WhenPriceIsZeroOrNegative() {
         tourPackage.setPrice(BigDecimal.ZERO);
-        assertThrows(BusinessRuleException.class, () -> tourPackageService.createTourPackage(tourPackage));
+        tourPackageDTO = tourPackageService.tourPackageToDTO(tourPackage);
+        assertThrows(BusinessRuleException.class, () -> tourPackageService.createTourPackage(tourPackageDTO));
     }
 
     @Test
     void create_ThrowsException_WhenDatesAreInvalid() {
         tourPackage.setEndDate(tourPackage.getStartDate().minusDays(1));
-        assertThrows(BusinessRuleException.class, () -> tourPackageService.createTourPackage(tourPackage));
+        tourPackageDTO = tourPackageService.tourPackageToDTO(tourPackage);
+        assertThrows(BusinessRuleException.class, () -> tourPackageService.createTourPackage(tourPackageDTO));
     }
 
     @Test
     void create_ThrowsException_WhenSpotsEqualZero() {
         tourPackage.setInitialSpots(0);
-        assertThrows(BusinessRuleException.class, () -> tourPackageService.createTourPackage(tourPackage));
+        tourPackageDTO = tourPackageService.tourPackageToDTO(tourPackage);
+        assertThrows(BusinessRuleException.class, () -> tourPackageService.createTourPackage(tourPackageDTO));
     }
 
     @Test
     void create_ThrowsException_WhenSpotsLessThanZero() {
         tourPackage.setInitialSpots(-1);
-        assertThrows(BusinessRuleException.class, () -> tourPackageService.createTourPackage(tourPackage));
+        tourPackageDTO = tourPackageService.tourPackageToDTO(tourPackage);
+        assertThrows(BusinessRuleException.class, () -> tourPackageService.createTourPackage(tourPackageDTO));
     }
 
     @Test
     void create_Success() {
         when(tourPackageRepository.save(any(TourPackage.class))).thenReturn(tourPackage);
-        TourPackage saved = tourPackageService.createTourPackage(tourPackage);
+        TourPackageDTO saved = tourPackageService.createTourPackage(tourPackageDTO);
         assertNotNull(saved);
-        verify(tourPackageRepository).save(tourPackage);
+        verify(tourPackageRepository).save(any(TourPackage.class));
     }
 
     @Test
@@ -109,12 +117,13 @@ class TourPackageServiceTest {
         updatedData.setId(1L);
         updatedData.setInitialSpots(15);
         tourPackage.setRemainingSpots(5);
+        tourPackageDTO = tourPackageService.tourPackageToDTO(updatedData);
         when(tourPackageRepository.findById(1L)).thenReturn(Optional.of(tourPackage));
         when(reservationRepository.findByTourPackageId(1L)).thenReturn(Collections.singletonList(new Reservation()));
         when(tourPackageRepository.save(any(TourPackage.class))).thenReturn(tourPackage);
-        TourPackage result = tourPackageService.update(updatedData);
-        assertEquals(15, result.getInitialSpots());
-        assertEquals(10, result.getRemainingSpots());
+        TourPackageDTO result = tourPackageService.update(tourPackageDTO);
+        assertEquals(15, result.initialSpots());
+        assertEquals(10, result.remainingSpots());
     }
 
     @Test
@@ -122,11 +131,12 @@ class TourPackageServiceTest {
         TourPackage updatedData = new TourPackage();
         updatedData.setId(1L);
         updatedData.setInitialSpots(2);
+        tourPackageDTO = tourPackageService.tourPackageToDTO(updatedData);
         tourPackage.setInitialSpots(10);
         tourPackage.setRemainingSpots(5);
         when(tourPackageRepository.findById(1L)).thenReturn(Optional.of(tourPackage));
         when(reservationRepository.findByTourPackageId(1L)).thenReturn(Collections.singletonList(new Reservation()));
-        assertThrows(BusinessRuleException.class, () -> tourPackageService.update(updatedData));
+        assertThrows(BusinessRuleException.class, () -> tourPackageService.update(tourPackageDTO));
     }
 
     @Test
@@ -134,14 +144,15 @@ class TourPackageServiceTest {
         TourPackage updatedData = new TourPackage();
         updatedData.setId(1L);
         updatedData.setInitialSpots(5);
+        tourPackageDTO = tourPackageService.tourPackageToDTO(updatedData);
         tourPackage.setInitialSpots(10);
         tourPackage.setRemainingSpots(5);
         when(tourPackageRepository.findById(1L)).thenReturn(Optional.of(tourPackage));
         when(reservationRepository.findByTourPackageId(1L)).thenReturn(Collections.singletonList(new Reservation()));
         when(tourPackageRepository.save(any(TourPackage.class))).thenReturn(tourPackage);
-        TourPackage result = tourPackageService.update(updatedData);
-        assertEquals(0, result.getRemainingSpots());
-        assertEquals(TourPackageState.SOLD_OUT, result.getTourPackageState());
+        TourPackageDTO result = tourPackageService.update(tourPackageDTO);
+        assertEquals(0, result.remainingSpots());
+        assertEquals(TourPackageState.SOLD_OUT, result.tourPackageState());
         verify(tourPackageRepository).save(tourPackage);
     }
 
@@ -150,7 +161,7 @@ class TourPackageServiceTest {
         when(tourPackageRepository.findById(1L)).thenReturn(Optional.of(tourPackage));
         when(reservationRepository.findByTourPackageId(1L)).thenReturn(new ArrayList<>());
         when(tourPackageRepository.save(any(TourPackage.class))).thenReturn(tourPackage);
-        TourPackage result = tourPackageService.update(tourPackage);
+        TourPackageDTO result = tourPackageService.update(tourPackageDTO);
         assertNotNull(result);
     }
 

@@ -201,20 +201,20 @@ function ReservationsView() {
       <Modal show={showTransaction} onHide={() => setShowTransaction(false)}>
         <Modal.Header closeButton className="bg-light border-0 py-3">
           <Modal.Title className="fw-bold text-center">
-            Transacción # {transaction?.id}
+            Transacción #{transaction?.id}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <p className="fw-medium text-muted">
             Monto de la transacción:{" "}
             <span className="fw-semibold text-dark">
-              {formatCurrency(Number(transaction?.amount))}
+              {formatCurrency(Number(transaction?.amount))} CLP
             </span>
           </p>
           <p className="fw-medium text-muted">
             Reserva asociada:{" "}
             <span className="fw-semibold text-dark">
-              # {transaction?.reservationId}
+              #{transaction?.reservationId}
             </span>
           </p>
           <p className="fw-medium text-muted">
@@ -323,7 +323,7 @@ function ReservationsView() {
                       <div className="p-3 border rounded-3 bg-light-subtle">
                         <h6 className="small text-muted mb-1">Monto</h6>
                         <p className="fw-bold mb-0 text-success">
-                          {formatCurrency(Number(selectedReservation?.price))}
+                          {formatCurrency(Number(selectedReservation?.price))} CLP
                         </p>
                       </div>
                     </Col>
@@ -469,7 +469,7 @@ function ReservationsView() {
               )}
 
               <span className="fw-bold fs-5 text-success">
-                {formatCurrency(reservation.price)}
+                {formatCurrency(reservation.price)} CLP
               </span>
             </Stack>
           </Card.Header>

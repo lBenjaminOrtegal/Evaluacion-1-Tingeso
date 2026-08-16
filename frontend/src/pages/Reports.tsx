@@ -203,7 +203,7 @@ function Reports() {
                     {reservation.passengersAmount}
                   </td>
                   <td className="fw-bold text-success">
-                    {formatCurrency(reservation.price)}
+                    {formatCurrency(reservation.price)} CLP
                   </td>
                   <td className="text-center">
                     <Badge
@@ -335,7 +335,7 @@ function Reports() {
                       <span className="text-success fw-bold">
                         {formatCurrency(
                           group.reduce((acc, curr) => acc + curr.price, 0),
-                        )}
+                        )} CLP
                       </span>
                     </p>
                   </Col>
@@ -359,7 +359,7 @@ function Reports() {
                           {reservation.passengersAmount}
                         </td>
                         <td className="fw-bold text-success text-center">
-                          {formatCurrency(reservation.price)}
+                          {formatCurrency(reservation.price)} CLP
                         </td>
                       </tr>
                     ))}

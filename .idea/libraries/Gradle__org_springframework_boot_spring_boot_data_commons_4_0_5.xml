@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="Gradle: org.springframework.boot:spring-boot-data-commons:4.0.5" type="java-imported" external-system-id="GRADLE">
+    <properties groupId="org.springframework.boot" artifactId="spring-boot-data-commons" version="4.0.5" baseVersion="4.0.5" />
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-data-commons/4.0.5/2a09a26870c634b1caaed9cd2d06b13a24869e4/spring-boot-data-commons-4.0.5.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-data-commons/4.0.5/e003241673b045454748aea9cc5100d9ff63d15c/spring-boot-data-commons-4.0.5-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

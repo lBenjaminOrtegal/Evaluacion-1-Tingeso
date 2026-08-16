@@ -1,6 +1,7 @@
 package com.tingeso.backend.services;
 
 import com.tingeso.backend.configuration.DiscountConfig;
+import com.tingeso.backend.dto.DiscountDTO;
 import com.tingeso.backend.entities.Discount;
 import com.tingeso.backend.entities.Reservation;
 import com.tingeso.backend.enums.ReservationState;
@@ -90,17 +91,17 @@ class DiscountServiceTest {
     void whenDiscountExists_thenUpdateShouldModifyFieldsAndSave() {
         when(discountRepository.findById(1L)).thenReturn(Optional.of(existingDiscount));
         when(discountRepository.save(any(Discount.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        Discount result = discountService.update(updateRequest);
+        DiscountDTO result = discountService.update(discountService.discountToDTO(updateRequest));
         assertNotNull(result);
-        assertFalse(result.isCombinableDiscounts());
-        assertEquals(new BigDecimal("0.30"), result.getMaxDiscountLimit());
-        assertEquals(5, result.getMinPassengers());
-        assertEquals(new BigDecimal("0.08"), result.getDiscountPassengers());
-        assertEquals(4, result.getMinReservations());
-        assertEquals(new BigDecimal("0.12"), result.getDiscountReservations());
-        assertEquals(10, result.getDaysWindow());
-        assertEquals(5, result.getMinReservationsMultiplePackages());
-        assertEquals(new BigDecimal("0.20"), result.getDiscountMultiplePackages());
+        assertFalse(result.combinableDiscounts());
+        assertEquals(new BigDecimal("0.30"), result.maxDiscountLimit());
+        assertEquals(5, result.minPassengers());
+        assertEquals(new BigDecimal("0.08"), result.discountPassengers());
+        assertEquals(4, result.minReservations());
+        assertEquals(new BigDecimal("0.12"), result.discountReservations());
+        assertEquals(10, result.daysWindow());
+        assertEquals(5, result.minReservationsMultiplePackages());
+        assertEquals(new BigDecimal("0.20"), result.discountMultiplePackages());
         verify(discountRepository, times(1)).findById(1L);
         verify(discountRepository, times(1)).save(existingDiscount);
     }
@@ -108,7 +109,8 @@ class DiscountServiceTest {
     @Test
     void whenDiscountDoesNotExist_thenUpdateShouldThrowEntityNotFoundException() {
         when(discountRepository.findById(1L)).thenReturn(Optional.empty());
-        assertThrows(ResourceNotFoundException.class, () -> discountService.update(updateRequest));
+        var updateDto = discountService.discountToDTO(updateRequest);
+        assertThrows(ResourceNotFoundException.class, () -> discountService.update(updateDto));
         verify(discountRepository, never()).save(any(Discount.class));
     }
 

@@ -165,13 +165,13 @@ function Payment() {
             <p className="fw-medium text-muted">
               ID de la transacción:{" "}
               <span className="fw-semibold text-dark">
-                # {createdTransaction?.id}
+                #{createdTransaction?.id}
               </span>
             </p>
             <p className="fw-medium text-muted">
               Monto de la transacción:{" "}
               <span className="fw-semibold text-dark">
-                {formatCurrency(Number(createdTransaction?.amount))}
+                {formatCurrency(Number(createdTransaction?.amount))} CLP
               </span>
             </p>
             <p className="fw-medium text-muted">
@@ -194,7 +194,7 @@ function Payment() {
             <p className="fw-medium text-muted">
               Reserva asociada:{" "}
               <span className="fw-semibold text-dark">
-                # {createdTransaction?.reservationId}
+                #{createdTransaction?.reservationId}
               </span>
             </p>
           </Stack>
@@ -249,7 +249,7 @@ function Payment() {
               <div className="border-bottom pb-3">
                 <div className="d-flex justify-content-between mb-2">
                   <span className="text-muted fw-medium">ID de la reserva</span>
-                  <span className="fw-bold text-dark"># {reservation.id}</span>
+                  <span className="fw-bold text-dark">#{reservation.id}</span>
                 </div>
                 <div className="d-flex justify-content-between mb-2">
                   <span className="text-muted fw-medium">
@@ -264,7 +264,7 @@ function Payment() {
                     Precio por persona
                   </span>
                   <span className="fw-semibold text-dark">
-                    {formatCurrency(Number(tourPackage?.price))}
+                    {formatCurrency(Number(tourPackage?.price))} CLP
                   </span>
                 </div>
               </div>
@@ -280,7 +280,7 @@ function Payment() {
                   </small>
                 </div>
                 <span className="fs-3 fw-bold text-success">
-                  {formatCurrency(reservation.price)}
+                  {formatCurrency(reservation.price)} CLP
                 </span>
               </Stack>
             </Stack>

@@ -1,7 +1,7 @@
 package com.tingeso.backend.controllers;
 
 import com.tingeso.backend.dto.DiscountDataDTO;
-import com.tingeso.backend.entities.Reservation;
+import com.tingeso.backend.dto.ReservationDTO;
 import com.tingeso.backend.services.ReservationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,56 +21,56 @@ public class ReservationController {
 
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @GetMapping
-    public ResponseEntity<List<Reservation>> findAll() {
+    public ResponseEntity<List<ReservationDTO>> findAll() {
         return ResponseEntity.ok(reservationService.findAll());
     }
 
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @GetMapping("/{id}")
-    public ResponseEntity<Reservation> findById(@PathVariable Long id) {
+    public ResponseEntity<ReservationDTO> findById(@PathVariable Long id) {
         return ResponseEntity.ok(reservationService.findById(id));
     }
 
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @GetMapping("/user-email/{userEmail}")
-    public ResponseEntity<List<Reservation>> findByUserEmail(@PathVariable String userEmail) {
+    public ResponseEntity<List<ReservationDTO>> findByUserEmail(@PathVariable String userEmail) {
         return ResponseEntity.ok(reservationService.findByUserEmail(userEmail));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/reports/date")
-    public ResponseEntity<List<Reservation>> findDateReports(@RequestParam LocalDateTime startDate, @RequestParam LocalDateTime endDate) {
+    public ResponseEntity<List<ReservationDTO>> findDateReports(@RequestParam LocalDateTime startDate, @RequestParam LocalDateTime endDate) {
         return ResponseEntity.ok(reservationService.findDateReports(startDate, endDate));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/reports/ranking")
-    public ResponseEntity<List<List<Reservation>>> findRanking(@RequestParam LocalDateTime startDate, @RequestParam LocalDateTime endDate, @RequestParam Integer order, @RequestParam String type) {
+    public ResponseEntity<List<List<ReservationDTO>>> findRanking(@RequestParam LocalDateTime startDate, @RequestParam LocalDateTime endDate, @RequestParam Integer order, @RequestParam String type) {
         return ResponseEntity.ok(reservationService.findRanking(startDate, endDate, order, type));
     }
 
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @PostMapping
-    public ResponseEntity<Reservation> create(@Valid @RequestBody Reservation reservation) {
-        return ResponseEntity.ok(reservationService.create(reservation));
+    public ResponseEntity<ReservationDTO> create(@Valid @RequestBody ReservationDTO reservationDTO) {
+        return ResponseEntity.ok(reservationService.create(reservationDTO));
     }
 
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @PutMapping
-    public ResponseEntity<Reservation> update(@Valid @RequestBody Reservation reservation) {
-        return ResponseEntity.ok(reservationService.update(reservation));
+    public ResponseEntity<ReservationDTO> update(@Valid @RequestBody ReservationDTO reservationDTO) {
+        return ResponseEntity.ok(reservationService.update(reservationDTO));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         reservationService.deleteById(id);
         return ResponseEntity.ok().build();
     }
 
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @PostMapping("/calculate-price")
-    public ResponseEntity<DiscountDataDTO> calculatePrice(@RequestBody Reservation reservation) {
-        return ResponseEntity.ok(reservationService.calculatePrice(reservation));
+    public ResponseEntity<DiscountDataDTO> calculatePrice(@RequestBody ReservationDTO reservationDTO) {
+        return ResponseEntity.ok(reservationService.calculatePrice(reservationDTO));
     }
 }

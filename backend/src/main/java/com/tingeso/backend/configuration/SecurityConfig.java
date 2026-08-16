@@ -24,7 +24,7 @@ public class SecurityConfig {
     private List<String> allowedOrigins;
 
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain securityFilterChain(HttpSecurity http) {
         return http
                 .cors(cors -> cors.configurationSource(request -> {
                     var config = new org.springframework.web.cors.CorsConfiguration();
@@ -35,7 +35,7 @@ public class SecurityConfig {
                     return config;
                 }))
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests((auth) -> auth
+                .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/tour-packages").permitAll()
                         .requestMatchers("/api/tour-packages/filters").permitAll()
                         .requestMatchers("/api/tour-packages/{id}").permitAll()

@@ -8,6 +8,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import java.math.BigDecimal;
+import java.util.logging.Logger;
 
 @SpringBootApplication
 @EnableScheduling
@@ -16,12 +17,14 @@ public class BackendApplication implements CommandLineRunner {
 
     private final DiscountRepository discountRepository;
 
+    Logger logger = Logger.getLogger(getClass().getName());
+
     public static void main(String[] args) {
         SpringApplication.run(BackendApplication.class, args);
     }
 
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String... args) {
         if (!discountRepository.existsById(1L)) {
             Discount defaultDiscounts = new Discount(
                     1L,
@@ -37,9 +40,9 @@ public class BackendApplication implements CommandLineRunner {
             );
 
             discountRepository.save(defaultDiscounts);
-            System.out.println("Discount created");
+            logger.info("Discount created");
         } else {
-            System.out.println("Discount already exists");
+            logger.info("Discount already exists");
         }
     }
 }

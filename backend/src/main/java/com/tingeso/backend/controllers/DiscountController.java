@@ -1,5 +1,6 @@
 package com.tingeso.backend.controllers;
 
+import com.tingeso.backend.dto.DiscountDTO;
 import com.tingeso.backend.entities.Discount;
 import com.tingeso.backend.services.DiscountService;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,7 @@ public class DiscountController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping
-    public ResponseEntity<Discount> update(@RequestBody Discount discount) {
-        return ResponseEntity.ok(discountService.update(discount));
+    public ResponseEntity<DiscountDTO> update(@RequestBody DiscountDTO discountDTO) {
+        return ResponseEntity.ok(discountService.update(discountDTO));
     }
 }

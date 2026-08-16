@@ -1,6 +1,6 @@
 package com.tingeso.backend.controllers;
 
-import com.tingeso.backend.entities.Transaction;
+import com.tingeso.backend.dto.TransactionDTO;
 import com.tingeso.backend.services.TransactionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,14 +17,14 @@ public class TransactionController {
 
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @GetMapping("/{id}")
-    public ResponseEntity<Transaction> findByReservationId(@PathVariable Long id) {
+    public ResponseEntity<TransactionDTO> findByReservationId(@PathVariable Long id) {
         return ResponseEntity.ok(transactionService.findByReservationId(id));
     }
 
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @PostMapping
-    public ResponseEntity<Transaction> create(@Valid @RequestBody Transaction transaction) {
-        return ResponseEntity.ok(transactionService.create(transaction));
+    public ResponseEntity<TransactionDTO> create(@Valid @RequestBody TransactionDTO transactionDTO) {
+        return ResponseEntity.ok(transactionService.create(transactionDTO));
     }
 
     @PreAuthorize("hasAnyRole('USER','ADMIN')")

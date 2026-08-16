@@ -2,6 +2,7 @@ package com.tingeso.backend.services;
 
 import com.tingeso.backend.configuration.DiscountConfig;
 import com.tingeso.backend.dto.DiscountDataDTO;
+import com.tingeso.backend.dto.ReservationDTO;
 import com.tingeso.backend.entities.*;
 import com.tingeso.backend.enums.ReservationState;
 import com.tingeso.backend.enums.TourPackageState;
@@ -44,6 +45,7 @@ class ReservationServiceTest {
 
     private Reservation reservation;
     private TourPackage tourPackage;
+    private ReservationDTO reservationDTO;
 
     @BeforeEach
     void setUp() {
@@ -63,19 +65,21 @@ class ReservationServiceTest {
         String testEmail = "user@test.com";
         reservation.setUserEmail(testEmail);
         reservation.setReservationState(ReservationState.PENDING);
+
+        reservationDTO = reservationService.reservationToDTO(reservation);
     }
 
     @Test
     void findAll_ShouldReturnList() {
         when(reservationRepository.findAll()).thenReturn(List.of(reservation));
-        List<Reservation> result = reservationService.findAll();
+        List<ReservationDTO> result = reservationService.findAll();
         assertEquals(1, result.size());
     }
 
     @Test
     void findById_WhenExists_ShouldReturnReservation() {
         when(reservationRepository.findById(1L)).thenReturn(Optional.of(reservation));
-        Reservation result = reservationService.findById(1L);
+        ReservationDTO result = reservationService.findById(1L);
         assertNotNull(result);
     }
 
@@ -93,27 +97,29 @@ class ReservationServiceTest {
         Reservation r1 = new Reservation(); r1.setTourPackageId(10L); r1.setPassengersAmount(2); r1.setPrice(BigDecimal.valueOf(2000)); r1.setTourPackageName("A");
         Reservation r2 = new Reservation(); r2.setTourPackageId(20L); r2.setPassengersAmount(5); r2.setPrice(BigDecimal.valueOf(5000)); r2.setTourPackageName("B");
         when(reservationRepository.findDateReports(any(), any(), any())).thenReturn(Arrays.asList(r1, r2));
-        List<List<Reservation>> ranking = reservationService.findRanking(start, end, 0, "passengers");
-        assertEquals(10L, ranking.get(0).getFirst().getTourPackageId());
-        assertEquals(20L, ranking.get(1).getFirst().getTourPackageId());
+        List<List<ReservationDTO>> ranking = reservationService.findRanking(start, end, 0, "passengers");
+        assertEquals(10L, ranking.get(0).getFirst().tourPackageId());
+        assertEquals(20L, ranking.get(1).getFirst().tourPackageId());
     }
 
     @Test
     void create_WhenPackageNotFound_ShouldThrowException() {
         when(tourPackageRepository.findById(any())).thenReturn(Optional.empty());
-        assertThrows(RuntimeException.class, () -> reservationService.create(reservation));
+        assertThrows(RuntimeException.class, () -> reservationService.create(reservationDTO));
     }
 
     @Test
     void create_WhenPackageNotAvailable_ShouldThrowIllegalStateException() {
         tourPackage.setTourPackageState(TourPackageState.SOLD_OUT);
         when(tourPackageRepository.findById(10L)).thenReturn(Optional.of(tourPackage));
-        assertThrows(BusinessRuleException.class, () -> reservationService.create(reservation));
+        assertThrows(BusinessRuleException.class, () -> reservationService.create(reservationDTO));
     }
 
     @Test
     void create_Success_ShouldReduceSpotsAndMarkSoldOutIfZero() {
+        tourPackage.setRemainingSpots(10);
         reservation.setPassengersAmount(10);
+        reservationDTO = reservationService.reservationToDTO(reservation);
         when(tourPackageRepository.findById(10L)).thenReturn(Optional.of(tourPackage));
         when(discountConfig.getMaxDiscountLimit()).thenReturn(new BigDecimal("0.25"));
         when(discountService.calculatePassengersAmountDiscount(any())).thenReturn(BigDecimal.ZERO);
@@ -121,11 +127,12 @@ class ReservationServiceTest {
         when(discountService.calculateMultiplePackagesDiscount(any())).thenReturn(BigDecimal.ZERO);
         when(promotionRepository.findByTourPackageId(10L)).thenReturn(Optional.empty());
         when(reservationRepository.save(any())).thenReturn(reservation);
-        Reservation result = reservationService.create(reservation);
+        ReservationDTO result = reservationService.create(reservationDTO);
+        assertNotNull(result);
         assertEquals(0, tourPackage.getRemainingSpots());
         assertEquals(TourPackageState.SOLD_OUT, tourPackage.getTourPackageState());
         verify(tourPackageRepository).save(tourPackage);
-        verify(reservationRepository).save(reservation);
+        verify(reservationRepository).save(any(Reservation.class));
     }
 
     @Test
@@ -134,7 +141,7 @@ class ReservationServiceTest {
         reservationInDb.setReservationState(ReservationState.CANCELED);
         when(reservationRepository.findById(any())).thenReturn(Optional.of(reservationInDb));
         when(tourPackageRepository.findById(any())).thenReturn(Optional.of(tourPackage));
-        assertThrows(BusinessRuleException.class, () -> reservationService.update(reservation));
+        assertThrows(BusinessRuleException.class, () -> reservationService.update(reservationDTO));
     }
 
     @Test
@@ -145,7 +152,8 @@ class ReservationServiceTest {
         when(reservationRepository.findById(any())).thenReturn(Optional.of(reservationInDb));
         when(tourPackageRepository.findById(any())).thenReturn(Optional.of(tourPackage));
         reservation.setReservationState(ReservationState.CONFIRMED);
-        assertThrows(BusinessRuleException.class, () -> reservationService.update(reservation));
+        reservationDTO = reservationService.reservationToDTO(reservation);
+        assertThrows(BusinessRuleException.class, () -> reservationService.update(reservationDTO));
     }
 
     @Test
@@ -165,7 +173,8 @@ class ReservationServiceTest {
         when(promotionRepository.findByTourPackageId(any())).thenReturn(Optional.empty());
         reservation.setReservationState(ReservationState.CANCELED);
         reservation.setPassengersAmount(3);
-        reservationService.update(reservation);
+        reservationDTO = reservationService.reservationToDTO(reservation);
+        reservationService.update(reservationDTO);
         assertEquals(13, tourPackage.getRemainingSpots());
         assertEquals(TourPackageState.AVAILABLE, tourPackage.getTourPackageState());
         verify(tourPackageRepository).save(tourPackage);
@@ -179,7 +188,8 @@ class ReservationServiceTest {
         when(reservationRepository.findById(any())).thenReturn(Optional.of(reservationInDb));
         when(tourPackageRepository.findById(any())).thenReturn(Optional.of(tourPackage));
         reservation.setPassengersAmount(15);
-        assertThrows(BusinessRuleException.class, () -> reservationService.update(reservation));
+        reservationDTO = reservationService.reservationToDTO(reservation);
+        assertThrows(BusinessRuleException.class, () -> reservationService.update(reservationDTO));
     }
 
     @Test
@@ -200,7 +210,7 @@ class ReservationServiceTest {
         when(discountService.calculateFrequentClientDiscount(any())).thenReturn(new BigDecimal("0.10"));
         when(discountService.calculateMultiplePackagesDiscount(any())).thenReturn(BigDecimal.ZERO);
         when(promotionRepository.findByTourPackageId(10L)).thenReturn(Optional.empty());
-        DiscountDataDTO result = reservationService.calculatePrice(reservation);
+        DiscountDataDTO result = reservationService.calculatePrice(reservationDTO);
         assertTrue(result.getMaxDiscount());
         assertEquals(new BigDecimal("400.00"), result.getDiscountAmount());
         assertEquals(new BigDecimal("1600.00"), result.getTotalAmount());
@@ -215,7 +225,7 @@ class ReservationServiceTest {
         when(discountService.calculateFrequentClientDiscount(any())).thenReturn(new BigDecimal("0.12"));
         when(discountService.calculateMultiplePackagesDiscount(any())).thenReturn(BigDecimal.ZERO);
         when(promotionRepository.findByTourPackageId(10L)).thenReturn(Optional.empty());
-        DiscountDataDTO result = reservationService.calculatePrice(reservation);
+        DiscountDataDTO result = reservationService.calculatePrice(reservationDTO);
         assertFalse(result.getMaxDiscount());
         assertEquals(new BigDecimal("240.00"), result.getDiscountAmount());
         assertEquals(new BigDecimal("1760.00"), result.getTotalAmount());

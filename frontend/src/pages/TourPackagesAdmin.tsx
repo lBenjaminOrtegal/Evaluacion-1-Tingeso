@@ -142,7 +142,7 @@ function TourPackagesAdmin() {
               <td>{tour.startDate}</td>
               <td>{tour.endDate}</td>
               <td className="fw-bold text-success">
-                {formatCurrency(tour.price)}
+                {formatCurrency(tour.price)} CLP
               </td>
               <td className="text-center">{tour.remainingSpots}</td>
               <td className="text-center">

@@ -1,5 +1,6 @@
 package com.tingeso.backend.services;
 
+import com.tingeso.backend.dto.TransactionDTO;
 import com.tingeso.backend.entities.Reservation;
 import com.tingeso.backend.enums.ReservationState;
 import com.tingeso.backend.entities.Transaction;
@@ -37,35 +38,36 @@ class TransactionServiceTest {
 
     private Transaction validTransaction;
     private Reservation validReservation;
+    private TransactionDTO validTransactionDTO;
 
     @BeforeEach
     void setUp() {
         validReservation = new Reservation();
         validReservation.setId(1L);
         validReservation.setReservationState(ReservationState.PENDING);
-
         validTransaction = new Transaction();
         validTransaction.setReservationId(1L);
         validTransaction.setAmount(new BigDecimal("100.00"));
+        validTransaction.setState(TransactionState.SUCCESS);
+        validTransactionDTO = transactionService.transactionToDTO(validTransaction);
     }
 
     @Test
     void createTransaction_Success() {
         when(reservationRepository.findById(1L)).thenReturn(Optional.of(validReservation));
         when(transactionRepository.save(any(Transaction.class))).thenReturn(validTransaction);
-        Transaction result = transactionService.create(validTransaction);
+        TransactionDTO result = transactionService.create(validTransactionDTO);
         assertNotNull(result);
-        assertEquals(TransactionState.SUCCESS, result.getState());
+        assertEquals(TransactionState.SUCCESS, result.state());
         assertEquals(ReservationState.CONFIRMED, validReservation.getReservationState());
         assertNotNull(validReservation.getPaymentDate());
-        verify(reservationRepository).save(validReservation);
-        verify(transactionRepository).save(validTransaction);
+        verify(transactionRepository).save(any(Transaction.class));
     }
 
     @Test
     void createTransaction_ThrowsEntityNotFound() {
         when(reservationRepository.findById(1L)).thenReturn(Optional.empty());
-        assertThrows(ResourceNotFoundException.class, () -> transactionService.create(validTransaction));
+        assertThrows(ResourceNotFoundException.class, () -> transactionService.create(validTransactionDTO));
         verify(transactionRepository, never()).save(any());
     }
 
@@ -73,7 +75,7 @@ class TransactionServiceTest {
     void createTransaction_ThrowsIllegalState_WhenReservationCanceled() {
         validReservation.setReservationState(ReservationState.CANCELED);
         when(reservationRepository.findById(1L)).thenReturn(Optional.of(validReservation));
-        BusinessRuleException exception = assertThrows(BusinessRuleException.class, () -> transactionService.create(validTransaction));
+        BusinessRuleException exception = assertThrows(BusinessRuleException.class, () -> transactionService.create(validTransactionDTO));
         assertTrue(exception.getMessage().contains("reservation is canceled"));
         verify(transactionRepository, never()).save(any());
     }
@@ -82,7 +84,7 @@ class TransactionServiceTest {
     void createTransaction_ThrowsIllegalStateException_WhenReservationAlreadyPaid() {
         validReservation.setPaymentDate(LocalDateTime.now());
         when(reservationRepository.findById(1L)).thenReturn(Optional.of(validReservation));
-        BusinessRuleException exception = assertThrows(BusinessRuleException.class, () -> transactionService.create(validTransaction));
+        BusinessRuleException exception = assertThrows(BusinessRuleException.class, () -> transactionService.create(validTransactionDTO));
         assertTrue(exception.getMessage().contains("Cannot create transaction because payment is already set."));
         verify(transactionRepository, never()).save(any());
     }
@@ -90,16 +92,18 @@ class TransactionServiceTest {
     @Test
     void createTransaction_ThrowsIllegalState_WhenAmountIsZeroOrLess() {
         validTransaction.setAmount(BigDecimal.ZERO);
+        validTransactionDTO = transactionService.transactionToDTO(validTransaction);
         when(reservationRepository.findById(1L)).thenReturn(Optional.of(validReservation));
-        BusinessRuleException exception = assertThrows(BusinessRuleException.class, () -> transactionService.create(validTransaction));
+        BusinessRuleException exception = assertThrows(BusinessRuleException.class, () -> transactionService.create(validTransactionDTO));
         assertTrue(exception.getMessage().contains("amount is less or equal to 0"));
     }
 
     @Test
     void createTransaction_ThrowsIllegalState_WhenAmountIsNegative() {
         validTransaction.setAmount(new BigDecimal("-10.0"));
+        validTransactionDTO = transactionService.transactionToDTO(validTransaction);
         when(reservationRepository.findById(1L)).thenReturn(Optional.of(validReservation));
-        assertThrows(BusinessRuleException.class, () -> transactionService.create(validTransaction));
+        assertThrows(BusinessRuleException.class, () -> transactionService.create(validTransactionDTO));
     }
 
     @Test

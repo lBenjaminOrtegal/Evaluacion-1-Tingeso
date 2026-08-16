@@ -205,7 +205,7 @@ function ReservationCreationEdition() {
                 <div className="d-flex justify-content-between align-items-center mb-2">
                   <span className="fw-bold">Precio unitario del paquete</span>
                   <span className="fs-5 fw-bold text-dark">
-                    {formatCurrency(Number(tourPackage?.price))}
+                    {formatCurrency(Number(tourPackage?.price))} CLP
                   </span>
                 </div>
                 <div className="d-flex justify-content-between align-items-center">
@@ -418,7 +418,7 @@ function ReservationCreationEdition() {
                         Importe total sin descuentos:{" "}
                         {formatCurrency(
                           Number(discountsData?.totalAmountWithoutDiscounts),
-                        )}
+                        )} CLP
                       </p>
 
                       {discountsData &&
@@ -427,7 +427,7 @@ function ReservationCreationEdition() {
                             Descuento en función del número de pasajeros:{" "}
                             {formatCurrency(
                               Number(discountsData?.passengersDiscount),
-                            )}
+                            )} CLP
                           </p>
                         )}
 
@@ -437,7 +437,7 @@ function ReservationCreationEdition() {
                             Descuento para clientes frecuentes:{" "}
                             {formatCurrency(
                               Number(discountsData?.frequentClientDiscount),
-                            )}
+                            )} CLP
                           </p>
                         )}
 
@@ -447,7 +447,7 @@ function ReservationCreationEdition() {
                             Descuento por compras múltiples:{" "}
                             {formatCurrency(
                               Number(discountsData?.multiplePackagesDiscount),
-                            )}
+                            )} CLP
                           </p>
                         )}
 
@@ -456,7 +456,7 @@ function ReservationCreationEdition() {
                           Promociones aplicadas:{" "}
                           {formatCurrency(
                             Number(discountsData?.promotionDiscount),
-                          )}
+                          )} CLP
                         </p>
                       )}
 
@@ -465,20 +465,20 @@ function ReservationCreationEdition() {
                           Descuentos totales aplicados (máximo de descuentos):{" "}
                           {formatCurrency(
                             Number(discountsData?.discountAmount),
-                          )}
+                          )} CLP
                         </p>
                       ) : (
                         <p className="mb-1 text-decoration-underline">
                           Descuentos totales aplicados:{" "}
                           {formatCurrency(
                             Number(discountsData?.discountAmount),
-                          )}
+                          )} CLP
                         </p>
                       )}
 
                       <p className="fw-bold fs-5 text-primary mb-3">
                         Importe final:{" "}
-                        {formatCurrency(Number(discountsData?.totalAmount))}
+                        {formatCurrency(Number(discountsData?.totalAmount))} CLP
                       </p>
                     </Stack>
                   </Stack>

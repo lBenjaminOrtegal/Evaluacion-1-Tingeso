@@ -1,7 +1,7 @@
 package com.tingeso.backend.controllers;
 
+import com.tingeso.backend.dto.TourPackageDTO;
 import com.tingeso.backend.dto.TourPackageFiltersDTO;
-import com.tingeso.backend.entities.*;
 import com.tingeso.backend.enums.Category;
 import com.tingeso.backend.enums.Season;
 import com.tingeso.backend.enums.TourPackageState;
@@ -9,7 +9,6 @@ import com.tingeso.backend.enums.TripType;
 import com.tingeso.backend.services.TourPackageService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -26,17 +25,17 @@ public class TourPackageController {
     private final TourPackageService tourPackageService;
 
     @GetMapping
-    public ResponseEntity<List<TourPackage>> findAll() {
+    public ResponseEntity<List<TourPackageDTO>> findAll() {
         return ResponseEntity.ok(tourPackageService.findAll());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TourPackage> findById(@PathVariable Long id) {
+    public ResponseEntity<TourPackageDTO> findById(@PathVariable Long id) {
         return ResponseEntity.ok(tourPackageService.findById(id));
     }
 
     @GetMapping("/filters")
-    public ResponseEntity<List<TourPackage>> findCustomFilters(
+    public ResponseEntity<List<TourPackageDTO>> findCustomFilters(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String destiny,
             @RequestParam(required = false) Category category,
@@ -62,14 +61,14 @@ public class TourPackageController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<TourPackage> create(@Valid @RequestBody TourPackage tourPackage) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(tourPackageService.createTourPackage(tourPackage));
+    public ResponseEntity<TourPackageDTO> create(@Valid @RequestBody TourPackageDTO tourPackageDTO) {
+        return ResponseEntity.ok(tourPackageService.createTourPackage(tourPackageDTO));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping
-    public ResponseEntity<TourPackage> update(@Valid @RequestBody TourPackage tourPackage) {
-        return ResponseEntity.ok(tourPackageService.update(tourPackage));
+    public ResponseEntity<TourPackageDTO> update(@Valid @RequestBody TourPackageDTO tourPackageDTO) {
+        return ResponseEntity.ok(tourPackageService.update(tourPackageDTO));
     }
 
     @PreAuthorize("hasRole('ADMIN')")

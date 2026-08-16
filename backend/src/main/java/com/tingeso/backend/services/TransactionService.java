@@ -1,5 +1,6 @@
 package com.tingeso.backend.services;
 
+import com.tingeso.backend.dto.TransactionDTO;
 import com.tingeso.backend.entities.Reservation;
 import com.tingeso.backend.enums.ReservationState;
 import com.tingeso.backend.entities.Transaction;
@@ -23,32 +24,47 @@ public class TransactionService {
     private final ReservationRepository reservationRepository;
 
     @Transactional(readOnly = true)
-    public Transaction findByReservationId(Long id) {
-        return transactionRepository.findByReservationId(id);
+    public TransactionDTO findByReservationId(Long id) {
+        return transactionToDTO(transactionRepository.findByReservationId(id));
     }
 
     @Transactional
-    public Transaction create(Transaction transaction) {
-        Reservation reservation = reservationRepository.findById(transaction.getReservationId())
-                .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + transaction.getReservationId()));
+    public TransactionDTO create(TransactionDTO transactionDTO) {
+        Reservation reservation = reservationRepository.findById(transactionDTO.reservationId())
+                .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + transactionDTO.reservationId()));
         if (reservation.getReservationState() == ReservationState.CANCELED) {
             throw new BusinessRuleException("Cannot create transaction because reservation is canceled.");
         }
         if (reservation.getPaymentDate() != null) {
             throw new BusinessRuleException("Cannot create transaction because payment is already set.");
         }
-        if (transaction.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+        if (transactionDTO.amount().compareTo(BigDecimal.ZERO) <= 0) {
             throw new BusinessRuleException("Cannot create transaction because amount is less or equal to 0.");
         }
         reservation.setReservationState(ReservationState.CONFIRMED);
         reservation.setPaymentDate(LocalDateTime.now());
         reservationRepository.save(reservation);
+        Transaction transaction = new Transaction();
+        transaction.setAmount(transactionDTO.amount());
+        transaction.setReservationId(transactionDTO.reservationId());
         transaction.setDate(LocalDateTime.now());
+        transaction.setPaymentMethod(transactionDTO.paymentMethod());
         transaction.setState(TransactionState.SUCCESS);
-        return transactionRepository.save(transaction);
+        return transactionToDTO(transactionRepository.save(transaction));
     }
 
     public Boolean successfulTransaction() {
         return true;
+    }
+
+    public TransactionDTO transactionToDTO(Transaction transaction) {
+        return new TransactionDTO(
+                transaction.getId(),
+                transaction.getAmount(),
+                transaction.getReservationId(),
+                transaction.getDate(),
+                transaction.getPaymentMethod(),
+                transaction.getState()
+        );
     }
 }

@@ -136,7 +136,7 @@ function ReservationsAdmin() {
               <td className="text-muted">#{reservation.tourPackageId}</td>
               <td className="fw-medium">{reservation.tourPackageName}</td>
               <td className="fw-bold text-success">
-                {formatCurrency(reservation.price)}
+                {formatCurrency(reservation.price)} CLP
               </td>
               <td className="text-center">{reservation.passengersAmount}</td>
               <td className="text-center">

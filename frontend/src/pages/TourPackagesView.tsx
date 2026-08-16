@@ -24,7 +24,6 @@ import {
   getCategoryColor,
   getCategoryWord,
   getSeasonWord,
-  getTourPackageStateWord,
   getTripTypeWord,
 } from "../utils/colorUtils";
 import { ErrorResponseModal } from "../components/ErrorResponseModal";
@@ -120,7 +119,11 @@ function TourPackagesView() {
 
   return (
     <Container className="py-4">
-      <ErrorResponseModal show={showError} onClose={() => setShowError(false)} error={apiError}/>
+      <ErrorResponseModal
+        show={showError}
+        onClose={() => setShowError(false)}
+        error={apiError}
+      />
       <Stack
         direction="horizontal"
         gap={3}
@@ -311,7 +314,7 @@ function TourPackagesView() {
                   />
                   <div className="position-absolute top-0 end-0 m-3">
                     <span className="badge bg-white text-dark shadow-sm py-2 px-3 fw-bold">
-                      {formatCurrency(tour.price)}
+                      {formatCurrency(tour.price)} CLP
                     </span>
                   </div>
                 </div>
@@ -367,11 +370,10 @@ function TourPackagesView() {
         </Row>
 
         <Modal
-          size="lg"
+          fullscreen
           centered
           show={show}
           onHide={handleClose}
-          contentClassName="shadow-lg border-0"
         >
           {tour && (
             <>
@@ -392,65 +394,45 @@ function TourPackagesView() {
                 </div>
               </Modal.Header>
 
-              <Modal.Body className="px-4 py-4">
+              <Modal.Body className="p-4">
                 <Row className="g-4">
                   <Col md={7}>
-                    <section className="mb-4">
-                      <h6 className="text-uppercase text-primary fw-bold small mb-2">
+                    <Stack>
+                      <p className="text-uppercase text-primary fw-bold small mb-2">
                         Descripción del viaje
-                      </h6>
-                      <p className="text-muted leading-relaxed">
+                      </p>
+                      <p className="text-muted small leading-relaxed">
                         {tour.description}
                       </p>
-                    </section>
+                    </Stack>
 
-                    <Row className="g-3 mb-4">
-                      <Col xs={6}>
-                        <div className="p-3 border rounded-3 bg-light-subtle">
-                          <h6 className="small text-muted mb-1">Duración</h6>
-                          <p className="fw-bold mb-0">{tour.duration}</p>
-                        </div>
-                      </Col>
-                      <Col xs={6}>
-                        <div className="p-3 border rounded-3 bg-light-subtle">
-                          <h6 className="small text-muted mb-1">Temporada</h6>
-                          <p className="fw-bold mb-0">
-                            {getSeasonWord(tour.season)}
-                          </p>
-                        </div>
-                      </Col>
-                      <Col xs={6}>
-                        <div className="p-3 border rounded-3 bg-light-subtle">
-                          <h6 className="small text-muted mb-1">
-                            Tipo de viaje
-                          </h6>
-                          <p className="fw-bold mb-0">
-                            {getTripTypeWord(tour.tripType)}
-                          </p>
-                        </div>
-                      </Col>
-                      <Col xs={6}>
-                        <div className="p-3 border rounded-3 bg-light-subtle">
-                          <h6 className="small text-muted mb-1">Estado</h6>
-                          <p
-                            className={`fw-bold mb-0 ${tour.tourPackageState === "AVAILABLE" ? "text-success" : "text-secondary"}`}
-                          >
-                            {getTourPackageStateWord(tour.tourPackageState)}
-                          </p>
-                        </div>
-                      </Col>
-                    </Row>
+                    <Stack className="mb-4">
+                      <Row>
+                        <Col>
+                          <p className="text-uppercase text-primary fw-bold small mb-2">Duración</p>
+                          <p className="fw-bold small mb-0">{tour.duration}</p>
+                        </Col>
+                        <Col>
+                          <p className="text-uppercase text-primary fw-bold small mb-2">Temporada</p>
+                          <p className="fw-bold small mb-0">{getSeasonWord(tour.season)}</p>
+                        </Col>
+                        <Col>
+                          <p className="text-uppercase text-primary fw-bold small mb-2">Tipo de viaje</p>
+                          <p className="fw-bold small mb-0">{getTripTypeWord(tour.tripType)}</p>
+                        </Col>
+                      </Row>
+                    </Stack>
 
-                    <section className="mb-4">
-                      <h6 className="text-uppercase text-primary fw-bold small mb-2">
-                        Servicios incluidos
-                      </h6>
+                    <Stack className="mb-4">
+                      <p className="text-uppercase text-primary fw-bold small mb-2">
+                        Servicios Incluidos
+                      </p>
                       <ListGroup>
                         {tour?.services.map((s, index) => (
-                          <ListGroupItem key={index}>{s}</ListGroupItem>
+                          <ListGroupItem className="small fw-bold" key={index}>{s}</ListGroupItem>
                         ))}
                       </ListGroup>
-                    </section>
+                    </Stack>
                   </Col>
 
                   <Col md={5} className="border-start ps-md-4">
@@ -475,15 +457,13 @@ function TourPackagesView() {
                       </p>
                     </div>
 
-                    <div className="p-3 rounded-4 bg-light border mb-4">
-                      <div className="d-flex justify-content-between align-items-center mb-3">
-                        <span className="text-secondary">
-                          Precio por persona
-                        </span>
-                        <span className="fs-3 fw-bold text-primary">
-                          {formatCurrency(tour.price)}
-                        </span>
-                      </div>
+                    <Stack className="mb-4">
+                      <p className="text-uppercase text-primary fw-bold small mb-2">
+                        Precio por persona
+                      </p>
+                      <p className="fs-3 fw-bold text-primary">
+                        {formatCurrency(tour.price)} CLP
+                      </p>
                       <Button
                         variant="primary"
                         className="w-100 py-2 fw-bold shadow-sm"
@@ -492,7 +472,7 @@ function TourPackagesView() {
                       >
                         Reservar Ahora
                       </Button>
-                    </div>
+                    </Stack>
 
                     <Stack>
                       <div className="small text-muted">

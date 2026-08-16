@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="Gradle: org.springframework.boot:spring-boot-security-oauth2-resource-server:4.0.5" type="java-imported" external-system-id="GRADLE">
+    <properties groupId="org.springframework.boot" artifactId="spring-boot-security-oauth2-resource-server" version="4.0.5" baseVersion="4.0.5" />
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-security-oauth2-resource-server/4.0.5/6a655bd531d9930c87afb7500637f2371fe7e95d/spring-boot-security-oauth2-resource-server-4.0.5.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-security-oauth2-resource-server/4.0.5/5c3cee7a8eb9be5b2493d913e4e3ff0b7c88c982/spring-boot-security-oauth2-resource-server-4.0.5-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
