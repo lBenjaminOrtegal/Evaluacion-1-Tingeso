@@ -17,7 +17,7 @@ export const ErrorResponseModal: React.FC<ErrorResponseModalProps> = ({
   const getErrorMessage = (): string => {
     if (!error) return defaultMessage;
     const err = error as any;
-    if (err.response && err.response.data) {
+    if (err.response) {
       return (
         err.response.data.message ||
         err.response.data.error ||

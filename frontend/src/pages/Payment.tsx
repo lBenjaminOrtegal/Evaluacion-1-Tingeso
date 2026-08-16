@@ -83,7 +83,7 @@ function Payment() {
       return;
     }
 
-    var newTransaction: Partial<Transaction> = {
+    let newTransaction: Partial<Transaction> = {
       amount: reservation.price,
       reservationId: reservation.id,
       paymentMethod: "CREDIT_CARD",

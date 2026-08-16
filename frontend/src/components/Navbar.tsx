@@ -1,5 +1,5 @@
 import { useKeycloak } from "@react-keycloak/web";
-import { Button, Container, Nav, Navbar } from "react-bootstrap";
+import { Button, Container, Nav, Navbar, NavDropdown } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
 function NavbarComponent() {
@@ -15,11 +15,11 @@ function NavbarComponent() {
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto">
-            <Nav.Link as={Link} to="/">
+            <Nav.Link as={Link} to="/" className="fw-medium">
               Inicio
             </Nav.Link>
 
-            <Nav.Link as={Link} to="/tour-packages">
+            <Nav.Link as={Link} to="/tour-packages" className="fw-medium">
               Paquetes túristicos
             </Nav.Link>
 
@@ -27,13 +27,13 @@ function NavbarComponent() {
               <Nav.Link
                 as={Link}
                 to="/tour-packages-admin"
-                className="text-decoration-underline"
+                className="fw-medium"
               >
                 Administrar paquetes
               </Nav.Link>
             )}
 
-            <Nav.Link as={Link} to="/reservations">
+            <Nav.Link as={Link} to="/reservations" className="fw-medium">
               Reservas
             </Nav.Link>
 
@@ -41,24 +41,29 @@ function NavbarComponent() {
               <Nav.Link
                 as={Link}
                 to="/reservations-admin"
-                className="text-decoration-underline"
+                className="fw-medium"
               >
                 Administrar reservas
               </Nav.Link>
             )}
 
             {keycloak.hasRealmRole("ADMIN") && (
-              <Nav.Link
-                as={Link}
-                to="/reports"
-                className="text-decoration-underline"
+              <NavDropdown
+                title="Reportes"
+                id="reportsDropdown"
+                className="fw-medium"
               >
-                Reportes
-              </Nav.Link>
+                <NavDropdown.Item as={Link} to="/reports/date">
+                  Fecha
+                </NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/reports/sales">
+                  Ventas
+                </NavDropdown.Item>
+              </NavDropdown>
             )}
 
             {keycloak.authenticated && (
-              <Nav.Link as={Link} to="/profile">
+              <Nav.Link as={Link} to="/profile" className="fw-medium">
                 Perfil
               </Nav.Link>
             )}
@@ -69,7 +74,7 @@ function NavbarComponent() {
               <Button
                 onClick={() => keycloak.logout()}
                 variant="outline-danger"
-                className="fw-semibold"
+                className="fw-medium"
               >
                 Cerrar Sesión
               </Button>

@@ -85,7 +85,7 @@ function ReservationsView() {
     try {
       setLoading(true);
       const response = await reservationService.getByEmail(email);
-      var reservations = response.data;
+      let reservations = response.data;
       reservations.reverse();
       setReservations(reservations);
     } catch (error) {
@@ -174,7 +174,11 @@ function ReservationsView() {
 
   return (
     <Container className="mt-4">
-      <ErrorResponseModal show={showError} onClose={() => setShowError(false)} error={apiError}/>
+      <ErrorResponseModal
+        show={showError}
+        onClose={() => setShowError(false)}
+        error={apiError}
+      />
       <Modal show={showCancel} onHide={() => setShowCancel(false)}>
         <Modal.Header closeButton className="bg-light border-0 py-3">
           <Modal.Title className="fw-bold text-center">
@@ -323,7 +327,8 @@ function ReservationsView() {
                       <div className="p-3 border rounded-3 bg-light-subtle">
                         <h6 className="small text-muted mb-1">Monto</h6>
                         <p className="fw-bold mb-0 text-success">
-                          {formatCurrency(Number(selectedReservation?.price))} CLP
+                          {formatCurrency(Number(selectedReservation?.price))}{" "}
+                          CLP
                         </p>
                       </div>
                     </Col>
@@ -375,26 +380,24 @@ function ReservationsView() {
                         <strong>Preferencias</strong>{" "}
                       </p>
                       <ol>
-                        {selectedReservation?.preferences.map((p, index) => (
-                          <li key={index}>{p}</li>
+                        {selectedReservation?.preferences.map((p) => (
+                          <li key={selectedReservation.id}>{p}</li>
                         ))}
                       </ol>
                       <p className="mb-0">
                         <strong>Solicitudes</strong>{" "}
                       </p>
                       <ol>
-                        {selectedReservation?.specialRequests.map(
-                          (p, index) => (
-                            <li key={index}>{p}</li>
-                          ),
-                        )}
+                        {selectedReservation?.specialRequests.map((p) => (
+                          <li key={selectedReservation.id}>{p}</li>
+                        ))}
                       </ol>
                       <p className="mb-0">
                         <strong>Servicios contratados</strong>{" "}
                       </p>
                       <ol>
-                        {tourPackage?.services.map((s, index) => (
-                          <li key={index}>{s}</li>
+                        {tourPackage?.services.map((s) => (
+                          <li key={tourPackage.id}>{s}</li>
                         ))}
                       </ol>
                     </div>

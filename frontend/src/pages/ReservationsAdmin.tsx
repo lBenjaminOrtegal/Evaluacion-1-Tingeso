@@ -26,7 +26,7 @@ function ReservationsAdmin() {
     try {
       setLoading(true);
       const response = await reservationService.getAll();
-      var reservations = response.data;
+      let reservations = response.data;
       reservations.reverse();
       setReservations(reservations);
     } catch (error) {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Button,
   Container,
@@ -34,7 +34,7 @@ function Discounts() {
   const [discountMultiplePackages, setDiscountMultiplePackages] =
     useState<number>(0);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const discount: Discount = {

@@ -49,7 +49,7 @@ function ReservationCreationEdition() {
       setLoading(true);
       const responseTourPackage = await tourPackageService.getById(Number(id));
       setTourPackage(responseTourPackage.data);
-      var passengers = 1;
+      let passengers = 1;
       if (reservationId) {
         const responseReservation = await reservationService.getById(
           Number(reservationId),
@@ -257,8 +257,10 @@ function ReservationCreationEdition() {
                         Servicios incluidos
                       </span>
                       <ListGroup>
-                        {tourPackage?.services.map((s, index) => (
-                          <ListGroupItem key={index}>{s}</ListGroupItem>
+                        {tourPackage?.services.map((s) => (
+                          <ListGroupItem key={tourPackage.id}>
+                            {s}
+                          </ListGroupItem>
                         ))}
                       </ListGroup>
                     </Col>
@@ -270,8 +272,11 @@ function ReservationCreationEdition() {
                         Condiciones
                       </span>
                       <div>
-                        {tourPackage?.conditions.map((c, index) => (
-                          <p className="text-secondary mb-2" key={index}>
+                        {tourPackage?.conditions.map((c) => (
+                          <p
+                            className="text-secondary mb-2"
+                            key={tourPackage.id}
+                          >
                             {c}
                           </p>
                         ))}
@@ -282,8 +287,11 @@ function ReservationCreationEdition() {
                         Restricciones
                       </span>
                       <div>
-                        {tourPackage?.restrictions.map((r, index) => (
-                          <p className="text-secondary mb-2" key={index}>
+                        {tourPackage?.restrictions.map((r) => (
+                          <p
+                            className="text-secondary mb-2"
+                            key={tourPackage.id}
+                          >
                             {r}
                           </p>
                         ))}
@@ -418,7 +426,8 @@ function ReservationCreationEdition() {
                         Importe total sin descuentos:{" "}
                         {formatCurrency(
                           Number(discountsData?.totalAmountWithoutDiscounts),
-                        )} CLP
+                        )}{" "}
+                        CLP
                       </p>
 
                       {discountsData &&
@@ -427,7 +436,8 @@ function ReservationCreationEdition() {
                             Descuento en función del número de pasajeros:{" "}
                             {formatCurrency(
                               Number(discountsData?.passengersDiscount),
-                            )} CLP
+                            )}{" "}
+                            CLP
                           </p>
                         )}
 
@@ -437,7 +447,8 @@ function ReservationCreationEdition() {
                             Descuento para clientes frecuentes:{" "}
                             {formatCurrency(
                               Number(discountsData?.frequentClientDiscount),
-                            )} CLP
+                            )}{" "}
+                            CLP
                           </p>
                         )}
 
@@ -447,7 +458,8 @@ function ReservationCreationEdition() {
                             Descuento por compras múltiples:{" "}
                             {formatCurrency(
                               Number(discountsData?.multiplePackagesDiscount),
-                            )} CLP
+                            )}{" "}
+                            CLP
                           </p>
                         )}
 
@@ -456,7 +468,8 @@ function ReservationCreationEdition() {
                           Promociones aplicadas:{" "}
                           {formatCurrency(
                             Number(discountsData?.promotionDiscount),
-                          )} CLP
+                          )}{" "}
+                          CLP
                         </p>
                       )}
 
@@ -465,14 +478,16 @@ function ReservationCreationEdition() {
                           Descuentos totales aplicados (máximo de descuentos):{" "}
                           {formatCurrency(
                             Number(discountsData?.discountAmount),
-                          )} CLP
+                          )}{" "}
+                          CLP
                         </p>
                       ) : (
                         <p className="mb-1 text-decoration-underline">
                           Descuentos totales aplicados:{" "}
                           {formatCurrency(
                             Number(discountsData?.discountAmount),
-                          )} CLP
+                          )}{" "}
+                          CLP
                         </p>
                       )}
 

@@ -157,7 +157,11 @@ function TourPackageCreationEdition() {
 
   return (
     <Container className="py-4">
-      <ErrorResponseModal show={showError} onClose={() => setShowError(false)} error={apiError}/>
+      <ErrorResponseModal
+        show={showError}
+        onClose={() => setShowError(false)}
+        error={apiError}
+      />
       <Modal show={show} onHide={() => setShow(false)}>
         <Modal.Header closeButton className="bg-light border-0 py-3">
           <Modal.Title>Transacción completa</Modal.Title>

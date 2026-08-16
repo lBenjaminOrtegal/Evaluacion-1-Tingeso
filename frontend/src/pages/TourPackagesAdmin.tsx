@@ -33,7 +33,7 @@ function TourPackagesAdmin() {
     try {
       setLoading(true);
       const response = await tourPackageService.getAll();
-      var tourPackages = response.data;
+      let tourPackages = response.data;
       tourPackages.reverse();
       setTourPackages(tourPackages);
     } catch (error) {
@@ -77,7 +77,11 @@ function TourPackagesAdmin() {
 
   return (
     <Container className="py-4">
-      <ErrorResponseModal show={showError} onClose={() => setShowError(false)} error={apiError}/>
+      <ErrorResponseModal
+        show={showError}
+        onClose={() => setShowError(false)}
+        error={apiError}
+      />
       <Stack
         direction="horizontal"
         gap={3}

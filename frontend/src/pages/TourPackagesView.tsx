@@ -27,6 +27,7 @@ import {
   getTripTypeWord,
 } from "../utils/colorUtils";
 import { ErrorResponseModal } from "../components/ErrorResponseModal";
+import type { TourPackageFilters } from "../interfaces/tourPackageFilters.interface.ts";
 
 function TourPackagesView() {
   const [tourPackages, setTourPackages] = useState<TourPackage[]>([]);
@@ -64,17 +65,18 @@ function TourPackagesView() {
   const getTourPackages = async () => {
     try {
       setLoading(true);
-      const response = await tourPackageService.getByCustomFilters(
-        packageName,
-        destiny,
-        category,
-        season,
-        tripType,
-        maxPrice,
-        startDate,
-        endDate,
-        onlyAvailable ? "AVAILABLE" : "",
-      );
+      const filters: TourPackageFilters = {
+        name: packageName || "",
+        destiny: destiny || "",
+        category: category || "",
+        season: season || "",
+        tripType: tripType || "",
+        maxPrice: maxPrice,
+        startDate: startDate || "",
+        endDate: endDate || "",
+        state: onlyAvailable ? "AVAILABLE" : "",
+      };
+      const response = await tourPackageService.getByCustomFilters(filters);
       setTourPackages(response.data);
     } catch (error) {
       console.error("Error cargando paquetes:", error);
@@ -303,7 +305,7 @@ function TourPackagesView() {
           {tourPackages.map((tour) => (
             <Col key={tour.id} className="d-flex align-items-stretch">
               <Card
-                className="shadow-sm h-100 transition-card overflow-hidden"
+                className="shadow h-100 transition-card overflow-hidden"
                 style={{ width: "30rem" }}
               >
                 <div className="position-relative">
@@ -369,15 +371,10 @@ function TourPackagesView() {
           ))}
         </Row>
 
-        <Modal
-          fullscreen
-          centered
-          show={show}
-          onHide={handleClose}
-        >
+        <Modal size="xl" show={show} onHide={handleClose}>
           {tour && (
             <>
-              <Modal.Header closeButton className="bg-light border-0 py-3">
+              <Modal.Header closeButton className="bg-light border-0 px-5">
                 <div>
                   <Modal.Title className="fw-bold fs-3 mb-0 text-dark">
                     {tour.name}
@@ -394,7 +391,7 @@ function TourPackagesView() {
                 </div>
               </Modal.Header>
 
-              <Modal.Body className="p-4">
+              <Modal.Body className="p-5">
                 <Row className="g-4">
                   <Col md={7}>
                     <Stack>
@@ -409,16 +406,26 @@ function TourPackagesView() {
                     <Stack className="mb-4">
                       <Row>
                         <Col>
-                          <p className="text-uppercase text-primary fw-bold small mb-2">Duración</p>
+                          <p className="text-uppercase text-primary fw-bold small mb-2">
+                            Duración
+                          </p>
                           <p className="fw-bold small mb-0">{tour.duration}</p>
                         </Col>
                         <Col>
-                          <p className="text-uppercase text-primary fw-bold small mb-2">Temporada</p>
-                          <p className="fw-bold small mb-0">{getSeasonWord(tour.season)}</p>
+                          <p className="text-uppercase text-primary fw-bold small mb-2">
+                            Temporada
+                          </p>
+                          <p className="fw-bold small mb-0">
+                            {getSeasonWord(tour.season)}
+                          </p>
                         </Col>
                         <Col>
-                          <p className="text-uppercase text-primary fw-bold small mb-2">Tipo de viaje</p>
-                          <p className="fw-bold small mb-0">{getTripTypeWord(tour.tripType)}</p>
+                          <p className="text-uppercase text-primary fw-bold small mb-2">
+                            Tipo de viaje
+                          </p>
+                          <p className="fw-bold small mb-0">
+                            {getTripTypeWord(tour.tripType)}
+                          </p>
                         </Col>
                       </Row>
                     </Stack>
@@ -428,8 +435,13 @@ function TourPackagesView() {
                         Servicios Incluidos
                       </p>
                       <ListGroup>
-                        {tour?.services.map((s, index) => (
-                          <ListGroupItem className="small fw-bold" key={index}>{s}</ListGroupItem>
+                        {tour?.services.map((s) => (
+                          <ListGroupItem
+                            className="small fw-bold"
+                            key={tour.id}
+                          >
+                            {s}
+                          </ListGroupItem>
                         ))}
                       </ListGroup>
                     </Stack>
@@ -480,16 +492,16 @@ function TourPackagesView() {
                           <strong>Condiciones:</strong>{" "}
                         </p>
                         <ol>
-                          {tour.conditions.map((condition, index) => (
-                            <li key={index}>{condition}</li>
+                          {tour.conditions.map((condition) => (
+                            <li key={tour.id}>{condition}</li>
                           ))}
                         </ol>
                         <p className="mb-0">
                           <strong>Restricciones:</strong>{" "}
                         </p>
                         <ol>
-                          {tour.restrictions.map((restriction, index) => (
-                            <li key={index}>{restriction}</li>
+                          {tour.restrictions.map((restriction) => (
+                            <li key={tour.id}>{restriction}</li>
                           ))}
                         </ol>
                       </div>
