@@ -55,13 +55,10 @@ public class ReservationService {
 
     @Transactional(readOnly = true)
     public List<ReservationDTO> findByUserEmail(String userEmail) {
-        List<Reservation> reservationList = reservationRepository.findByUserEmail(userEmail);
-        if (!reservationList.isEmpty()) {
-            return reservationList
-                    .stream()
-                    .map(this::reservationToDTO)
-                    .toList();
-        } else throw new ResourceNotFoundException("Reservations with user email " + userEmail + " not founded");
+        return reservationRepository.findByUserEmail(userEmail)
+                .stream()
+                .map(this::reservationToDTO)
+                .toList();
     }
 
     @Transactional(readOnly = true)
